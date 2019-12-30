@@ -15,7 +15,7 @@ if (isset($_SESSION['yhy'])) {
     $fn = $row[0];
     $ln = $row[1];
     $of = $row[2];
-    if ($of == "sh" || $of=="admin") {
+    if ($of == "sh" || $of == "admin") {
         
     } else {
         echo '<script> alert("You have no access for this page!")</script>';
@@ -32,6 +32,31 @@ $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 while ($arr = mysqli_fetch_array($result)) {
     $data[] = $arr;
+}
+?>
+
+<?php
+if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
+    $productlist = json_encode($_SESSION['todo']);
+    $sql = "INSERT INTO shstock(date, productlist, subject, ship, tracking, ordernumber,log) VALUES ('" . $str . "','" . $productlist . "','export' ,'DHL','" . $_POST['dhl'] . "','1','" . $_POST['note'] . "')";
+    $result = mysqli_query($conn, $sql);
+    if ($result) {
+        $sql = "INSERT INTO note (date, subject,status) VALUES (' " . $str . "',' STOCK TRANSFER:" . $_POST['dhl'] . "+NOTE:" . $_POST['note'] . "','1')";
+        mysqli_query($conn, $sql);
+
+        $pro = json_decode($productlist);
+        for ($i = 0; $i < count($pro); $i++) {
+            $sql = "UPDATE product SET shanghai=shanghai-" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
+            mysqli_query($conn, $sql);
+            $sql = "UPDATE product SET transit=transit+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
+            mysqli_query($conn, $sql);
+        }
+        header('location: ' . $_SERVER['HTTP_REFERER']);
+        print "<script>alert('Successful!')</script>";
+    } else {
+        print "<script>alert('Failue, Please redo!')</script>";
+    }
+    unset($_SESSION['todo']);
 }
 ?>
 
@@ -106,7 +131,6 @@ while ($arr = mysqli_fetch_array($result)) {
         <!--[if lt IE 8]>
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
-
         <div class="left-sidebar-pro">
             <nav id="sidebar" class="">              
                 <div class="nalika-profile">
@@ -134,6 +158,9 @@ while ($arr = mysqli_fetch_array($result)) {
                                 <ul>
                                     <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>
                                 </ul>
+                                <ul>
+                                    <li><a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a></li>
+                                </ul>
                             </li>
 
                             <li class="active">
@@ -151,7 +178,7 @@ while ($arr = mysqli_fetch_array($result)) {
                             <li>
                                 <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-mail icon-wrap"></i> <span class="mini-click-non">Export & Import</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
-                                    
+
                                     <li><a class="has-arrow" title="Import" href="stocktrans.php"><span >Incoming</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">     
                                             <li><a title="Supply" href="supply.php"><span class="mini-sub-pro">Supply & Return(NC)</span></a></li>
@@ -246,64 +273,31 @@ while ($arr = mysqli_fetch_array($result)) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="indicator-nt"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-tick" aria-hidden="true"></i>
+                                                                <?php 
+                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
+                                                                print "<li>
+                                                                    <a href='notification.php'>
+                                                                        <div class='notification-icon'>
+                                                                            <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2><?php print $user; ?></h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-cloud" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Sulaiman din</h2>
-                                                                            <p>Please done this project as soon possible.</p>
+                                                                        <div class='notification-content'>                                                                            
+                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
+                                                                            <p>".$datanote[$i]['subject']."</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-folder" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Victor Jara</h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-bar-chart" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Victor Jara</h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
+                                                                </li>";}
+                                                                
+                                                                ?>
                                                             </ul>
-                                                            <div class="notification-view">
-                                                                <a href="#">View All Notification</a>
-                                                            </div>
+                                                             <div class="notification-view">
+                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
+                                                        </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -566,32 +560,6 @@ while ($arr = mysqli_fetch_array($result)) {
                                                 <input name="confirm" type="submit" value="Click to confirm">
                                             </div>
                                         </form> 
-
-                                        <?php
-                                        if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
-                                            $productlist = json_encode($_SESSION['todo']);
-                                            $sql = "INSERT INTO shstock(date, productlist, subject, ship, tracking, ordernumber,log) VALUES ('" . $str . "','" . $productlist . "','export' ,'DHL','" . $_POST['dhl'] . "','1','".$_POST['note']."')";
-                                            $result = mysqli_query($conn, $sql);
-                                            if ($result) {
-                                                $sql="INSERT INTO note (date, subject,status) VALUES (' ". $str . "',' STOCK TRANSFER:". $_POST['dhl'] ."+NOTE:".$_POST['note']."','1')";
-                                                mysqli_query($conn, $sql);
-                                                
-                                                $pro = json_decode($productlist);
-                                                for ($i = 0; $i < count($pro); $i++) {
-                                                    $sql = "UPDATE product SET shanghai=shanghai-" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
-                                                    mysqli_query($conn, $sql);
-                                                    $sql = "UPDATE product SET transit=transit+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
-                                                    mysqli_query($conn, $sql);
-                                                }
-
-                                                print "<script>alert('Successful!')</script>";
-                                            } else {
-                                                print "<script>alert('Failue, Please redo!')</script>";
-                                            }
-                                            unset($_SESSION['todo']);
-                                        }
-                                        ?>
-
 
                                     </div>
                                 </div>

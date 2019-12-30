@@ -80,6 +80,7 @@ for ($i = 0; $i < $perpage; $i++) {
         $_SESSION['detailnc'] = $row[7];
         $_SESSION['detailtransit'] = $row[8];
         $_SESSION['detailshanghai'] = $row[9];
+        $_SESSION['detailsold'] = $row[10];
         break;
     }
 }
@@ -183,6 +184,9 @@ for ($i = 0; $i < $perpage; $i++) {
                                 <ul>
                                     <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>
                                 </ul>
+                                <ul>
+                                    <li><a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a></li>
+                                </ul>
                             </li>
 
                             <li class="active">
@@ -200,7 +204,7 @@ for ($i = 0; $i < $perpage; $i++) {
                             <li>
                                 <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-mail icon-wrap"></i> <span class="mini-click-non">Export & Import</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
-                                    
+
                                     <li><a class="has-arrow" title="Import" href="stocktrans.php"><span >Incoming</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">     
                                             <li><a title="Supply" href="supply.php"><span class="mini-sub-pro">Supply & Return(NC)</span></a></li>
@@ -295,64 +299,31 @@ for ($i = 0; $i < $perpage; $i++) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="indicator-nt"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-tick" aria-hidden="true"></i>
+                                                                <?php 
+                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
+                                                                print "<li>
+                                                                    <a href='notification.php'>
+                                                                        <div class='notification-icon'>
+                                                                            <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2><?php print $user; ?></h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-cloud" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Sulaiman din</h2>
-                                                                            <p>Please done this project as soon possible.</p>
+                                                                        <div class='notification-content'>                                                                            
+                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
+                                                                            <p>".$datanote[$i]['subject']."</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-folder" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Victor Jara</h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-bar-chart" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Victor Jara</h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
+                                                                </li>";}
+                                                                
+                                                                ?>
                                                             </ul>
-                                                            <div class="notification-view">
-                                                                <a href="#">View All Notification</a>
-                                                            </div>
+                                                             <div class="notification-view">
+                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
+                                                        </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -523,8 +494,8 @@ for ($i = 0; $i < $perpage; $i++) {
                                             <span class="single-regular"><?php print "￥" . @$_SESSION['detailprice']; ?></span>
                                         </div>
                                         <div class="single-pro-size">
-                                            <h6><?php print @$_SESSION['detailbrand'] . "_" . @$_SESSION['detailcategory']; ?></h6>
-                                            <span>S</span> <span>M</span> <span>L</span> <span>XL</span> <span>XXL</span>
+                                            <h4 style="color:#fff" ><?php print @$_SESSION['detailbrand'] . "_" . @$_SESSION['detailcategory']; ?></h4>
+                                            <h4 style="color:#fff"  >Sold: <?php print $_SESSION['detailsold']; ?></h4>
                                         </div>
                                         <div class="color-quality-pro">
                                             <div class="color-quality-details">
@@ -536,12 +507,12 @@ for ($i = 0; $i < $perpage; $i++) {
                                         </div>
                                         <div class="color-quality-pro">
                                             <div class="color-quality-details">
-                                                <h5>/Stock</h5>
-                                                <a style="color:#fff "><?php print @$_SESSION['detailshanghai'] ?></a>
+                                                <h5>  &nbsp&nbsp&nbsp &nbsp&nbspStock</h5>
+                                                <a style="color:#fff ">    <?php print @$_SESSION['detailshanghai'] ?></a>
                                                 <a style="color:#fff" > &nbsp;&GT;&GT;&nbsp;&nbsp; </a>
-                                                <a style="color:#fff "><?php print @$_SESSION['detailtransit'] ?></a>
+                                                <a style="color:#fff ">    <?php print @$_SESSION['detailtransit'] ?></a>
                                                 <a style="color:#fff" > &nbsp;&GT;&GT;&nbsp;&nbsp; </a>
-                                                <a style="color:#fff "><?php print @$_SESSION['detailnc'] ?></a>
+                                                <a style="color:#fff ">    <?php print @$_SESSION['detailnc'] ?></a>
                                                 <a> &nbsp;&nbsp;&nbsp; </a>
 
                                             </div>     

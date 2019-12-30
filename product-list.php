@@ -155,7 +155,7 @@ if ($totalrow != 0) {
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
 
-           <div class="left-sidebar-pro">
+        <div class="left-sidebar-pro">
             <nav id="sidebar" class="">              
                 <div class="nalika-profile">
                     <div class="profile-dtl">
@@ -182,6 +182,9 @@ if ($totalrow != 0) {
                                 <ul>
                                     <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>
                                 </ul>
+                                <ul>
+                                    <li><a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a></li>
+                                </ul>
                             </li>
 
                             <li class="active">
@@ -199,7 +202,7 @@ if ($totalrow != 0) {
                             <li>
                                 <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-mail icon-wrap"></i> <span class="mini-click-non">Export & Import</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
-                                    
+
                                     <li><a class="has-arrow" title="Import" href="stocktrans.php"><span >Incoming</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">     
                                             <li><a title="Supply" href="supply.php"><span class="mini-sub-pro">Supply & Return(NC)</span></a></li>
@@ -292,64 +295,31 @@ if ($totalrow != 0) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="indicator-nt"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-tick" aria-hidden="true"></i>
+                                                                <?php 
+                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
+                                                                print "<li>
+                                                                    <a href='notification.php'>
+                                                                        <div class='notification-icon'>
+                                                                            <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2><?php print $user; ?></h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-cloud" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Sulaiman din</h2>
-                                                                            <p>Please done this project as soon possible.</p>
+                                                                        <div class='notification-content'>                                                                            
+                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
+                                                                            <p>".$datanote[$i]['subject']."</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-folder" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Victor Jara</h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-bar-chart" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Victor Jara</h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
+                                                                </li>";}
+                                                                
+                                                                ?>
                                                             </ul>
-                                                            <div class="notification-view">
-                                                                <a href="#">View All Notification</a>
-                                                            </div>
+                                                             <div class="notification-view">
+                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
+                                                        </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -497,25 +467,24 @@ if ($totalrow != 0) {
                                             </tr>
                                             <?php
                                         }
-
-                                        echo '</table>';
-                                        ?><!--
-                    <div class="custom-pagination "  >
-                        <ul class="pagination ">
-
-                                        <?php
-                                        for ($i = 1; $i <= $totalpage; $i++) {
-                                            if ($i == $page) {
-                                                printf("<li ><a >%d</a></li>", $i);
-                                            } else {
-                                                printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
-                                            }
-                                        }
                                         ?>
+                                    </table><!--
+            <div class="custom-pagination "  >
+                <ul class="pagination ">
+
+                                    <?php
+                                    for ($i = 1; $i <= $totalpage; $i++) {
+                                        if ($i == $page) {
+                                            printf("<li ><a >%d</a></li>", $i);
+                                        } else {
+                                            printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
+                                        }
+                                    }
+                                    ?>
 
 
-                        </ul>
-                    </div>-->
+                </ul>
+            </div>-->
 
                                 </form>
                             </div>
@@ -591,15 +560,15 @@ if ($totalrow != 0) {
 
 
         <script type="text/javascript">
-                                                    function openNewWin(url)
-                                                    {
-                                                        window.open(url);
-                                                    }
+                                                function openNewWin(url)
+                                                {
+                                                    window.open(url);
+                                                }
 
-                                                    function confirmation(url) {
+                                                function confirmation(url) {
 
-                                                        return confirm('Are you sure?');
-                                                    }
+                                                    return confirm('Are you sure?');
+                                                }
 
 
         </script>

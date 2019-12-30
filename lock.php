@@ -126,7 +126,7 @@ if (isset($_POST['submit'])) {
             </div>
             <div class="row">
                 <div class="col-md-12 col-md-12 col-sm-12 col-xs-12 text-center login-footer">
-                    <p>Copyright © 2018 <a href="https://colorlib.com/wp/templates/">Colorlib</a> All rights reserved.</p>
+                    <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn </a>. All rights reserved.</p>
                 </div>
             </div>
         </div>

@@ -12,7 +12,6 @@ if (isset($_SESSION['yhy'])) {
     $ln = $row[1];
     //$of = $row[2];
     //if($of=="sh"||"admin"){
-        
     //}else{
     //    echo '<script> alert("You have no access for this page!")</script>';
     //    print '<script> location.replace("homepage.php"); </script>';
@@ -149,6 +148,9 @@ if ($totalrow != 0) {
                                 <ul>
                                     <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>
                                 </ul>
+                                <ul>
+                                    <li><a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a></li>
+                                </ul>
                             </li>
 
                             <li class="active">
@@ -259,64 +261,31 @@ if ($totalrow != 0) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="indicator-nt"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-tick" aria-hidden="true"></i>
+                                                                <?php 
+                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
+                                                                print "<li>
+                                                                    <a href='notification.php'>
+                                                                        <div class='notification-icon'>
+                                                                            <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2><?php print $user; ?></h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-cloud" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Sulaiman din</h2>
-                                                                            <p>Please done this project as soon possible.</p>
+                                                                        <div class='notification-content'>                                                                            
+                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
+                                                                            <p>".$datanote[$i]['subject']."</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-folder" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Victor Jara</h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="#">
-                                                                        <div class="notification-icon">
-                                                                            <i class="icon nalika-bar-chart" aria-hidden="true"></i>
-                                                                        </div>
-                                                                        <div class="notification-content">
-                                                                            <span class="notification-date">16 Sept</span>
-                                                                            <h2>Victor Jara</h2>
-                                                                            <p>Please done this project as soon possible.</p>
-                                                                        </div>
-                                                                    </a>
-                                                                </li>
+                                                                </li>";}
+                                                                
+                                                                ?>
                                                             </ul>
-                                                            <div class="notification-view">
-                                                                <a href="#">View All Notification</a>
-                                                            </div>
+                                                             <div class="notification-view">
+                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
+                                                        </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -447,16 +416,19 @@ if ($totalrow != 0) {
                                             switch ($data[$index]['ship']) {
                                                 case "DHL":
                                                     ?>
-                                        <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php break;
+                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
+                                                    <?php
+                                                    break;
                                                 case "USPS":
                                                     ?>
                                                     <td><a href='#' style="color:#ff4" onclick='openNewWin("https://tools.usps.com/go/TrackConfirmAction?tLabels=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php break;
+                                                    <?php
+                                                    break;
                                                 case "UPS":
                                                     ?>
                                                     <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.ups.com/track?loc=en_US&tracknum=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php break;
+                                                    <?php
+                                                    break;
                                                 case "Fedex":
                                                     ?>
                                                     <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.fedex.com/apps/fedextrack/?tracknumbers=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
