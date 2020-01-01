@@ -31,36 +31,46 @@ $columns = array('date', 'subject', 'status', 'ordernumber', 'mkt');
 $search = "";
 
 if (isset($_POST['search'])) {
-    $sql = "SELECT * FROM note where status= '1' AND (subject LIKE '%" . @$_POST['searchtext'] . "%' OR ordernumber LIKE '%" . @$_POST['searchtext'] . "%')";
-} else {
-    $sql = "SELECT * FROM note where status= '1'";
-}
-$result = mysqli_query($conn, $sql);
-$totalnotes = mysqli_num_rows($result);
+    $_SESSION['notifysearchtext'] = $_POST['searchtext'];
+    $sql = "SELECT * FROM note where status= '1' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
+    $result = mysqli_query($conn, $sql);
+    $totalnotes = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
-if ($totalnotes != 0) {
-    while ($arr = mysqli_fetch_array($result)) {
-        $datanote[] = $arr;
+    if ($totalnotes != 0) {
+        while ($arr = mysqli_fetch_array($result)) {
+            $datanote[] = $arr;
+        }
     }
-    ?>
-
-    <?php
-//编辑后获取sku存入session在edit界面调取
-
-    for ($i = 0; $i < count($datanote); $i++) {
-        $tem = "edit" . $i;
-        $nnote = "note" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $nts = $datanote[$i]['subject'];
-            $apend = $nts . ">>>" . $str . "Update:" . $_POST["$nnote"];
-            $sql = "UPDATE note SET subject='{$apend}' WHERE date='" . $datanote[$i]['date'] . "'";
-            mysqli_query($conn, $sql);
-            header('location: ' . $_SERVER['HTTP_REFERER']);
-            break;
+} else {
+    $sql = "SELECT * FROM note where status= '1' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
+    $result = mysqli_query($conn, $sql);
+    $totalnotes = mysqli_num_rows($result);
+//$totalpage = ceil($totalrow / $perpage);
+    if ($totalnotes != 0) {
+        while ($arr = mysqli_fetch_array($result)) {
+            $datanote[] = $arr;
         }
     }
 }
+?>
+
+<?php
+//编辑后获取sku存入session在edit界面调取
+
+for ($i = 0; $i < count($datanote); $i++) {
+    $tem = "edit" . $i;
+    $nnote = "note" . $i;
+    if (isset($_REQUEST["{$tem}"])) {
+        $_REQUEST["{$tem}"] = 0;
+        $nts = $datanote[$i]['subject'];
+        $apend = $nts . ">>>" . $str . "Update:" . $_POST["$nnote"];
+        $sql = "UPDATE note SET subject='{$apend}' WHERE date='" . $datanote[$i]['date'] . "'";
+        mysqli_query($conn, $sql);
+        header('location: ' . $_SERVER['HTTP_REFERER']);
+        break;
+    }
+}
+
 
 for ($i = 0; $i < count($datanote); $i++) {
     $tem = "trash" . $i;
@@ -332,7 +342,7 @@ if (isset($_POST['login'])) {
                                                             <i class="icon nalika-down-arrow nalika-angle-dw"></i>
                                                         </a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
-                                                            <li><a href="register.html"><span class="icon nalika-home author-log-ic"></span> Register</a>
+                                                            <li><a href="register.php"><span class="icon nalika-home author-log-ic"></span> Register</a>
                                                             </li>
                                                             <li><a href="#"><span class="icon nalika-user author-log-ic"></span> My Profile</a>
                                                             </li>
@@ -408,8 +418,8 @@ if (isset($_POST['login'])) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_POST['searchtext'])) {
-                                                            print $_POST['searchtext'];
+                                                        if (isset($_SESSION['notifysearchtext'])) {
+                                                            print $_SESSION['notifysearchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
@@ -517,7 +527,7 @@ if (isset($_POST['login'])) {
                         <div class="row">
                             <div class="col-mg-3">
                                 <div class="footer-copy-right">
-                                    <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn</a> All rights reserved.</p>
+                                    <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
                                 </div>
                             </div>
                         </div>
@@ -582,15 +592,15 @@ if (isset($_POST['login'])) {
 
 
         <script type="text/javascript">
-                                                function openNewWin(url)
-                                                {
-                                                    window.open(url);
-                                                }
+                                                    function openNewWin(url)
+                                                    {
+                                                        window.open(url);
+                                                    }
 
-                                                function confirmation(url) {
+                                                    function confirmation(url) {
 
-                                                    return confirm('Are you sure?');
-                                                }
+                                                        return confirm('Are you sure?');
+                                                    }
 
 
         </script>

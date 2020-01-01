@@ -22,12 +22,13 @@ $columns = array('sku', 'brand', 'category', 'price', 'ram', 'cpu', 'quality');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'DESC' : 'ASC';
 //$perpage = 20;
-$search = "";
+
 
 if (isset($_POST['search'])) {
-    $sql = "SELECT * FROM product where sku LIKE '%" . @$_POST['searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['listsearchtext'] = $_POST['searchtext'];
+    $sql = "SELECT * FROM product where sku LIKE '%" . $_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM product ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM product where sku LIKE '%" . @$_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -40,28 +41,29 @@ if ($totalrow != 0) {
     while ($arr = mysqli_fetch_array($result)) {
         $data[] = $arr;
     }
+}
 //    if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
 //       $page = 1;
 //    } else
 //        $page = $_GET['page'];
-    ?>
+?>
 
-    <?php
+<?php
 // for ($i = 0; $i < $perpage; $i++) {
 //      $ind = ($page - 1) * $perpage + $i;
 //   if ($ind >= count($data))
 //        break;
 //   else {
-    for ($i = 0; $i < count($data); $i++) {
-        $tem = "trash" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $sql = "DELETE FROM `product` WHERE sku='" . $data[$i]['sku'] . "'";
-            mysqli_query($conn, $sql);
-            header('location: ' . $_SERVER['HTTP_REFERER']);
-            break;
-        }
+for ($i = 0; $i < count($data); $i++) {
+    $tem = "trash" . $i;
+    if (isset($_REQUEST["{$tem}"])) {
+        $_REQUEST["{$tem}"] = 0;
+        $sql = "DELETE FROM `product` WHERE sku='" . $data[$i]['sku'] . "'";
+        mysqli_query($conn, $sql);
+        header('location: ' . $_SERVER['HTTP_REFERER']);
+        break;
     }
+}
 
 
 //编辑后获取sku存入session在edit界面调取
@@ -71,14 +73,13 @@ if ($totalrow != 0) {
 //   break;
 //  else {
 
-    for ($i = 0; $i < count($data); $i++) {
-        $tem = "edit" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $_SESSION['editsku'] = $data[$i]['sku'];
-            header('location:product-edit.php');
-            break;
-        }
+for ($i = 0; $i < count($data); $i++) {
+    $tem = "edit" . $i;
+    if (isset($_REQUEST["{$tem}"])) {
+        $_REQUEST["{$tem}"] = 0;
+        $_SESSION['editsku'] = $data[$i]['sku'];
+        header('location:product-edit.php');
+        break;
     }
 }
 ?>
@@ -295,31 +296,33 @@ if ($totalrow != 0) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php 
-                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
-                                                                print "<li>
+<?php
+for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
-                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
-                                                                            <p>".$datanote[$i]['subject']."</p>
+                                                                            <h2>";
+    print $datanote[$i]['date'];
+    print "</h2>
+                                                                            <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>";}
-                                                                
-                                                                ?>
+                                                                </li>";
+}
+?>
                                                             </ul>
-                                                             <div class="notification-view">
-                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
-                                                        </div>
+                                                            <div class="notification-view">
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -329,7 +332,7 @@ if ($totalrow != 0) {
                                                             <i class="icon nalika-down-arrow nalika-angle-dw"></i>
                                                         </a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
-                                                            <li><a href="register.html"><span class="icon nalika-home author-log-ic"></span> Register</a>
+                                                            <li><a href="register.php"><span class="icon nalika-home author-log-ic"></span> Register</a>
                                                             </li>
                                                             <li><a href="#"><span class="icon nalika-user author-log-ic"></span> My Profile</a>
                                                             </li>
@@ -405,10 +408,10 @@ if ($totalrow != 0) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_POST['searchtext'])) {
-                                                            print $_POST['searchtext'];
-                                                        }
-                                                        ?>" ></div>
+                                                                if (isset($_SESSION['listsearchtext'])) {
+                                                                    print $_SESSION['listsearchtext'];
+                                                                }
+                                                                ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -439,25 +442,25 @@ if ($totalrow != 0) {
 
 
 
-                                        <?php
+<?php
 // if ($totalrow != 0) {
 //    for ($i = 0; $i < $perpage; $i++) {
 //       $index = ($page - 1) * $perpage + $i;
 //      if ($index >= count($data))
 //           break;
 //      else {
-                                        for ($index = 0; $index < count($data); $index++) {
-                                            print '<tr>';
-                                            print "<td>{$data[$index]['sku']}</td>";
-                                            print "<td>{$data[$index]['brand']}</td>";
-                                            print "<td>{$data[$index]['category']}</td>";
-                                            print "<td>{$data[$index]['price']}</td>";
-                                            print "<td>{$data[$index]['ram']}</td>";
-                                            print "<td>{$data[$index]['cpu']}</td>";
-                                            print "<td>{$data[$index]['quality']}</td>";
-                                            $edit = "edit" . $index;
-                                            $trash = "trash" . $index;
-                                            ?>
+for ($index = 0; $index < @count($data); $index++) {
+    print '<tr>';
+    print "<td>{$data[$index]['sku']}</td>";
+    print "<td>{$data[$index]['brand']}</td>";
+    print "<td>{$data[$index]['category']}</td>";
+    print "<td>{$data[$index]['price']}</td>";
+    print "<td>{$data[$index]['ram']}</td>";
+    print "<td>{$data[$index]['cpu']}</td>";
+    print "<td>{$data[$index]['quality']}</td>";
+    $edit = "edit" . $index;
+    $trash = "trash" . $index;
+    ?>
 
                                             <td>
                                                 <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="Edit" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
@@ -465,22 +468,22 @@ if ($totalrow != 0) {
 
                                             </td >  
                                             </tr>
-                                            <?php
-                                        }
-                                        ?>
+    <?php
+}
+?>
                                     </table><!--
             <div class="custom-pagination "  >
                 <ul class="pagination ">
 
-                                    <?php
-                                    for ($i = 1; $i <= $totalpage; $i++) {
-                                        if ($i == $page) {
-                                            printf("<li ><a >%d</a></li>", $i);
-                                        } else {
-                                            printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
-                                        }
-                                    }
-                                    ?>
+<?php
+for ($i = 1; $i <= $totalpage; $i++) {
+    if ($i == $page) {
+        printf("<li ><a >%d</a></li>", $i);
+    } else {
+        printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
+    }
+}
+?>
 
 
                 </ul>
@@ -497,7 +500,7 @@ if ($totalrow != 0) {
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="footer-copy-right">
-                                <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn</a> All rights reserved.</p>
+                                <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
                             </div>
                         </div>
                     </div>
@@ -560,15 +563,15 @@ if ($totalrow != 0) {
 
 
         <script type="text/javascript">
-                                                function openNewWin(url)
-                                                {
-                                                    window.open(url);
-                                                }
+                                                    function openNewWin(url)
+                                                    {
+                                                        window.open(url);
+                                                    }
 
-                                                function confirmation(url) {
+                                                    function confirmation(url) {
 
-                                                    return confirm('Are you sure?');
-                                                }
+                                                        return confirm('Are you sure?');
+                                                    }
 
 
         </script>

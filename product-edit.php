@@ -19,15 +19,16 @@ if (isset($_SESSION['yhy'])) {
 <?php
 if (isset($_SESSION['editsku'])) {
     $sku = $_SESSION['editsku'];
-    $sql = "select * from product where sku='" . $sku . "'";
+    $sql = "select sku,brand, category, price, ram,cpu,quality,web from product where sku='" . $sku . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
-    $brand = $row[1];
-    $category = $row[2];
-    $price = $row[3];
-    $ram = $row[4];
-    $cpu = $row[5];
-    $quality = $row[6];
+    $brand = $row['brand'];
+    $category = $row['category'];
+    $price = $row['price'];
+    $ram = $row['ram'];
+    $cpu = $row['cpu'];
+    $quality = $row['quality'];
+    $web = $row['web'];
     unset($_SESSION['editsku']);
 } else {
     $sku = 0;
@@ -37,6 +38,7 @@ if (isset($_SESSION['editsku'])) {
     $ram = 0;
     $cpu = 0;
     $quality = 0;
+    $web = 0;
 }
 ?>
 
@@ -49,13 +51,13 @@ if (isset($_POST["save"])) {
     $iram = @$_POST["iram"];
     $icpu = @$_POST["icpu"];
     $iqulity = @$_POST["iqulity"];
+    $iweb = @$_POST["iweb"];
     if (checkinput($isku)) {
-        require('libs/database_connection.php');
         $sql = "select * from product where sku='" . $isku . "'";
         $result = mysqli_query($conn, $sql);
         if (!$result || mysqli_num_rows($result) == 0) {
 
-            $sql = "insert into product(sku,brand, category, price, ram,cpu,quality) values('" . $isku . "','" . $ibrand . "','" . $icategory . "','" . $iprice . "','" . $iram . "','" . $icpu . "','" . $iquality . "')";
+            $sql = "insert into product(sku,brand, category, price, ram,cpu,quality,web) values('" . $isku . "','" . $ibrand . "','" . $icategory . "','" . $iprice . "','" . $iram . "','" . $icpu . "','" . $iquality ."','" . $iweb . "')"; "')";
             $result = mysqli_query($conn, $sql);
             print '<script>alert("Add Successful!")</script>';
             print '<script> location.replace("product-list.php"); </script>';
@@ -71,16 +73,16 @@ if (isset($_POST["update"])) {
     $icategory = @$_POST['icategory'];
     $iprice = @$_POST["iprice"];
     $iram = @$_POST["iram"];
+    $iweb = @$_POST["iweb"];
     $icpu = @$_POST["icpu"];
-    $iquality = @$_POST["iquality"];
-    require('libs/database_connection.php');
+    $iquality = @$_POST["iquality"];    
     $sql = "select * from product where sku='" . $isku . "'";
     $result = mysqli_query($conn, $sql);
     if (!$result || mysqli_num_rows($result) == 0) {
 
         print '<script>alert("This SKU is not existed, Please add a new product!")</script>';
     } else {
-        $sql = "UPDATE product SET brand='$ibrand',category='$icategory',price='$iprice',ram='$iram',cpu='$icpu',quality='$iquality' WHERE sku='$isku'";
+        $sql = "UPDATE product SET brand='$ibrand',category='$icategory',price='$iprice',ram='$iram',cpu='$icpu',quality='$iquality',web='$iweb' WHERE sku='$isku'";
 
         $result = mysqli_query($conn, $sql);
         print '<script>alert("Edit Successful!")</script>';
@@ -342,7 +344,7 @@ function checkinput($isku) {
                                                             <i class="icon nalika-down-arrow nalika-angle-dw"></i>
                                                         </a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
-                                                            <li><a href="register.html"><span class="icon nalika-home author-log-ic"></span> Register</a>
+                                                            <li><a href="register.php"><span class="icon nalika-home author-log-ic"></span> Register</a>
                                                             </li>
                                                             <li><a href="#"><span class="icon nalika-user author-log-ic"></span> My Profile</a>
                                                             </li>
@@ -435,9 +437,14 @@ function checkinput($isku) {
                                                                 ?>>
                                                             </div>
                                                             <div class="input-group mg-b-pro-edt">
-                                                                <span class="input-group-addon"><i class="icon nalika-new-file" aria-hidden="true"></i></span>
-                                                                <input type="text" class="form-control" placeholder="Sale Price">
-                                                            </div>
+                                                                <span class="input-group-addon"><i class="fa fa-internet-explorer" aria-hidden="true"></i></span>
+
+                                                                <input name="iweb" type="text" class="form-control" placeholder="Website" <?php
+                                                                if ($web) {
+                                                                    print "value='" . $web . "'";
+                                                                } unset($_SESSION['editsku']);
+                                                                ?>>
+                                                            </div>                                                            
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="icon nalika-folder" aria-hidden="true"></i></span>
                                                                 <span class="input-group-addon">Quality</span>
@@ -488,6 +495,16 @@ function checkinput($isku) {
                                                                         print "selected";
                                                                     } unset($_SESSION['editsku']);
                                                                     ?>>GIGABYTE</option>
+                                                                    <option value="Intel"    <?php
+                                                                    if ($cpu && $brand == 'Intel') {
+                                                                        print "selected";
+                                                                    } unset($_SESSION['editsku']);
+                                                                    ?>>Intel</option>
+                                                                    <option value="AMD"    <?php
+                                                                    if ($cpu && $brand == 'AMD') {
+                                                                        print "selected";
+                                                                    } unset($_SESSION['editsku']);
+                                                                    ?>>AMD</option>
 
                                                                 </select></div>
                                                             <div class="input-group mg-b-pro-edt">
@@ -817,7 +834,7 @@ function checkinput($isku) {
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="footer-copy-right">
-                                <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn</a> All rights reserved.</p>
+                                <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
                             </div>
                         </div>
                     </div>

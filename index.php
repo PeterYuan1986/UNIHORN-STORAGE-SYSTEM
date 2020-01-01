@@ -101,7 +101,7 @@ if (isset($_POST["login"])) {
             <div class="row">
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <div class="back-link back-backend">
-                        <a href="http://www.google.com" class="btn btn-primary">Back to www.unihorn.com</a>
+                        <a href="http://www.unihorn.tech" class="btn btn-primary">Back to www.unihorn.tech</a>
                     </div>
                 </div>
             </div>
@@ -149,7 +149,7 @@ if (isset($_POST["login"])) {
             </div>
             <div class="row">
                 <div class="col-md-12 col-md-12 col-sm-12 col-xs-12 text-center">
-                    <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn </a>. All rights reserved.</p>
+                    <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn </a>. All rights reserved.</p>
                     <p><?php print "Local Time(GMT-5): " . strftime($str); ?></p>
                     <img src="img/unihorn-1.gif">
                 </div>

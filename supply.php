@@ -34,43 +34,56 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'D
 $search = "";
 
 if (isset($_POST['search'])) {
-    $sql = "SELECT sku, nc FROM product where sku LIKE '%" . @$_POST['searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT sku, nc FROM product ORDER BY " . $column . ' ' . $sort_order;
-}
-$result = mysqli_query($conn, $sql);
-$totalrow = mysqli_num_rows($result);
+    $_SESSION['supplypagesearchtext'] = $_POST['searchtext'];
+    $sql = "SELECT sku, nc FROM product where sku LIKE '%" . $_SESSION['supplypagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $result = mysqli_query($conn, $sql);
+    $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
-if ($totalrow != 0) {
-    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-    $add_class = ' class="highlight"';
+    if ($totalrow != 0) {
+        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+        $add_class = ' class="highlight"';
 
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
-    }
-    ?>
-
-    <?php
-    for ($i = 0; $i < count($data); $i++) {
-        $tem = "trash" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $sql = "DELETE FROM `product` WHERE sku='" . $data[$i]['sku'] . "'";
-            mysqli_query($conn, $sql);
-            header('location: ' . $_SERVER['HTTP_REFERER']);
-            break;
+        while ($arr = mysqli_fetch_array($result)) {
+            $data[] = $arr;
         }
     }
+} else {
+    $sql = "SELECT sku, nc FROM product where sku LIKE '%" . @$_SESSION['supplypagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $result = mysqli_query($conn, $sql);
+    $totalrow = mysqli_num_rows($result);
+//$totalpage = ceil($totalrow / $perpage);
+    if ($totalrow != 0) {
+        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+        $add_class = ' class="highlight"';
 
-    for ($i = 0; $i < count($data); $i++) {
-        $tem = "edit" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $_SESSION['editsku'] = $data[$i]['sku'];
-            header('location:product-edit.php');
-            break;
+        while ($arr = mysqli_fetch_array($result)) {
+            $data[] = $arr;
         }
+    }
+}
+?>
+
+<?php
+for ($i = 0; $i < count($data); $i++) {
+    $tem = "trash" . $i;
+    if (isset($_REQUEST["{$tem}"])) {
+        $_REQUEST["{$tem}"] = 0;
+        $sql = "DELETE FROM `product` WHERE sku='" . $data[$i]['sku'] . "'";
+        mysqli_query($conn, $sql);
+        header('location: ' . $_SERVER['HTTP_REFERER']);
+        break;
+    }
+}
+
+for ($i = 0; $i < count($data); $i++) {
+    $tem = "edit" . $i;
+    if (isset($_REQUEST["{$tem}"])) {
+        $_REQUEST["{$tem}"] = 0;
+        $_SESSION['editsku'] = $data[$i]['sku'];
+        header('location:product-edit.php');
+        break;
     }
 }
 ?>
@@ -88,7 +101,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                 $sql = "UPDATE product SET nc=nc+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
             }
-            header('location: ' . $_SERVER['HTTP_REFERER']);
+
             print "<script>alert('Successful!')</script>";
         } else {
             print "<script>alert('Failue, Please redo!')</script>";
@@ -105,7 +118,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                     $sql = "UPDATE product SET nc=nc+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
                     mysqli_query($conn, $sql);
                 }
-                header('location: ' . $_SERVER['HTTP_REFERER']);
+
                 print "<script>alert('Successful!')</script>";
             } else {
                 print "<script>alert('Failue, Please redo!')</script>";
@@ -116,7 +129,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
             $sql = "INSERT INTO `ncstock`(date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','return-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
             $result = mysqli_query($conn, $sql);
             if ($result) {
-                header('location: ' . $_SERVER['HTTP_REFERER']);
+
                 print "<script>alert('Successful!')</script>";
             } else {
                 print "<script>alert('Failue, Please redo!')</script>";
@@ -340,31 +353,33 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php 
-                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
-                                                                print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
-                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
-                                                                            <p>".$datanote[$i]['subject']."</p>
+                                                                            <h2>";
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
+                                                                            <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>";}
-                                                                
+                                                                </li>";
+                                                                }
                                                                 ?>
                                                             </ul>
-                                                             <div class="notification-view">
-                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
-                                                        </div>
+                                                            <div class="notification-view">
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -374,7 +389,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                             <i class="icon nalika-down-arrow nalika-angle-dw"></i>
                                                         </a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
-                                                            <li><a href="register.html"><span class="icon nalika-home author-log-ic"></span> Register</a>
+                                                            <li><a href="register.php"><span class="icon nalika-home author-log-ic"></span> Register</a>
                                                             </li>
                                                             <li><a href="#"><span class="icon nalika-user author-log-ic"></span> My Profile</a>
                                                             </li>
@@ -453,10 +468,10 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
 
 
                                                                 <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                    if (isset($_POST['searchtext'])) {
-                                                                        print $_POST['searchtext'];
-                                                                    }
-                                                                    ?>" ></div>
+                                                                if (isset($_SESSION['supplypagesearchtext'])) {
+                                                                    print $_SESSION['supplypagesearchtext'];
+                                                                }
+                                                                ?>" ></div>
                                                                 <div style="color:#fff;width:000px;float:left;">
                                                                     <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -470,7 +485,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                     <tr>
                                                         <th><a style="color: #fff" href="supply.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                         <th><a style="color: #fff" href="supply.php?column=nc&order=<?php echo $asc_or_desc; ?>">Inventory <i class=" fa fa-sort<?php echo $column == 'nc' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                        <th>Amount To Send</th>
+                                                        <th>Amount</th>
                                                         <th>Check</th>
 
                                                     </tr>
@@ -491,7 +506,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                             <input  style="color:#000" name ="<?php print $check; ?>"   value="1" type="checkbox">
                                                         </td >
                                                         </tr>
-<?php } ?>
+                                                    <?php } ?>
                                                 </table>
                                                 <div class="custom-pagination "  >
                                                     <input name="submit" type="submit" value="Click to confirm">
@@ -510,7 +525,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                 <tr>
                                                     <th>SKU</th>
                                                     <th>Inventory</th>
-                                                    <th>To Send</th>
+                                                    <th>Amount</th>
                                                 </tr>
                                                 <?php
 //这段控制pickup表格
@@ -576,7 +591,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="footer-copy-right">
-                                <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn</a> All rights reserved.</p>
+                                <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
                             </div>
                         </div>
                     </div>

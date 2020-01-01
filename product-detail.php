@@ -22,40 +22,35 @@ if (isset($_SESSION['yhy'])) {
 
 <?php
 $perpage = 20;
-$search = "";
 
 if (isset($_POST['search'])) {
-
-    $sql = "SELECT sku,shanghai,transit,nc FROM product where sku LIKE '%" . @$_POST['searchtext'] . "%'";
-} else {
-    $sql = "SELECT sku,shanghai,transit,nc FROM product";
-}
-$result = mysqli_query($conn, $sql);
-$totalrow = mysqli_num_rows($result);
-$totalpage = ceil($totalrow / $perpage);
-if ($totalrow != 0) {
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
-    }
-    if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
-        $page = 1;
-    } else
-        $page = $_GET['page'];
-
-    for ($i = 0; $i < $perpage; $i++) {
-        $ind = ($page - 1) * $perpage + $i;
-        if ($ind >= count($data))
-            break;
-        else {
-            $tem = "trash" . $ind;
-            if (isset($_REQUEST["{$tem}"])) {
-                $_REQUEST["{$tem}"] = 0;
-                $sql = "DELETE FROM `product` WHERE sku='" . $data[$ind]['sku'] . "'";
-                mysqli_query($conn, $sql);
-                header('location: ' . $_SERVER['HTTP_REFERER']);
-                break;
-            }
+    $_SESSION['detailpagesearchtext'] = $_POST['searchtext'];
+    $sql = "SELECT sku FROM product where sku LIKE '%" . $_SESSION['detailpagesearchtext'] . "%'";
+    $result = mysqli_query($conn, $sql);
+    $totalrow = mysqli_num_rows($result);
+    $totalpage = ceil($totalrow / $perpage);
+    if ($totalrow != 0) {
+        while ($arr = mysqli_fetch_array($result)) {
+            $data[] = $arr;
         }
+        if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
+            $page = 1;
+        } else
+            $page = $_GET['page'];
+    }
+} else {
+    $sql = "SELECT sku FROM product where sku LIKE '%" . @$_SESSION['detailpagesearchtext'] . "%'";
+    $result = mysqli_query($conn, $sql);
+    $totalrow = mysqli_num_rows($result);
+    $totalpage = ceil($totalrow / $perpage);
+    if ($totalrow != 0) {
+        while ($arr = mysqli_fetch_array($result)) {
+            $data[] = $arr;
+        }
+        if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
+            $page = 1;
+        } else
+            $page = $_GET['page'];
     }
 }
 ?>
@@ -66,7 +61,9 @@ if ($totalrow != 0) {
 for ($i = 0; $i < $perpage; $i++) {
     $ind = ($page - 1) * $perpage + $i;
     $tem = "sss" . $ind;
-    if (isset($_POST["{$tem}"])) {
+    if ($i > count($data)) {
+        break;
+    } else if (isset($_POST["{$tem}"])) {
         $_SESSION['detailsku'] = $data[$ind]['sku'];
         $sql = "select * from product where sku='" . $_SESSION['detailsku'] . "'";
         $result = mysqli_query($conn, $sql);
@@ -81,6 +78,7 @@ for ($i = 0; $i < $perpage; $i++) {
         $_SESSION['detailtransit'] = $row[8];
         $_SESSION['detailshanghai'] = $row[9];
         $_SESSION['detailsold'] = $row[10];
+        $_SESSION['detailweb'] = $row[11];
         break;
     }
 }
@@ -299,31 +297,33 @@ for ($i = 0; $i < $perpage; $i++) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php 
-                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
-                                                                print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
-                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
-                                                                            <p>".$datanote[$i]['subject']."</p>
+                                                                            <h2>";
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
+                                                                            <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>";}
-                                                                
+                                                                </li>";
+                                                                }
                                                                 ?>
                                                             </ul>
-                                                             <div class="notification-view">
-                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
-                                                        </div>
+                                                            <div class="notification-view">
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -333,7 +333,7 @@ for ($i = 0; $i < $perpage; $i++) {
                                                             <i class="icon nalika-down-arrow nalika-angle-dw"></i>
                                                         </a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
-                                                            <li><a href="register.html"><span class="icon nalika-home author-log-ic"></span> Register</a>
+                                                            <li><a href="register.php"><span class="icon nalika-home author-log-ic"></span> Register</a>
                                                             </li>
                                                             <li><a href="#"><span class="icon nalika-user author-log-ic"></span> My Profile</a>
                                                             </li>
@@ -381,8 +381,8 @@ for ($i = 0; $i < $perpage; $i++) {
 
 
                                                         <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                            if (isset($_POST['searchtext'])) {
-                                                                print $_POST['searchtext'];
+                                                            if (isset($_SESSION['detailpagesearchtext'])) {
+                                                                print $_SESSION['detailpagesearchtext'];
                                                             }
                                                             ?>" ></div>
                                                         <div style="color:#fff;width:000px;float:left;">
@@ -495,7 +495,7 @@ for ($i = 0; $i < $perpage; $i++) {
                                         </div>
                                         <div class="single-pro-size">
                                             <h4 style="color:#fff" ><?php print @$_SESSION['detailbrand'] . "_" . @$_SESSION['detailcategory']; ?></h4>
-                                            <h4 style="color:#fff"  >Sold: <?php print $_SESSION['detailsold']; ?></h4>
+                                            <h4 style="color:#fff"  >Sold: <?php print @$_SESSION['detailsold']; ?></h4>
                                         </div>
                                         <div class="color-quality-pro">
                                             <div class="color-quality-details">
@@ -525,8 +525,9 @@ for ($i = 0; $i < $perpage; $i++) {
 
                                             </div>
                                             <div class="pro-viwer">
-                                                <a href="#"><i class="fa fa-heart"></i></a>
-                                                <a href="#"><i class="fa fa-eye"></i></a>
+                                                <a href="#" onclick="openNewWin('<?php print @$_SESSION['detailweb'] ?>');">
+                                                <i class="fa fa-internet-explorer">Click</i></a>
+                                                
                                             </div>
                                         </div>
                                         <div class="clear"></div>
@@ -676,7 +677,7 @@ for ($i = 0; $i < $perpage; $i++) {
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="footer-copy-right">
-                                    <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn</a> All rights reserved.</p>
+                                    <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
                                 </div>
                             </div>
                         </div>

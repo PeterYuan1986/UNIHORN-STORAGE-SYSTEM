@@ -13,8 +13,7 @@ $code = $Bar->getBarcode($_SESSION['detailsku'], $Bar::TYPE_CODE_128);
             body, html {
                 height: 100%;
             }
-            .bg {
-                background-image: url("images/bg.jpg");
+            .bg {                
                 height: 100%;
                 background-position: center;
                 background-repeat: no-repeat;
@@ -29,7 +28,7 @@ $code = $Bar->getBarcode($_SESSION['detailsku'], $Bar::TYPE_CODE_128);
         <div class="container" id="panel">
             
             <div class="row">
-                <div class="col-md-6 offset-md-3" style="background: white; padding: 20px; box-shadow: 10px 10px 5px #888888;">
+                <div class="col-md-6 offset-md-3" style="background: white; padding: 0px;">
                     <div class="panel-heading">
                         <h1><?php print $_SESSION['detailsku']; ?></h1>
                     </div>

@@ -5,9 +5,6 @@ require 'header.php';
 
 <?php
 if (isset($_SESSION['yhy'])) {
-
-
-
     $user = $_SESSION['yhy'];
     $sql = "select firstname, lastname ,office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
@@ -34,46 +31,39 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'D
 $search = "";
 
 if (isset($_POST['search'])) {
-    $sql = "SELECT sku, nc FROM product where nc>0 and sku LIKE '%" . @$_POST['searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT sku, nc FROM product where nc>0 ORDER BY " . $column . ' ' . $sort_order;
-}
-$result = mysqli_query($conn, $sql);
-$totalrow = mysqli_num_rows($result);
+    $_SESSION['outncsearchtext'] = $_POST['searchtext'];
+
+    $sql = "SELECT sku, nc FROM product where nc>0 and sku LIKE '%" . $_SESSION['outncsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $result = mysqli_query($conn, $sql);
+    $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
-if ($totalrow != 0) {
-    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-    $add_class = ' class="highlight"';
+    if ($totalrow != 0) {
+        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+        $add_class = ' class="highlight"';
 
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
-    }
-    ?>
-
-    <?php
-    for ($i = 0; $i < count($data); $i++) {
-        $tem = "trash" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $sql = "DELETE FROM `product` WHERE sku='" . $data[$i]['sku'] . "'";
-            mysqli_query($conn, $sql);
-            header('location: ' . $_SERVER['HTTP_REFERER']);
-            break;
+        while ($arr = mysqli_fetch_array($result)) {
+            $data[] = $arr;
         }
     }
+} else {
+    $sql = "SELECT sku, nc FROM product where nc>0 and sku LIKE '%" . @$_SESSION['outncsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $result = mysqli_query($conn, $sql);
+    $totalrow = mysqli_num_rows($result);
+//$totalpage = ceil($totalrow / $perpage);
+    if ($totalrow != 0) {
+        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+        $add_class = ' class="highlight"';
 
-    for ($i = 0; $i < count($data); $i++) {
-        $tem = "edit" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $_SESSION['editsku'] = $data[$i]['sku'];
-            header('location:product-edit.php');
-            break;
+        while ($arr = mysqli_fetch_array($result)) {
+            $data[] = $arr;
         }
     }
 }
 ?>
+
+
 
 <?php
 if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
@@ -86,7 +76,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
             for ($i = 0; $i < count($pro); $i++) {
                 $sql = "UPDATE product SET nc=nc-" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
-                $sql = "UPDATE product SET sales=sales+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
+                $sql = "UPDATE product SET sold=sold+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
             }
             header('location: ' . $_SERVER['HTTP_REFERER']);
@@ -335,23 +325,23 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php
-                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                    print "<li>
+<?php
+for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                    print $datanote[$i]['date'];
-                                                                    print "</h2>
+    print $datanote[$i]['date'];
+    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                }
-                                                                ?>
+}
+?>
                                                             </ul>
                                                             <div class="notification-view">
                                                                 <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
@@ -365,7 +355,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                             <i class="icon nalika-down-arrow nalika-angle-dw"></i>
                                                         </a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
-                                                            <li><a href="register.html"><span class="icon nalika-home author-log-ic"></span> Register</a>
+                                                            <li><a href="register.php"><span class="icon nalika-home author-log-ic"></span> Register</a>
                                                             </li>
                                                             <li><a href="#"><span class="icon nalika-user author-log-ic"></span> My Profile</a>
                                                             </li>
@@ -440,10 +430,10 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
 
 
                                                                 <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                    if (isset($_POST['searchtext'])) {
-                                                                        print $_POST['searchtext'];
-                                                                    }
-                                                                    ?>" ></div>
+                                                                if (isset($_SESSION['outncsearchtext'])) {
+                                                                    print $_SESSION['outncsearchtext'];
+                                                                }
+                                                                ?>" ></div>
                                                                 <div style="color:#fff;width:000px;float:left;">
                                                                     <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -462,14 +452,14 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
 
                                                     </tr>
 
-                                                    <?php
-                                                    for ($index = 0; $index < @count($data); $index++) {
-                                                        print '<tr>';
-                                                        print "<td>{$data[$index]['sku']}</td>";
-                                                        print "<td>{$data[$index]['nc']}</td>";
-                                                        $deta = "inven" . $index;
-                                                        $check = "check" . $index;
-                                                        ?>
+<?php
+for ($index = 0; $index < @count($data); $index++) {
+    print '<tr>';
+    print "<td>{$data[$index]['sku']}</td>";
+    print "<td>{$data[$index]['nc']}</td>";
+    $deta = "inven" . $index;
+    $check = "check" . $index;
+    ?>
 
                                                         <td>
                                                             <input  style="color:#000"  name ="<?php print $deta; ?>"    type="text">
@@ -478,7 +468,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                             <input  style="color:#000" name ="<?php print $check; ?>"   value="1" type="checkbox">
                                                         </td >
                                                         </tr>
-                                                    <?php } ?>
+<?php } ?>
                                                 </table>
                                                 <div class="custom-pagination "  >
                                                     <input name="submit" type="submit" value="Click to confirm">
@@ -499,26 +489,26 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                     <th>Inventory</th>
                                                     <th>To Send</th>
                                                 </tr>
-                                                <?php
+<?php
 //这段控制pickup表格
-                                                $total = 0;
-                                                if (isset($_POST['submit'])) {
-                                                    $tosend = array();
-                                                    for ($ind = 0; $ind < count($data); $ind++) {
-                                                        $deta = "inven" . $ind;
-                                                        $check = "check" . $ind;
-                                                        if (@$_POST["{$check}"] != NULL) {
-                                                            print '<tr>';
-                                                            print "<td>{$data[$ind]['sku']}</td>";
-                                                            print "<td>{$data[$ind]['nc']}</td>";
-                                                            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
-                                                            $total += trim(@$_REQUEST["{$deta}"]);
-                                                            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
-                                                        }
-                                                    }
-                                                    $_SESSION['tosend'] = $tosend;
-                                                }
-                                                ?>
+$total = 0;
+if (isset($_POST['submit'])) {
+    $tosend = array();
+    for ($ind = 0; $ind < count($data); $ind++) {
+        $deta = "inven" . $ind;
+        $check = "check" . $ind;
+        if (@$_POST["{$check}"] != NULL) {
+            print '<tr>';
+            print "<td>{$data[$ind]['sku']}</td>";
+            print "<td>{$data[$ind]['nc']}</td>";
+            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
+            $total += trim(@$_REQUEST["{$deta}"]);
+            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
+        }
+    }
+    $_SESSION['tosend'] = $tosend;
+}
+?>
                                             </table>     
 
                                             <div class="custom-pagination "  >
@@ -565,7 +555,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="footer-copy-right">
-                                <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn</a> All rights reserved.</p>
+                                <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
                             </div>
                         </div>
                     </div>

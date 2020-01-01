@@ -199,7 +199,7 @@ function checkinput($user, $fn, $ln, $pwd1, $pwd2, $email1, $email2) {
             </div>
             <div class="row">
                 <div class="col-md-12 text-center">
-                    <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn</a> All rights reserved.</p>
+                    <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
                     <p><?php print "Local Time(GMT-5): " . strftime($str); ?></p>
                     <p><image src="img/unihorn-1.gif"</p>
                 </div>

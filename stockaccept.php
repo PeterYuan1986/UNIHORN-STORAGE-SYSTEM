@@ -32,7 +32,13 @@ while ($arr = mysqli_fetch_array($result)) {
     $data[] = $arr;
 }
 ?>
-
+<?php
+$sql = "SELECT sku,nc FROM product";
+$result = mysqli_query($conn, $sql);
+while ($arr = mysqli_fetch_array($result)) {
+    $alldata[] = $arr;
+}
+?>
 
 <html class="no-js" lang="en">
 
@@ -280,7 +286,7 @@ while ($arr = mysqli_fetch_array($result)) {
                                                             <i class="icon nalika-down-arrow nalika-angle-dw"></i>
                                                         </a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
-                                                            <li><a href="register.html"><span class="icon nalika-home author-log-ic"></span> Register</a>
+                                                            <li><a href="register.php"><span class="icon nalika-home author-log-ic"></span> Register</a>
                                                             </li>
                                                             <li><a href="#"><span class="icon nalika-user author-log-ic"></span> My Profile</a>
                                                             </li>
@@ -530,8 +536,8 @@ while ($arr = mysqli_fetch_array($result)) {
                                                     $todo = array();
                                                     for ($ind = 0; $ind < count($updoc); $ind++) {
                                                         $flagl = false;
-                                                        for ($i = 0; $i < @count($data) && !$flagl; $i++) {
-                                                            if ($updoc[$ind][0] == $data[$i]['sku'])
+                                                        for ($i = 0; $i < @count($alldata) && !$flagl; $i++) {
+                                                            if ($updoc[$ind][0] == $alldata[$i]['sku'])
                                                                 $flagl = true;
                                                         }
                                                         if (!$flagl) {
@@ -541,24 +547,20 @@ while ($arr = mysqli_fetch_array($result)) {
                                                         }
                                                     }
                                                     if ($flag) {
-                                                        for ($i = 0; $i < @count($data); $i++) {
+                                                        for ($i = 0; $i < @count($alldata); $i++) {
                                                             $num = 0;
                                                             for ($ind = 0; $ind < count($updoc); $ind++) {
-                                                                if ($data[$i]['sku'] == $updoc[$ind][0]) {
+                                                                if ($alldata[$i]['sku'] == $updoc[$ind][0]) {
                                                                     $a = $i;
                                                                     $num++;
                                                                 }
                                                             }
                                                             if ($num != 0) {
                                                                 print '<tr>';
-                                                                print "<td>{$data[$a]['sku']}</td>";
-                                                                print "<td>{$data[$a]['shanghai']}</td>";
-                                                                if ($num <= $data[$a]['shanghai']) {
-                                                                    print "<td> $num  </td></tr>";
-                                                                } else {
-                                                                    print "<td><a style='color:#000'> $num </a> </td></tr>";
-                                                                }
-                                                                $todo[] = array($data[$a]['sku'], $num);
+                                                                print "<td>{$alldata[$a]['sku']}</td>";
+                                                                print "<td> $num  </td></tr>";
+                                                                
+                                                                $todo[] = array($alldata[$a]['sku'], $num);
                                                                 $total += $num;
                                                             }
                                                         }
@@ -629,7 +631,7 @@ while ($arr = mysqli_fetch_array($result)) {
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="footer-copy-right">
-                                <p>Copyright © 2019 <a href="https://www.unihorn.com">Unihorn</a> All rights reserved.</p>
+                                <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
                             </div>
                         </div>
                     </div>
