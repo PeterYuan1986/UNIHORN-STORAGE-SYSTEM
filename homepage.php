@@ -43,19 +43,18 @@ $amazon = $shamazon + $ncamazon;
 $ebay = $shebay + $ncebay;
 $newegg = $shnewegg + $ncnewegg;
 $all=$newegg+$ebay+$amazon;
-$sql = "SELECT * FROM `ncstock` WHERE date BETWEEN 2020-01-01 AND 2020-12-31 AND subject='order'";
+$sql = "SELECT * FROM `ncstock` WHERE date BETWEEN '2019-12-31' AND '2020-12-31' AND subject='order'";
 $result = mysqli_query($conn, $sql);
 $yearnc = mysqli_num_rows($result);
 
 
-$sql = "SELECT * FROM `shstock` WHERE date BETWEEN 2020-01-01 AND 2020-12-31 AND subject='order'";
+$sql = "SELECT * FROM `shstock` WHERE date BETWEEN '2019-12-31' AND '2020-12-31' AND subject='order'";
 $result = mysqli_query($conn, $sql);
 $yearsh = mysqli_num_rows($result);
 $year = $yearnc + $yearsh;
 
 $sql = "SELECT sku,sold FROM `product` order by sold DESC";
 $result = mysqli_query($conn, $sql);
-$row = mysqli_fetch_array($result);
 $inex = 0;
 $tota = 0;
 while ($row = mysqli_fetch_array($result)) {
@@ -66,6 +65,7 @@ while ($row = mysqli_fetch_array($result)) {
     $tota += $row[1];
     $inex++;
 }
+
 ?>
 
 <html class="no-js" lang="en">

@@ -43,6 +43,143 @@ if ($totalrow != 0) {
 }
 ?>
 
+<?php
+for ($index = 0; $index < @count($data); $index++) {
+    $can = "cancel" . $index;
+    if (isset($_POST["{$can}"])) {
+        switch ($data[$index]['subject']) {
+            case "replacement": {
+                    $productl = json_decode($data[$index]['productlist']);
+                    for ($i = 0; $i < count($productl); $i++) {
+                        $sql = "update product set nc=nc+" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        print $sql . "<br>";
+                        mysqli_query($conn, $sql);
+                    }
+                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    print $sql . "<br>";
+                    $result = mysqli_query($conn, $sql);
+                    if ($result) {
+                        echo '<script> alert("Succesful!")</script>';
+                        header('location: ' . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
+                    } break;
+                }
+            case "order": {
+                    $productl = json_decode($data[$index]['productlist']);
+                    for ($i = 0; $i < count($productl); $i++) {
+                        $sql = "update product set nc=nc+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        mysqli_query($conn, $sql);
+                    }
+                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    if ($result) {
+                        echo '<script> alert("Succesful!")</script>';
+                        header('location: ' . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
+                    } break;
+                }
+           case "supply-good": {
+                    $productl = json_decode($data[$index]['productlist']);
+                    for ($i = 0; $i < count($productl); $i++) {
+                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        mysqli_query($conn, $sql);
+                    }
+                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    if ($result) {
+                        echo '<script> alert("Succesful!")</script>';
+                        header('location: ' . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
+                    } break;
+                }
+                case "supply-bad": {                    
+                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    if ($result) {
+                        echo '<script> alert("Succesful!")</script>';
+                        header('location: ' . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
+                    } break;
+                }
+            case "return-bad": {
+                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    if ($result) {
+                        echo '<script> alert("Succesful!")</script>';
+                        header('location: ' . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
+                    } break;
+                }
+            case "return-good": {
+                    $productl = json_decode($data[$index]['productlist']);
+                    for ($i = 0; $i < count($productl); $i++) {
+                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        mysqli_query($conn, $sql);
+                    }
+                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    if ($result) {
+                        echo '<script> alert("Succesful!")</script>';
+                        header('location: ' . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
+                    } break;
+                }
+            case "import": {
+                    $productl = json_decode($data[$index]['productlist']);
+                    for ($i = 0; $i < count($productl); $i++) {
+                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        mysqli_query($conn, $sql);
+                    }
+
+                    $sql = "update shstock set ordernumber=0 where tracking='" . $data[$index]['tracking'] . "'";
+                    mysqli_query($conn, $sql);
+                    $sql = "select productlist from shstock where tracking='" . $data[$index]['tracking'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    $row = mysqli_fetch_array($result);
+                    $product2 = json_decode($row[0]);
+                    for ($i = 0; $i < count($product2); $i++) {
+                        $sql = "update product set transit=transit+" . $product2[$i][1] . " where sku='" . $product2[$i][0] . "'";
+                        mysqli_query($conn, $sql);
+                    }
+
+                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    if ($result) {
+                        echo '<script> alert("Succesful!")</script>';
+                        header('location: ' . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
+                    } break;
+                }
+            case "export": {
+
+                    $sql = "select productlist from ncstock where tracking='" . $data[$index]['tracking'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    $row = mysqli_fetch_array($result);
+                    $product2 = json_decode($row[0]);
+                    for ($i = 0; $i < count($product2); $i++) {
+                        $sql = "update product set nc=nc+" . $product2[$i][1] . ",transit=transit-" . $product2[$i][1] . " where sku='" . $product2[$i][0] . "'";
+                        mysqli_query($conn, $sql);
+                    }
+                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $result = mysqli_query($conn, $sql);
+                    if ($result) {
+                        echo '<script> alert("Succesful!")</script>';
+                        header('location: ' . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
+                    } break;
+                }
+        }
+    }
+}
+?>
 
 
 <html class="no-js" lang="en">   
@@ -255,31 +392,33 @@ if ($totalrow != 0) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php 
-                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
-                                                                print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
-                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
-                                                                            <p>".$datanote[$i]['subject']."</p>
+                                                                            <h2>";
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
+                                                                            <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>";}
-                                                                
+                                                                </li>";
+                                                                }
                                                                 ?>
                                                             </ul>
-                                                             <div class="notification-view">
-                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
-                                                        </div>
+                                                            <div class="notification-view">
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -437,7 +576,13 @@ if ($totalrow != 0) {
                                                     break;
                                             }
                                             print "<td>{$data[$index]['productlist']}</td>";
-                                            print "<td>{$data[$index]['log']}</td></tr>";
+                                            print "<td>{$data[$index]['log']}</td>";
+                                            $ca = "cancel" . $index;
+                                            if ((strtotime($str) - strtotime($data[$index]['date'])) < 10800) {
+                                                print "<td><input type='submit' style='color:#000' onclick='return confirmation()' name='$ca' value='Cancel'></td></tr>";
+                                            }else {
+                                                print "</tr>";
+                                            }
                                         }
                                         ?>
                                     </table>

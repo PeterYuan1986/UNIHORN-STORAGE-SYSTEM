@@ -220,7 +220,7 @@ $graph->title->Set('Order Statistic');
 $graph->title->SetColor('white');
 // Some extra margin (from the top)
 $graph->title->SetMargin(10);
-$graph->title->SetFont(FF_TIMES,FS_BOLD,20);
+$graph->title->SetFont(FF_TIMES,FS_NORMAL,20);
 
 // Create the three var series we will combine
 $bplot1 = new BarPlot($datay1);

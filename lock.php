@@ -108,7 +108,7 @@ if (isset($_POST['submit'])) {
                             <i class="fa fa-lock" aria-hidden="true"></i>
                             <br/>
                             <h4><strong><?php print $str; ?></strong></h4>
-                            <p>Your are in lock screen. Main app was shut down and you need to enter your passwor to go back to app.</p>
+                            <p>Your are in lock screen. Main app was shut down and you need to enter your password to go back to app.</p>
                             <form name="form" action="" method="post" class="m-t">
                                 <div class="form-group">
                                     <input type="password" name="password"  required="" placeholder="******" class="form-control">

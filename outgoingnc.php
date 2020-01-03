@@ -79,7 +79,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                 $sql = "UPDATE product SET sold=sold+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
             }
-            header('location: ' . $_SERVER['HTTP_REFERER']);
+
             print "<script>alert('Successful!')</script>";
         } else {
             print "<script>alert('Failue, Please redo!')</script>";
@@ -95,7 +95,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                 $sql = "UPDATE product SET nc=nc-" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
             }
-            header('location: ' . $_SERVER['HTTP_REFERER']);
+
             print "<script>alert('Successful!')</script>";
         } else {
             print "<script>alert('Failue, Please redo!')</script>";
@@ -325,23 +325,23 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-<?php
-for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-    print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-    print $datanote[$i]['date'];
-    print "</h2>
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-}
-?>
+                                                                }
+                                                                ?>
                                                             </ul>
                                                             <div class="notification-view">
                                                                 <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
@@ -430,10 +430,10 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
 
 
                                                                 <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['outncsearchtext'])) {
-                                                                    print $_SESSION['outncsearchtext'];
-                                                                }
-                                                                ?>" ></div>
+                                                                    if (isset($_SESSION['outncsearchtext'])) {
+                                                                        print $_SESSION['outncsearchtext'];
+                                                                    }
+                                                                    ?>" ></div>
                                                                 <div style="color:#fff;width:000px;float:left;">
                                                                     <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -452,14 +452,14 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
 
                                                     </tr>
 
-<?php
-for ($index = 0; $index < @count($data); $index++) {
-    print '<tr>';
-    print "<td>{$data[$index]['sku']}</td>";
-    print "<td>{$data[$index]['nc']}</td>";
-    $deta = "inven" . $index;
-    $check = "check" . $index;
-    ?>
+                                                    <?php
+                                                    for ($index = 0; $index < @count($data); $index++) {
+                                                        print '<tr>';
+                                                        print "<td>{$data[$index]['sku']}</td>";
+                                                        print "<td>{$data[$index]['nc']}</td>";
+                                                        $deta = "inven" . $index;
+                                                        $check = "check" . $index;
+                                                        ?>
 
                                                         <td>
                                                             <input  style="color:#000"  name ="<?php print $deta; ?>"    type="text">
@@ -468,7 +468,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                                             <input  style="color:#000" name ="<?php print $check; ?>"   value="1" type="checkbox">
                                                         </td >
                                                         </tr>
-<?php } ?>
+                                                    <?php } ?>
                                                 </table>
                                                 <div class="custom-pagination "  >
                                                     <input name="submit" type="submit" value="Click to confirm">
@@ -489,26 +489,26 @@ for ($index = 0; $index < @count($data); $index++) {
                                                     <th>Inventory</th>
                                                     <th>To Send</th>
                                                 </tr>
-<?php
+                                                <?php
 //这段控制pickup表格
-$total = 0;
-if (isset($_POST['submit'])) {
-    $tosend = array();
-    for ($ind = 0; $ind < count($data); $ind++) {
-        $deta = "inven" . $ind;
-        $check = "check" . $ind;
-        if (@$_POST["{$check}"] != NULL) {
-            print '<tr>';
-            print "<td>{$data[$ind]['sku']}</td>";
-            print "<td>{$data[$ind]['nc']}</td>";
-            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
-            $total += trim(@$_REQUEST["{$deta}"]);
-            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
-        }
-    }
-    $_SESSION['tosend'] = $tosend;
-}
-?>
+                                                $total = 0;
+                                                if (isset($_POST['submit'])) {
+                                                    $tosend = array();
+                                                    for ($ind = 0; $ind < count($data); $ind++) {
+                                                        $deta = "inven" . $ind;
+                                                        $check = "check" . $ind;
+                                                        if (@$_POST["{$check}"] != NULL) {
+                                                            print '<tr>';
+                                                            print "<td>{$data[$ind]['sku']}</td>";
+                                                            print "<td>{$data[$ind]['nc']}</td>";
+                                                            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
+                                                            $total += trim(@$_REQUEST["{$deta}"]);
+                                                            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
+                                                        }
+                                                    }
+                                                    $_SESSION['tosend'] = $tosend;
+                                                }
+                                                ?>
                                             </table>     
 
                                             <div class="custom-pagination "  >

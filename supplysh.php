@@ -34,8 +34,8 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'D
 $search = "";
 
 if (isset($_POST['search'])) {
-    $_SESSION['supplyshpagesearchtext']=$_POST['searchtext'];
-    $sql = "SELECT sku, shanghai FROM product where sku LIKE '%" .$_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['supplyshpagesearchtext'] = $_POST['searchtext'];
+    $sql = "SELECT sku, shanghai FROM product where sku LIKE '%" . $_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
     $result = mysqli_query($conn, $sql);
     $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
@@ -49,8 +49,8 @@ if (isset($_POST['search'])) {
         }
     }
 } else {
-    $sql = "SELECT sku, shanghai FROM product where sku LIKE '%" .@$_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    
+    $sql = "SELECT sku, shanghai FROM product where sku LIKE '%" . @$_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+
     $result = mysqli_query($conn, $sql);
     $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
@@ -91,23 +91,38 @@ if (isset($_POST['search'])) {
 <?php
 if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
     if ($_POST['subject'] == "return") {
-        $productlist = json_encode($_SESSION['tosend']);
-        $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','supply' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
-        $result = mysqli_query($conn, $sql);
-        if ($result) {
-            $pro = json_decode($productlist);
-            for ($i = 0; $i < count($pro); $i++) {
-                $sql = "UPDATE product SET shanghai=shanghai+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
-                mysqli_query($conn, $sql);
-            }
+        if ($_POST['quali'] == "good") {
+            $productlist = json_encode($_SESSION['tosend']);
+            $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','return-good' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
             
-            print "<script>alert('Successful!')</script>";
-        } else {
-            print "<script>alert('Failue, Please redo!')</script>";
+            $result = mysqli_query($conn, $sql);
+            if ($result) {
+                $pro = json_decode($productlist);
+                for ($i = 0; $i < count($pro); $i++) {
+                    $sql = "UPDATE product SET shanghai=shanghai+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
+                    mysqli_query($conn, $sql);
+                }
+
+                print "<script>alert('Successful!')</script>";
+            } else {
+                print "<script>alert('Failue, Please redo!')</script>";
+            }
+            unset($_SESSION['tosend']);
+        } else {           
+            $productlist = json_encode($_SESSION['tosend']);
+            $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','return-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
+            $result = mysqli_query($conn, $sql);
+            if ($result) {
+                
+
+                print "<script>alert('Successful!')</script>";
+            } else {
+                print "<script>alert('Failue, Please redo!')</script>";
+            }
         }
-        unset($_SESSION['tosend']);
     } else {
         if ($_POST['quali'] == "good") {
+           
             $productlist = json_encode($_SESSION['tosend']);
             $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','supply-good' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
             $result = mysqli_query($conn, $sql);
@@ -117,18 +132,19 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                     $sql = "UPDATE product SET shanghai=shanghai+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
                     mysqli_query($conn, $sql);
                 }
-                
+
                 print "<script>alert('Successful!')</script>";
             } else {
                 print "<script>alert('Failue, Please redo!')</script>";
             }
             unset($_SESSION['tosend']);
         } else {
+               
             $productlist = json_encode($_SESSION['tosend']);
-            $sql = "INSERT INTO `shanghaistock`(date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','supply-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
+            $sql = "INSERT INTO `shstock`(date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','supply-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
             $result = mysqli_query($conn, $sql);
             if ($result) {
-                
+
                 print "<script>alert('Successful!')</script>";
             } else {
                 print "<script>alert('Failue, Please redo!')</script>";
@@ -358,23 +374,23 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-<?php
-for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-    print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-    print $datanote[$i]['date'];
-    print "</h2>
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-}
-?>
+                                                                }
+                                                                ?>
                                                             </ul>
                                                             <div class="notification-view">
                                                                 <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
@@ -450,7 +466,7 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
                     <div class="col-lg-12">
                         <div class="single-product-pr">
                             <div class="row">
-                                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12">
+                                <div class="col-lg-7 col-md-5 col-sm-5 col-xs-12">
 
                                     <div>
 
@@ -516,7 +532,7 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
                                 </div>
 
 
-                                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12">
+                                <div class="col-lg-3 col-md-5 col-sm-5 col-xs-12">
                                     <div>
                                         <h1 style="color:#fff">RECEIVE LIST</h1>
                                         <form method="post">
@@ -539,7 +555,7 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
                                                             print "<td>{$data[$ind]['sku']}</td>";
                                                             print "<td>{$data[$ind]['shanghai']}</td>";
                                                             print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
-                                                            $total += trim(@$_REQUEST["{$deta}"]);
+                                                            @$total += trim(@$_REQUEST["{$deta}"]);
                                                             $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
                                                         }
                                                     }
@@ -552,7 +568,7 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
                                                 <p style="color:#ff4"><br>Total Amount: <?php print $total; ?></p>
                                                 <h1 style="color:#fff"><br>Conrimation </h1>
                                                 <span style="color:#fff;margin-right:1.25em"><input name="subject" type="radio" value="supply" checked="">New Supply</span>
-                                                <span style="color:#fff;margin-right:1.25em"><input name="subject" type="radio" value="replacement">Return<br></span>
+                                                <span style="color:#fff;margin-right:1.25em"><input name="subject" type="radio" value="return">Return<br></span>
 
                                             </div>
 
@@ -566,7 +582,7 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
                                                 <label class="control-label" style="color:#fff">Note</label>
                                                 <input type="text"  title="请添加备注如果货物不良"  value="" name="note" id="username" class="form-control">
                                                 <span style="color:#fff;margin-right:1.25em"><input name="quali" type="radio" value="good" checked="" >Good</span>
-                                                <span style="color:#fff;margin-right:1.25em"><input name="quali" type="radio" value="UPS">Bad</span>
+                                                <span style="color:#fff;margin-right:1.25em"><input name="quali" type="radio" value="bad">Bad</span>
 
                                             </div>
                                             <div><input  name="confirm" type="submit" value="Click to confirm"></div>

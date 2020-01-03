@@ -91,22 +91,36 @@ for ($i = 0; $i < count($data); $i++) {
 <?php
 if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
     if ($_POST['subject'] == "supply") {
-        $productlist = json_encode($_SESSION['tosend']);
-        $sql = "INSERT INTO ncstock (date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','supply' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
+        if ($_POST['quali'] == "good") {
+            $productlist = json_encode($_SESSION['tosend']);
+            $sql = "INSERT INTO ncstock (date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','supply-good' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
 
-        $result = mysqli_query($conn, $sql);
-        if ($result) {
-            $pro = json_decode($productlist);
-            for ($i = 0; $i < count($pro); $i++) {
-                $sql = "UPDATE product SET nc=nc+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
-                mysqli_query($conn, $sql);
+            $result = mysqli_query($conn, $sql);
+            if ($result) {
+                $pro = json_decode($productlist);
+                for ($i = 0; $i < count($pro); $i++) {
+                    $sql = "UPDATE product SET nc=nc+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
+                    mysqli_query($conn, $sql);
+                }
+
+                print "<script>alert('Successful!')</script>";
+            } else {
+                print "<script>alert('Failue, Please redo!')</script>";
             }
-
-            print "<script>alert('Successful!')</script>";
+            unset($_SESSION['tosend']);
         } else {
-            print "<script>alert('Failue, Please redo!')</script>";
+            $productlist = json_encode($_SESSION['tosend']);
+            $sql = "INSERT INTO ncstock (date, productlist, subject, ordernumber, market, log) VALUES ('" . $str . "','" . $productlist . "','supply-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "')";
+
+            $result = mysqli_query($conn, $sql);
+            if ($result) {
+
+                print "<script>alert('Successful!')</script>";
+            } else {
+                print "<script>alert('Failue, Please redo!')</script>";
+            }
+            unset($_SESSION['tosend']);
         }
-        unset($_SESSION['tosend']);
     } else {
         if ($_POST['quali'] == "good") {
             $productlist = json_encode($_SESSION['tosend']);
@@ -451,7 +465,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                     <div class="col-lg-12">
                         <div class="single-product-pr">
                             <div class="row">
-                                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12">
+                                <div class="col-lg-7 col-md-5 col-sm-5 col-xs-12">
 
                                     <div>
 
@@ -517,7 +531,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                 </div>
 
 
-                                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12">
+                                <div class="col-lg-3 col-md-5 col-sm-5 col-xs-12">
                                     <div>
                                         <h1 style="color:#fff">RECEIVE LIST</h1>
                                         <form method="post">
