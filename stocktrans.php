@@ -159,21 +159,19 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                     <nav class="sidebar-nav left-sidebar-menu-pro">
                         <ul class="metismenu" id="menu1">
 
-                            <li class="active">
+                            <li >
                                 <a class="has-arrow" href="homepage.php">
                                     <i class="icon nalika-home icon-wrap"></i>
                                     <span class="mini-click-non">Dashboard</span>
                                 </a>
-                                <ul>
-                                    <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>
-                                </ul>
-                                <ul>
+                                <ul class="submenu-angle" aria-expanded="false">
+                                    <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>                                
                                     <li><a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a></li>
                                 </ul>
                             </li>
 
-                            <li class="active">
-                                <a class="has-arrow" href="homepage.php">
+                            <li>
+                                <a class="has-arrow" href="product-list.php">
 
                                     <i class="icon nalika-table icon-wrap"></i>
                                     <span class="mini-click-non">Product</span>
@@ -184,18 +182,17 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                     <li><a title="Product Detail" href="product-detail.php"><span class="mini-sub-pro">Product Detail</span></a></li>
                                 </ul>
                             </li>
-                            <li>
+                            <li class="active">
                                 <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-mail icon-wrap"></i> <span class="mini-click-non">Export & Import</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
-
-                                    <li><a class="has-arrow" title="Import" href="stocktrans.php"><span >Incoming</span></a>
+                                    <li><a class="has-arrow" title="Import" href="supply.php"><span >Incoming</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">     
                                             <li><a title="Supply" href="supply.php"><span class="mini-sub-pro">Supply & Return(NC)</span></a></li>
                                             <li><a title="Supply" href="supplysh.php"><span class="mini-sub-pro">Supply & Return(SH)</span></a></li>
                                             <li><a title="Import Stock" href="stockaccept.php"><span class="mini-sub-pro">Import Stock</span></a></li>                                             
                                         </ul>
                                     </li>
-                                    <li><a class="has-arrow" title="Export" href="mailbox.html"><span >Outgoing</span></a>
+                                    <li class="active"><a class="has-arrow" title="Export" href="outgoingnc.php"><span >Outgoing</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">   
                                             <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replacement(NC)</span></a></li>
                                             <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replacement(SH)</span></a></li>
@@ -205,7 +202,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                 </ul>
                             </li>
                             <li>
-                                <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-diamond icon-wrap"></i> <span class="mini-click-non">Warehouse</span></a>
+                                <a class="has-arrow" href="inventory-1.php" aria-expanded="false"><i class="icon nalika-diamond icon-wrap"></i> <span class="mini-click-non">Warehouse</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Inventory" href="inventory-1.php"><span class="mini-sub-pro">Inventory</span></a></li>
                                     <li><a title="Shanghai" href="recordsh.php"><span class="mini-sub-pro">Record SH</span></a></li>
@@ -214,7 +211,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                             </li>
 
                             <li>
-                                <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-bar-chart icon-wrap"></i> <span class="mini-click-non">Charts</span></a>
+                                <a class="has-arrow" href="bar-charts.html" aria-expanded="false"><i class="icon nalika-bar-chart icon-wrap"></i> <span class="mini-click-non">Charts</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Bar Charts" href="bar-charts.html"><span class="mini-sub-pro">Bar Charts</span></a></li>
                                     <li><a title="Line Charts" href="line-charts.html"><span class="mini-sub-pro">Line Charts</span></a></li>
@@ -226,13 +223,13 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                 </ul>
                             </li>
                             <li>
-                                <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">Data Tables</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">Data Tables</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Peity Charts" href="static-table.html"><span class="mini-sub-pro">Static Table</span></a></li>
                                     <li><a title="Data Table" href="data-table.html"><span class="mini-sub-pro">Data Table</span></a></li>
                                 </ul>
                             </li>
-                            <li id="removable">
+                            <li>
                                 <a class="has-arrow" href="#" aria-expanded="false"><i class="icon nalika-new-file icon-wrap"></i> <span class="mini-click-non">Website Link</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Finance" href="bookmark.php"><span class="mini-sub-pro">Bookmark</span></a></li>
@@ -257,8 +254,8 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
 
                                         <div class="col-lg-1 col-md-0 col-sm-1 col-xs-12">
                                             <div class="menu-switcher-pro">
-                                                <button type="button"  class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
-                                                    <i class="fa fa-bars"></i>
+                                                <button type="button" id="sidebarCollapse" class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
+                                                    <i class="icon nalika-menu-task"></i>
                                                 </button>
                                             </div>
                                         </div>

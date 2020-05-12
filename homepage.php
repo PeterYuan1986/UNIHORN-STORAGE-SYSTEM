@@ -42,7 +42,7 @@ $shnewegg = mysqli_num_rows($result);
 $amazon = $shamazon + $ncamazon;
 $ebay = $shebay + $ncebay;
 $newegg = $shnewegg + $ncnewegg;
-$all=$newegg+$ebay+$amazon;
+$all = $newegg + $ebay + $amazon;
 $sql = "SELECT * FROM `ncstock` WHERE date BETWEEN '2019-12-31' AND '2020-12-31' AND subject='order'";
 $result = mysqli_query($conn, $sql);
 $yearnc = mysqli_num_rows($result);
@@ -65,7 +65,6 @@ while ($row = mysqli_fetch_array($result)) {
     $tota += $row[1];
     $inex++;
 }
-
 ?>
 
 <html class="no-js" lang="en">
@@ -137,7 +136,6 @@ while ($row = mysqli_fetch_array($result)) {
         <!--[if lt IE 8]>
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
-
         <div class="left-sidebar-pro">
             <nav id="sidebar" class="">              
                 <div class="nalika-profile">
@@ -162,16 +160,14 @@ while ($row = mysqli_fetch_array($result)) {
                                     <i class="icon nalika-home icon-wrap"></i>
                                     <span class="mini-click-non">Dashboard</span>
                                 </a>
-                                <ul>
-                                    <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>
-                                </ul>
-                                <ul>
+                                <ul class="submenu-angle" aria-expanded="false">
+                                    <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>                                
                                     <li><a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a></li>
                                 </ul>
                             </li>
 
-                            <li class="active">
-                                <a class="has-arrow" href="homepage.php">
+                            <li>
+                                <a class="has-arrow" href="product-list.php">
 
                                     <i class="icon nalika-table icon-wrap"></i>
                                     <span class="mini-click-non">Product</span>
@@ -185,15 +181,14 @@ while ($row = mysqli_fetch_array($result)) {
                             <li>
                                 <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-mail icon-wrap"></i> <span class="mini-click-non">Export & Import</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
-
-                                    <li><a class="has-arrow" title="Import" href="stocktrans.php"><span >Incoming</span></a>
+                                    <li><a class="has-arrow" title="Import" href="supply.php"><span >Incoming</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">     
                                             <li><a title="Supply" href="supply.php"><span class="mini-sub-pro">Supply & Return(NC)</span></a></li>
                                             <li><a title="Supply" href="supplysh.php"><span class="mini-sub-pro">Supply & Return(SH)</span></a></li>
                                             <li><a title="Import Stock" href="stockaccept.php"><span class="mini-sub-pro">Import Stock</span></a></li>                                             
                                         </ul>
                                     </li>
-                                    <li><a class="has-arrow" title="Export" href="mailbox.html"><span >Outgoing</span></a>
+                                    <li><a class="has-arrow" title="Export" href="outgoingnc.php"><span >Outgoing</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">   
                                             <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replacement(NC)</span></a></li>
                                             <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replacement(SH)</span></a></li>
@@ -203,7 +198,7 @@ while ($row = mysqli_fetch_array($result)) {
                                 </ul>
                             </li>
                             <li>
-                                <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-diamond icon-wrap"></i> <span class="mini-click-non">Warehouse</span></a>
+                                <a class="has-arrow" href="inventory-1.php" aria-expanded="false"><i class="icon nalika-diamond icon-wrap"></i> <span class="mini-click-non">Warehouse</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Inventory" href="inventory-1.php"><span class="mini-sub-pro">Inventory</span></a></li>
                                     <li><a title="Shanghai" href="recordsh.php"><span class="mini-sub-pro">Record SH</span></a></li>
@@ -212,7 +207,7 @@ while ($row = mysqli_fetch_array($result)) {
                             </li>
 
                             <li>
-                                <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-bar-chart icon-wrap"></i> <span class="mini-click-non">Charts</span></a>
+                                <a class="has-arrow" href="bar-charts.html" aria-expanded="false"><i class="icon nalika-bar-chart icon-wrap"></i> <span class="mini-click-non">Charts</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Bar Charts" href="bar-charts.html"><span class="mini-sub-pro">Bar Charts</span></a></li>
                                     <li><a title="Line Charts" href="line-charts.html"><span class="mini-sub-pro">Line Charts</span></a></li>
@@ -224,7 +219,7 @@ while ($row = mysqli_fetch_array($result)) {
                                 </ul>
                             </li>
                             <li>
-                                <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">Data Tables</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">Data Tables</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Peity Charts" href="static-table.html"><span class="mini-sub-pro">Static Table</span></a></li>
                                     <li><a title="Data Table" href="data-table.html"><span class="mini-sub-pro">Data Table</span></a></li>
@@ -243,11 +238,7 @@ while ($row = mysqli_fetch_array($result)) {
         </div>
         <!-- Start Welcome area -->
         <div class="all-content-wrapper">
-
             <div class="header-advance-area">
-
-
-
                 <div class="header-top-area">
                     <div class="container-fluid">
                         <div class="row">
@@ -257,8 +248,8 @@ while ($row = mysqli_fetch_array($result)) {
 
                                         <div class="col-lg-1 col-md-0 col-sm-1 col-xs-12">
                                             <div class="menu-switcher-pro">
-                                                <button type="button"  class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
-                                                    <i class="fa fa-bars"></i>
+                                                <button type="button" id="sidebarCollapse" class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
+                                                    <i class="icon nalika-menu-task"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -282,31 +273,33 @@ while ($row = mysqli_fetch_array($result)) {
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
 
-                                                 <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php 
-                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
-                                                                print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
-                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
-                                                                            <p>".$datanote[$i]['subject']."</p>
+                                                                            <h2>";
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
+                                                                            <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>";}
-                                                                
+                                                                </li>";
+                                                                }
                                                                 ?>
                                                             </ul>
-                                                             <div class="notification-view">
-                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
-                                                        </div>
+                                                            <div class="notification-view">
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -387,17 +380,19 @@ while ($row = mysqli_fetch_array($result)) {
                                     <h4 class="text-left text-uppercase"><b>Amazon total Orders(7 days)</b></h4>
                                     <div class="row vertical-center-box vertical-center-box-tablet">
                                         <div class="col-xs-3 mar-bot-15 text-left">
-                                            <label class="label bg-<?php if ($amazon > $ebay && $amazon > $newegg)
-    print "red";else if ($amazon < $newegg && $amazon < $ebay)
-    print "green";
-else
-    print "blue";
-?>"><?php print round($amazon / $all * 100, 2) . "%"; ?><i class="fa fa-level-<?php if ($amazon > $ebay && $amazon > $newegg)
-                                                                                                      print "up";else if ($amazon < $newegg && $amazon < $ebay)
-                                                                                                      print "down";
-                                                                                                  else
-                                                                                                      print "";
-?>" aria-hidden="true"></i></label>
+                                            <label class="label bg-<?php
+                                            if ($amazon > $ebay && $amazon > $newegg)
+                                                print "red";else if ($amazon < $newegg && $amazon < $ebay)
+                                                print "green";
+                                            else
+                                                print "blue";
+                                            ?>"><?php print round($amazon / $all * 100, 2) . "%"; ?><i class="fa fa-level-<?php
+                                                   if ($amazon > $ebay && $amazon > $newegg)
+                                                       print "up";else if ($amazon < $newegg && $amazon < $ebay)
+                                                       print "down";
+                                                   else
+                                                       print "";
+                                                   ?>" aria-hidden="true"></i></label>
                                         </div>
                                         <div class="col-xs-9 cus-gh-hd-pro">
                                             <h2 class="text-right no-margin"><?php print $amazon; ?></h2>
@@ -413,17 +408,19 @@ else
                                     <h4 class="text-left text-uppercase"><b>Ebay total Orders(7 days)</b></h4>
                                     <div class="row vertical-center-box vertical-center-box-tablet">
                                         <div class="text-left col-xs-3 mar-bot-15">
-                                            <label class="label bg-<?php if ($ebay > $amazon && $ebay > $newegg)
-                                                                                                      print "red";else if ($ebay < $newegg && $amazon > $ebay)
-                                                                                                      print "green";
-                                                                                                  else
-                                                                                                      print "blue";
-?>"><?php print round($ebay / $all * 100, 2) . "%"; ?> <i class="fa fa-level-<?php if ($ebay > $amazon && $ebay > $newegg)
-                                                                                                      print "up";else if ($ebay < $newegg && $amazon > $ebay)
-                                                                                                      print "down";
-                                                                                                  else
-                                                                                                      print "";
-?>" aria-hidden="true"></i></label>
+                                            <label class="label bg-<?php
+                                            if ($ebay > $amazon && $ebay > $newegg)
+                                                print "red";else if ($ebay < $newegg && $amazon > $ebay)
+                                                print "green";
+                                            else
+                                                print "blue";
+                                            ?>"><?php print round($ebay / $all * 100, 2) . "%"; ?> <i class="fa fa-level-<?php
+                                                   if ($ebay > $amazon && $ebay > $newegg)
+                                                       print "up";else if ($ebay < $newegg && $amazon > $ebay)
+                                                       print "down";
+                                                   else
+                                                       print "";
+                                                   ?>" aria-hidden="true"></i></label>
                                         </div>
                                         <div class="col-xs-9 cus-gh-hd-pro">
                                             <h2 class="text-right no-margin"><?php print $ebay; ?></h2>
@@ -439,17 +436,19 @@ else
                                     <h4 class="text-left text-uppercase"><b>NewEgg total Orders(7 days)</b></h4>
                                     <div class="row vertical-center-box vertical-center-box-tablet">
                                         <div class="text-left col-xs-3 mar-bot-15">
-                                            <label class="label bg-<?php if ($newegg > $ebay && $amazon < $newegg)
-                                                                                                      print "red";else if ($amazon > $newegg && $newegg < $ebay)
-                                                                                                      print "green";
-                                                                                                  else
-                                                                                                      print "blue";
-?>"><?php print round($newegg / $all * 100, 2) . "%"; ?><i class="fa fa-level-<?php if ($newegg > $ebay && $amazon < $newegg)
-                                                                                                      print "up";else if ($amazon > $newegg && $newegg < $ebay)
-                                                                                                      print "down";
-                                                                                                  else
-                                                                                                      print "";
-?>" aria-hidden="true"></i></label>
+                                            <label class="label bg-<?php
+                                            if ($newegg > $ebay && $amazon < $newegg)
+                                                print "red";else if ($amazon > $newegg && $newegg < $ebay)
+                                                print "green";
+                                            else
+                                                print "blue";
+                                            ?>"><?php print round($newegg / $all * 100, 2) . "%"; ?><i class="fa fa-level-<?php
+                                                   if ($newegg > $ebay && $amazon < $newegg)
+                                                       print "up";else if ($amazon > $newegg && $newegg < $ebay)
+                                                       print "down";
+                                                   else
+                                                       print "";
+                                                   ?>" aria-hidden="true"></i></label>
                                         </div>
                                         <div class="col-xs-9 cus-gh-hd-pro">
                                             <h2 class="text-right no-margin"><?php print $newegg; ?></h2>
@@ -484,9 +483,9 @@ else
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
-                            
-                                <img src="statistic.php">
-                           
+
+                            <img src="statistic.php">
+
                         </div>
                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <div class="white-box analytics-info-cs mg-b-30 res-mg-t-30">
@@ -529,14 +528,14 @@ else
                     </div>
                 </div>
             </div>
-            
-            
-            
-            
+
+
+
+
             <div class="product-sales-area mg-tb-30">
-                
+
             </div>
-            
+
             <div class="footer-copyright-area">
                 <div class="container-fluid">
                     <div class="row">
