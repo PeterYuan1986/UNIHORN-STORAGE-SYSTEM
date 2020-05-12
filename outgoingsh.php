@@ -45,8 +45,7 @@ if (isset($_POST['search'])) {
             $data[] = $arr;
         }
     }
-} 
-else {
+} else {
     $sql = "SELECT sku, shanghai FROM product where shanghai>0 and sku LIKE '%" . @$_SESSION['outshsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
     $result = mysqli_query($conn, $sql);
     $totalrow = mysqli_num_rows($result);
@@ -101,7 +100,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                 $sql = "UPDATE product SET sold=sold+" . $pro[$i][1] . " where sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
             }
-            
+
             print "<script>alert('Successful!')</script>";
         } else {
             print "<script>alert('Failue, Please redo!')</script>";
@@ -121,7 +120,6 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
             }
 
             print "<script>alert('Successful!')</script>";
-            
         } else {
             print "<script>alert('Failue, Please redo!')</script>";
         }
@@ -340,6 +338,19 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-menu-task"></i></a>
+                                                        <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
+                                                            <li><a href="#"><span class="icon nalika-home author-log-ic"></span> Dashboard</a>
+                                                                <a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a>                       
+                                                                <a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a>
+                                                            </li>
+
+                                                            <li><a href="#"><span class="icon nalika-diamond author-log-ic"></span> Warehouse</a>
+                                                            <li><a title="Inventory" href="inventory-1.php"><span class="mini-sub-pro">Inventory</span></a>
+                                                                <a title="Shanghai" href="recordsh.php"><span class="mini-sub-pro">Record SH</span></a>
+                                                                <a title="Greensboro" href="recordnc.php"><span class="mini-sub-pro">Record NC</span></a></li>
+                                                        </ul>
+                                                    </li>
 
                                                     <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
@@ -347,23 +358,23 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-<?php
-for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-    print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-    print $datanote[$i]['date'];
-    print "</h2>
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-}
-?>
+                                                                }
+                                                                ?>
                                                             </ul>
                                                             <div class="notification-view">
                                                                 <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
@@ -388,10 +399,6 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
                                                             <li><a href="logout.php"><span class="icon nalika-unlocked author-log-ic"></span> Log Out</a>
                                                             </li>
                                                         </ul>
-                                                    </li>
-                                                    <li class="nav-item nav-setting-open"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-menu-task"></i></a>
-
-
                                                     </li>
                                                 </ul>
                                             </div>
@@ -452,10 +459,10 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
 
 
                                                                 <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['outshsearchtext'])) {
-                                                                    print $_SESSION['outshsearchtext'];
-                                                                }
-                                                                ?>" ></div>
+                                                                    if (isset($_SESSION['outshsearchtext'])) {
+                                                                        print $_SESSION['outshsearchtext'];
+                                                                    }
+                                                                    ?>" ></div>
                                                                 <div style="color:#fff;width:000px;float:left;">
                                                                     <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -474,14 +481,14 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
 
                                                     </tr>
 
-<?php
-for ($index = 0; $index < @count($data); $index++) {
-    print '<tr>';
-    print "<td>{$data[$index]['sku']}</td>";
-    print "<td>{$data[$index]['shanghai']}</td>";
-    $deta = "inven" . $index;
-    $check = "check" . $index;
-    ?>
+                                                    <?php
+                                                    for ($index = 0; $index < @count($data); $index++) {
+                                                        print '<tr>';
+                                                        print "<td>{$data[$index]['sku']}</td>";
+                                                        print "<td>{$data[$index]['shanghai']}</td>";
+                                                        $deta = "inven" . $index;
+                                                        $check = "check" . $index;
+                                                        ?>
 
                                                         <td>
                                                             <input  style="color:#000"  name ="<?php print $deta; ?>"    type="text">
@@ -490,7 +497,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                                             <input  style="color:#000" name ="<?php print $check; ?>"   value="1" type="checkbox">
                                                         </td >
                                                         </tr>
-<?php } ?>
+                                                    <?php } ?>
                                                 </table>
                                                 <div class="custom-pagination "  >
                                                     <input name="submit" type="submit" value="Click to confirm">
@@ -511,26 +518,26 @@ for ($index = 0; $index < @count($data); $index++) {
                                                     <th>Inventory</th>
                                                     <th>To Send</th>
                                                 </tr>
-<?php
+                                                <?php
 //这段控制pickup表格
-$total = 0;
-if (isset($_POST['submit'])) {
-    $tosend = array();
-    for ($ind = 0; $ind < count($data); $ind++) {
-        $deta = "inven" . $ind;
-        $check = "check" . $ind;
-        if (@$_POST["{$check}"] != NULL) {
-            print '<tr>';
-            print "<td>{$data[$ind]['sku']}</td>";
-            print "<td>{$data[$ind]['shanghai']}</td>";
-            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
-            $total += trim(@$_REQUEST["{$deta}"]);
-            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
-        }
-    }
-    $_SESSION['tosend'] = $tosend;
-}
-?>
+                                                $total = 0;
+                                                if (isset($_POST['submit'])) {
+                                                    $tosend = array();
+                                                    for ($ind = 0; $ind < count($data); $ind++) {
+                                                        $deta = "inven" . $ind;
+                                                        $check = "check" . $ind;
+                                                        if (@$_POST["{$check}"] != NULL) {
+                                                            print '<tr>';
+                                                            print "<td>{$data[$ind]['sku']}</td>";
+                                                            print "<td>{$data[$ind]['shanghai']}</td>";
+                                                            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
+                                                            $total += trim(@$_REQUEST["{$deta}"]);
+                                                            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
+                                                        }
+                                                    }
+                                                    $_SESSION['tosend'] = $tosend;
+                                                }
+                                                ?>
                                             </table>     
 
                                             <div class="custom-pagination "  >

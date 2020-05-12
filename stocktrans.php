@@ -278,7 +278,19 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-menu-task"></i></a>
+                                                        <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
+                                                            <li><a href="#"><span class="icon nalika-home author-log-ic"></span> Dashboard</a>
+                                                                <a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a>                       
+                                                                <a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a>
+                                                            </li>
 
+                                                            <li><a href="#"><span class="icon nalika-diamond author-log-ic"></span> Warehouse</a>
+                                                            <li><a title="Inventory" href="inventory-1.php"><span class="mini-sub-pro">Inventory</span></a>
+                                                                <a title="Shanghai" href="recordsh.php"><span class="mini-sub-pro">Record SH</span></a>
+                                                                <a title="Greensboro" href="recordnc.php"><span class="mini-sub-pro">Record NC</span></a></li>
+                                                        </ul>
+                                                    </li>
                                                     <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
@@ -304,7 +316,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -326,10 +338,6 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                             <li><a href="logout.php"><span class="icon nalika-unlocked author-log-ic"></span> Log Out</a>
                                                             </li>
                                                         </ul>
-                                                    </li>
-                                                    <li class="nav-item nav-setting-open"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-menu-task"></i></a>
-
-
                                                     </li>
                                                 </ul>
                                             </div>
@@ -508,7 +516,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                 }
 
                                                 //这段控制upload部分      将updoc中的重复项统计并查错                                          
-                                                if (@isset($_POST['subfile'])) {                                                    
+                                                if (@isset($_POST['subfile'])) {
                                                     $flag = true;
                                                     $a = 0;
                                                     $total = 0;
