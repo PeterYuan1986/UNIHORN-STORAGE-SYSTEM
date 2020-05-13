@@ -231,8 +231,8 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                     </li>
                                     <li class="active"><a class="has-arrow" title="Export" href="outgoingnc.php"><span >Outgoing</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">   
-                                            <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replacement(NC)</span></a></li>
-                                            <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replacement(SH)</span></a></li>
+                                            <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replace(NC)</span></a></li>
+                                            <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replace(SH)</span></a></li>
                                             <li><a title="Export Stock" href="stocktrans.php"><span class="mini-sub-pro">Export Stock</span></a></li>                                             
                                         </ul>
                                     </li>
@@ -291,8 +291,8 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
 
                                         <div class="col-lg-1 col-md-0 col-sm-1 col-xs-12">
                                             <div class="menu-switcher-pro">
-                                                <button type="button"  class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
-                                                    <i class="fa fa-bars"></i>
+                                                <button type="button" id="sidebarCollapse" class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
+                                                    <i class="icon nalika-menu-task"></i>
                                                 </button>
                                             </div>
                                         </div>
