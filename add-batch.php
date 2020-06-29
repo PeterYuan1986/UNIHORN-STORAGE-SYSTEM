@@ -11,15 +11,6 @@ if (isset($_SESSION['yhy'])) {
     $fn = $row[0];
     $ln = $row[1];
     $of = $row[2];
-    if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
-    }
-    //$of = $row[2];
-    //if($of=="sh"||"admin"){
-    //}else{
-    //    echo '<script> alert("You have no access for this page!")</script>';
-    //    print '<script> location.replace("homepage.php"); </script>';
-    //}
 } else {
     echo '<script> alert("Please Re-login!")</script>';
     print '<script> location.replace("index.php"); </script>';
@@ -28,174 +19,95 @@ if (isset($_SESSION['yhy'])) {
 
 
 <?php
-$columns = array('date', 'subject', 'ordernumber', 'market', 'tracking', 'ship', 'productlist');
-$column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
-$sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
-//$perpage = 20;
-$search = "";
 
-if (isset($_POST['search'])) {
-    $sql = "SELECT * FROM shstock where productlist LIKE '%" . @$_POST['searchtext'] . "%' OR tracking LIKE '%" . @$_POST['searchtext'] . "%' OR subject LIKE '%" . @$_POST['searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT * FROM shstock ORDER BY " . $column . ' ' . $sort_order;
-}
-$result = mysqli_query($conn, $sql);
-$totalrow = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-if ($totalrow != 0) {
-    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-    $add_class = ' class="highlight"';
 
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
-    }
-}
-?>
 
-<?php
-for ($index = 0; $index < @count($data); $index++) {
-    $can = "cancel" . $index;
-    if (isset($_POST["{$can}"])) {
-        switch ($data[$index]['subject']) {
-            case "replacement": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        print $sql . "<br>";
-                        mysqli_query($conn, $sql);
+if (isset($_POST['save'])) {
+    $daifabatchname = @$_POST['daifabatchname'];
+    $daifadhl = @$_POST['daifadhl'];
+    $daifaservice = @$_POST['daifaservice'];
+
+
+    $allowedExts = array(
+        'text/csv',
+        'application/csv',
+        'application/excel',
+        'application/vnd.ms-excel'
+    );
+    $temp = explode(".", @$_FILES["file"]["name"]);
+    //echo @$_FILES["file"]["size"];
+    $extension = end($temp);     // 获取文件后缀名
+    if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
+        if (@$_FILES["file"]["error"] > 0) {
+            // echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
+            echo "<script> alert('Error,请联系管理员！')</script>";
+        } else {
+            // echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
+            // echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
+            // echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
+            // echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
+            //判断当期目录下的 upload 目录是否存在该文件
+            //如果没有 upload 目录，你需要创建它，upload 目录权限为 777
+            $sql = "SELECT * FROM daifa where batchname='" . $daifabatchname . "'";
+            $result = mysqli_query($conn, $sql);
+            $totalrow = mysqli_num_rows($result);
+
+            if ($totalrow > 0) {
+                //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
+                echo "<script> alert('批次名已存在，请重新输入！')</script>";
+            } else {
+                // 如果 upload 目录不存在该文件则将文件上传到 upload 目录下
+                move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/" . $daifabatchname . ".csv");
+                //echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
+
+
+                @$filepath = @fopen("./upload/" . $daifabatchname . ".csv", 'r');
+                @$content = fgetcsv($filepath);
+                try {
+                    $a = 0;
+                    while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容                           
+                        $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,service, batch) 
+                    VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $daifaservice . "','" . $daifabatchname . "')";
+
+                        $result = mysqli_query($conn, $sql);
+                        $a++;
+                        if (!$result) {
+                            $sql = "DELETE FROM daifaorders WHERE batch==" . $daifabatchname;
+                            mysqli_query($conn, $sql);
+                            echo "<script> alert('重复单号：" . $content[0] . "！请修改后重新上传！')</script>";
+                            break;
+                        }
                     }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    print $sql . "<br>";
-                    $result = mysqli_query($conn, $sql);
                     if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "order": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "supply-good": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "supply-bad": {
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "return-bad": {
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "return-good": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "import": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
-
-                    $sql = "update ncstock set ordernumber=0 where tracking='" . $data[$index]['tracking'] . "'";
-                    mysqli_query($conn, $sql);
-                    $sql = "select productlist from ncstock where tracking='" . $data[$index]['tracking'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    $row = mysqli_fetch_array($result);
-                    $product2 = json_decode($row[0]);
-                    for ($i = 0; $i < count($product2); $i++) {
-                        $sql = "update product set transit=transit+" . $product2[$i][1] . " where sku='" . $product2[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
-
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "export": {
-
-                    $sql = "select productlist from shstock where date='" . $data[$index]['date'] . "'";
-
-                    $result = mysqli_query($conn, $sql);
-                    $row = mysqli_fetch_array($result);
-                    $product2 = json_decode($row[0]);
-                    for ($i = 0; $i < count($product2); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $product2[$i][1] . ",transit=transit-" . $product2[$i][1] . " where sku='" . $product2[$i][0] . "'";
+                        $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $a . "','" . $daifadhl . "','PENDING')";
 
                         mysqli_query($conn, $sql);
+                        echo "<script> alert('文件上传成功！')</script>";
                     }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
+                } catch (Exception $ex) {
+                    
                 }
+
+
+                @fclose(@$filepath);
+                unlink("./upload/" . $daifabatchname . ".csv");
+                //header("Location:data-table.php");
+            }
         }
+    } else {
+        echo "<script> alert('请上传csv文件!')</script>";
     }
 }
 ?>
 
 
 
-<html class="no-js" lang="en">   
+
+
+
+
+
+<html class="no-js" lang="en">
 
     <head>
         <meta charset="utf-8">
@@ -264,7 +176,7 @@ for ($index = 0; $index < @count($data); $index++) {
         <!--[if lt IE 8]>
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
-<div class="left-sidebar-pro">
+        <div class="left-sidebar-pro">
             <nav id="sidebar" class="">              
                 <div class="nalika-profile">
                     <div class="profile-dtl">
@@ -283,7 +195,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     <nav class="sidebar-nav left-sidebar-menu-pro">
                         <ul class="metismenu" id="menu1">
 
-                            <li>
+                            <li >
                                 <a class="has-arrow" href="homepage.php">
                                     <i class="icon nalika-home icon-wrap"></i>
                                     <span class="mini-click-non">Dashboard</span>
@@ -325,7 +237,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                     </li>
                                 </ul>
                             </li>
-                            <li class="active">
+                            <li>
                                 <a class="has-arrow" href="inventory-1.php" aria-expanded="false"><i class="icon nalika-diamond icon-wrap"></i> <span class="mini-click-non">Warehouse</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Inventory" href="inventory-1.php"><span class="mini-sub-pro">Inventory</span></a></li>
@@ -346,15 +258,15 @@ for ($index = 0; $index < @count($data); $index++) {
                                     <li><a title="Peity Charts" href="peity.html"><span class="mini-sub-pro">Peity Charts</span></a></li>
                                 </ul>
                             </li>
-                            <li>
-                              <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                            <li class="active">
+                                  <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
                                     <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
                                 </ul>
                             </li>
-                            <li>
+                            <li id="removable">
                                 <a class="has-arrow" href="#" aria-expanded="false"><i class="icon nalika-new-file icon-wrap"></i> <span class="mini-click-non">Website Link</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Finance" href="bookmark.php"><span class="mini-sub-pro">Bookmark</span></a></li>
@@ -365,7 +277,7 @@ for ($index = 0; $index < @count($data); $index++) {
                 </div>
             </nav>
         </div>
-        <!-- Mobile Menu end -->
+        <!-- Start Welcome area -->
         <div class="all-content-wrapper">
             <div class="header-advance-area">
                 <div class="header-top-area">
@@ -401,7 +313,6 @@ for ($index = 0; $index < @count($data); $index++) {
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
-
                                                     <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-menu-task"></i></a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
                                                             <li><a href="#"><span class="icon nalika-home author-log-ic"></span> Dashboard</a>
@@ -421,26 +332,28 @@ for ($index = 0; $index < @count($data); $index++) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php
-                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                    print "<li>
+<?php
+if ($of != 'gst') {
+    for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+        print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                    print $datanote[$i]['date'];
-                                                                    print "</h2>
+        print $datanote[$i]['date'];
+        print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                }
-                                                                ?>
+    }
+}
+?>
                                                             </ul>
                                                             <div class="notification-view">
-<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -462,23 +375,24 @@ for ($index = 0; $index < @count($data); $index++) {
                                                             <li><a href="logout.php"><span class="icon nalika-unlocked author-log-ic"></span> Log Out</a>
                                                             </li>
                                                         </ul>
-                                                    </li>
+                                                    </li>                                                    
                                                 </ul>
                                             </div>
+
+
                                         </div>
                                     </div>
+
                                 </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
 
 
-                <!-- Mobile Menu start -->
 
                 <!-- Mobile Menu end -->
-
-
                 <div class="breadcome-area">
                     <div class="container-fluid">
                         <div class="row">
@@ -488,10 +402,10 @@ for ($index = 0; $index < @count($data); $index++) {
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                                             <div class="breadcomb-wp">
                                                 <div class="breadcomb-icon">
-                                                    <i class="icon nalika-diamond"></i>
+                                                    <i class="icon nalika-edit"></i>
                                                 </div>
                                                 <div class="breadcomb-ctn">
-                                                    <h2>Shanghai Warehouse</h2>
+                                                    <h2>添加批次</h2>
                                                     <p>Welcome to Unihorn Management System <span class="bread-ntd"></span></p>
                                                 </div>
                                             </div>
@@ -504,122 +418,94 @@ for ($index = 0; $index < @count($data); $index++) {
                     </div>
                 </div>
             </div>
+            <!-- Single pro tab start-->
+            <div class="single-product-tab-area mg-b-30">
+                <!-- Single pro tab review Start-->
+                <div class="single-pro-review-area">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <div class="review-tab-pro-inner">
+                                    <ul id="myTab3" class="tab-review-design">
+                                        <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> Add Batch</a></li>
+                                    </ul>
+                                    <div id="myTabContent" class="tab-content custom-product-edit">
 
-            <div class="product-status mg-b-30">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div class="product-status-wrap">
-                                <h4>Record</h4>
+                                        <div class="product-tab-list tab-pane fade active in" id="description">
+                                            <form name="form" method="post" action="" enctype="multipart/form-data">
+                                                <div class="row">
+                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="review-content-section">
 
-                                <div>
-                                    <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                        <div class="header-top-menu tabl-d-n">
-                                            <div class="breadcome-heading">
-                                                <form method="post" role="search" class="">
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="icon nalika-edit" aria-hidden="true"></i></span>
+                                                                <input name='daifabatchname' type="text" required="" class="form-control" placeholder="Batch Name"
+<?php
+if (isset($_SESSION['daifabatchname'])) {
+    print "value='" . $_SESSION['daifabatchname'] . "'";
+} unset($_SESSION['daifabatchname']);
+?>
 
+                                                                       >
+                                                            </div>
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="fa fa-usd" aria-hidden="true"></i></span>
 
-                                                    <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_POST['searchtext'])) {
-                                                            print $_POST['searchtext'];
-                                                        }
-                                                        ?>" ></div>
-                                                    <div style="color:#fff;width:000px;float:left;">
-                                                        <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
+                                                                <input name="daifadhl" type="text" class="form-control" placeholder="DHL Tracking Number" <?php
+                                                                if (isset($_SESSION['daifadhl'])) {
+                                                                    print "value='" . $_SESSION['daifadhl'] . "'";
+                                                                } unset($_SESSION['daifadhl']);
+?>>
+                                                            </div>                                                                                                                    
+
+                                                        </div>
 
                                                     </div>
-                                                </form>
-                                            </div>
+                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="review-content-section">
+
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="icon nalika-menu" aria-hidden="true"></i></span>
+                                                                <span class="input-group-addon">Shipping Service</span>
+                                                                <select name="daifaservice" class="form-control pro-edt-select form-control-primary" required>
+                                                                    <option value="Letter"  <?php
+                                                                if (@$_SESSION['daifaservice'] == 'Letter') {
+                                                                    echo "selected";
+                                                                };
+?>   >Letter</option>
+                                                                    <option value="Package" <?php
+                                                                    if (@$_SESSION['daifaservice'] == 'Package') {
+                                                                        echo "selected";
+                                                                    };
+                                                                    ?>>Package</option>
+
+
+                                                                </select></div>
+
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <button><a onclick="window.open('download.php')">点击下载模板，请勿更改表格顺序</a></button>
+                                                                 </div>
+                                                             <div class="input-group mg-b-pro-edt">
+                                                                 <a style="color:yellow">上传CSV文件</a>
+                                                                 <input name="file" style="color:yellow" type="file" size="16" maxlength="80" accept="application/csv" >
+
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                            <div class="text-center custom-pro-edt-ds">
+                                                                <input name="save" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="ADD NEW">                                                            
+                                                                <a href='data-table.php' class="btn btn-ctl-bt waves-effect waves-light">Discard
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
-                                <form action="" method="post" name="form">
-
-
-                                    <table style="width:98%;margin:auto;color: #fff">
-
-                                        <tr>
-                                            <th><a style="color: #fff" href="recordsh.php?column=date&order=<?php echo $asc_or_desc; ?>">Date <i class=" fa fa-sort<?php echo $column == 'date' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=subject&order=<?php echo $asc_or_desc; ?>">Subject <i class=" fa fa-sort<?php echo $column == 'subject' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=market&order=<?php echo $asc_or_desc; ?>">Market Place <i class="fa fa-sort<?php echo $column == 'market' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=ordernumber&order=<?php echo $asc_or_desc; ?>">Order No. <i class="fa fa-sort<?php echo $column == 'ordernumber' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=ship&order=<?php echo $asc_or_desc; ?>">Ship Carrier <i class="fa fa-sort<?php echo $column == 'ship' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=tracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'tracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=productlist&order=<?php echo $asc_or_desc; ?>">Product List <i class="fa fa-sort<?php echo $column == 'productlist' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" >Note</a></th>
-                                        </tr>
-
-
-
-                                        <?php
-// if ($totalrow != 0) {
-//    for ($i = 0; $i < $perpage; $i++) {
-//       $index = ($page - 1) * $perpage + $i;
-//      if ($index >= count($data))
-//           break;
-//      else {
-                                        for ($index = 0; $index < @count($data); $index++) {
-                                            print '<tr>';
-                                            print "<td>{$data[$index]['date']}</td>";
-                                            print "<td>{$data[$index]['subject']}</td>";
-                                            print "<td>{$data[$index]['market']}</td>";
-                                            print "<td>{$data[$index]['ordernumber']}</td>";
-                                            print "<td>{$data[$index]['ship']}</td>";
-                                            switch ($data[$index]['ship']) {
-                                                case "DHL":
-                                                    ?>
-                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php
-                                                    break;
-                                                case "USPS":
-                                                    ?>
-                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://tools.usps.com/go/TrackConfirmAction?tLabels=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php
-                                                    break;
-                                                case "UPS":
-                                                    ?>
-                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.ups.com/track?loc=en_US&tracknum=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php
-                                                    break;
-                                                case "Fedex":
-                                                    ?>
-                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.fedex.com/apps/fedextrack/?tracknumbers=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php
-                                                    break;
-                                                case "":
-                                                    print "<td>{$data[$index]['tracking']}</td>";
-                                                    break;
-                                            }
-                                            print "<td>{$data[$index]['productlist']}</td>";
-                                            print "<td>{$data[$index]['log']}</td>";
-                                            $ca = "cancel" . $index;
-                                            if ((strtotime($str) - strtotime($data[$index]['date'])) < 10800) {
-                                                print "<td><input type='submit' style='color:#000' onclick='return confirmation()' name='$ca' value='Cancel'></td></tr>";
-                                            } else {
-                                                print "</tr>";
-                                            }
-                                        }
-                                        ?>
-                                    </table>
-                                    <!--
-            <div class="custom-pagination "  >
-                <ul class="pagination ">
-
-                                    <?php /*
-                                      for ($i = 1; $i <= $totalpage; $i++) {
-                                      if ($i == $page) {
-                                      printf("<li ><a >%d</a></li>", $i);
-                                      } else {
-                                      printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
-                                      }
-                                      } */
-                                    ?>
-
-
-                </ul>
-            </div>-->
-
-                                </form>
                             </div>
                         </div>
                     </div>
@@ -693,17 +579,10 @@ for ($index = 0; $index < @count($data); $index++) {
 
 
         <script type="text/javascript">
-                                            function openNewWin(url)
-                                            {
-                                                window.open(url);
-                                            }
-
-                                            function confirmation(url) {
-
-                                                return confirm('Are you sure?');
-                                            }
-
-
+                                function openNewWin(url)
+                                {
+                                    window.open(url);
+                                }
         </script>
     </body>
 

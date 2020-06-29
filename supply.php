@@ -15,6 +15,9 @@ if (isset($_SESSION['yhy'])) {
     $fn = $row[0];
     $ln = $row[1];
     $of = $row[2];
+    if ($of == "gst") {
+      print '<script> location.replace("data-table.php"); </script>';
+    }
     if ($of == "nc" || $of == "admin") {
         
     } else {
@@ -308,10 +311,11 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                 </ul>
                             </li>
                             <li>
-                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">Data Tables</span></a>
+                                  <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
-                                    <li><a title="Peity Charts" href="static-table.html"><span class="mini-sub-pro">Static Table</span></a></li>
-                                    <li><a title="Data Table" href="data-table.html"><span class="mini-sub-pro">Data Table</span></a></li>
+
+                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
                                 </ul>
                             </li>
                             <li>

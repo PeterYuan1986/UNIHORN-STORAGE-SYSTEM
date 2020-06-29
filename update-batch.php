@@ -1,5 +1,10 @@
 <?php
 require 'header.php';
+if (isset($_GET['id'])) {
+    $batch = $_GET['id'];
+} else {
+    header('location: data-table.php');
+}
 ?>
 
 <?php
@@ -10,16 +15,10 @@ if (isset($_SESSION['yhy'])) {
     $row = mysqli_fetch_array($result);
     $fn = $row[0];
     $ln = $row[1];
-    $of = $row[2];
-    if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+    $of =$row[2];
+    if($of=='gst'){
+        print '<script> location.replace("data-table.php"); </script>';
     }
-    //$of = $row[2];
-    //if($of=="sh"||"admin"){
-    //}else{
-    //    echo '<script> alert("You have no access for this page!")</script>';
-    //    print '<script> location.replace("homepage.php"); </script>';
-    //}
 } else {
     echo '<script> alert("Please Re-login!")</script>';
     print '<script> location.replace("index.php"); </script>';
@@ -28,166 +27,78 @@ if (isset($_SESSION['yhy'])) {
 
 
 <?php
-$columns = array('date', 'subject', 'ordernumber', 'market', 'tracking', 'ship', 'productlist');
-$column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
-$sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
-//$perpage = 20;
-$search = "";
+if (isset($_POST['save'])) {
+    if (!isset($_FILES["file"])) {
+        echo "<script> alert('请上传csv文件!')</script>";
+    } else { {
+            $allowedExts = array(
+                'text/txt',
+                'text/csv',
+                'text/plain',
+                'application/csv',
+                'text/comma-separated-values',
+                'application/excel',
+                'application/xlsx',
+                'application/vnd.ms-excel',
+                'application/vnd.msexcel',
+                'text/anytext',
+                'application/octet-stream',
+                'application/txt',
+            );
+            $temp = explode(".", @$_FILES["file"]["name"]);
+            $_FILES["file"]["size"];
+            $extension = end($temp);     // 获取文件后缀名
+            if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
+                if (@$_FILES["file"]["error"] > 0) {
+                    // echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
+                    echo "<script> alert('Error,请联系管理员！')</script>";
+                } else {
+                    // echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
+                    // echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
+                    // echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
+                    // echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
+                    //判断当期目录下的 upload 目录是否存在该文件
+                    //如果没有 upload 目录，你需要创建它，upload 目录权限为 777
+                    move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/tempupload.csv");
+                    //echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
 
-if (isset($_POST['search'])) {
-    $sql = "SELECT * FROM shstock where productlist LIKE '%" . @$_POST['searchtext'] . "%' OR tracking LIKE '%" . @$_POST['searchtext'] . "%' OR subject LIKE '%" . @$_POST['searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT * FROM shstock ORDER BY " . $column . ' ' . $sort_order;
-}
-$result = mysqli_query($conn, $sql);
-$totalrow = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-if ($totalrow != 0) {
-    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-    $add_class = ' class="highlight"';
 
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
-    }
-}
-?>
-
-<?php
-for ($index = 0; $index < @count($data); $index++) {
-    $can = "cancel" . $index;
-    if (isset($_POST["{$can}"])) {
-        switch ($data[$index]['subject']) {
-            case "replacement": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        print $sql . "<br>";
-                        mysqli_query($conn, $sql);
-                    }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    print $sql . "<br>";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "order": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "supply-good": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "supply-bad": {
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "return-bad": {
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "return-good": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
-            case "import": {
-                    $productl = json_decode($data[$index]['productlist']);
-                    for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
-                        mysqli_query($conn, $sql);
+                    @$filepath = @fopen("./upload/tempupload.csv", 'r');
+                    @$content = fgetcsv($filepath);
+                    try {
+                        $uspscost = 0;
+                        $servicefee = 0;
+                        while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
+                           
+                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . $content[4] . "' WHERE orderid='" . $content[27]."'";
+                            
+                            $result = mysqli_query($conn, $sql);
+                            if ($content[4] > 2.5) {
+                                $servicefee = $servicefee+0.4;
+                            } else {
+                                $servicefee = $servicefee +0.2;
+                            }
+                            $uspscost = $uspscost+ $content[4];
+                        }
+                        if ($result) {
+                            $sql = "UPDATE daifa SET status='SHIPPED', shippingcost='" . $uspscost . "', servicefee='" . $servicefee . "' WHERE batchname='" . $batch."'";                           
+                            mysqli_query($conn, $sql);
+                            
+                            
+                            echo "<script> alert('文件上传成功！')</script>";
+                           // header("Location:data-table.php");
+                        }
+                    } catch (Exception $ex) {
+                        
                     }
 
-                    $sql = "update ncstock set ordernumber=0 where tracking='" . $data[$index]['tracking'] . "'";
-                    mysqli_query($conn, $sql);
-                    $sql = "select productlist from ncstock where tracking='" . $data[$index]['tracking'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    $row = mysqli_fetch_array($result);
-                    $product2 = json_decode($row[0]);
-                    for ($i = 0; $i < count($product2); $i++) {
-                        $sql = "update product set transit=transit+" . $product2[$i][1] . " where sku='" . $product2[$i][0] . "'";
-                        mysqli_query($conn, $sql);
-                    }
 
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
+                    @fclose(@$filepath);
+                    @unlink("./upload/tempupload.csv");
                 }
-            case "export": {
-
-                    $sql = "select productlist from shstock where date='" . $data[$index]['date'] . "'";
-
-                    $result = mysqli_query($conn, $sql);
-                    $row = mysqli_fetch_array($result);
-                    $product2 = json_decode($row[0]);
-                    for ($i = 0; $i < count($product2); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $product2[$i][1] . ",transit=transit-" . $product2[$i][1] . " where sku='" . $product2[$i][0] . "'";
-
-                        mysqli_query($conn, $sql);
-                    }
-                    $sql = "DELETE FROM shstock WHERE date='" . $data[$index]['date'] . "'";
-                    $result = mysqli_query($conn, $sql);
-                    if ($result) {
-                        echo '<script> alert("Succesful!")</script>';
-                        header('location: ' . $_SERVER['HTTP_REFERER']);
-                    } else {
-                        echo '<script> alert("Failure, Please refresh the page and re-do it")</script>';
-                    } break;
-                }
+            } else {
+                echo "<script> alert('请上传csv文件!')</script>";
+            }
         }
     }
 }
@@ -195,7 +106,12 @@ for ($index = 0; $index < @count($data); $index++) {
 
 
 
-<html class="no-js" lang="en">   
+
+
+
+
+
+<html class="no-js" lang="en">
 
     <head>
         <meta charset="utf-8">
@@ -264,7 +180,7 @@ for ($index = 0; $index < @count($data); $index++) {
         <!--[if lt IE 8]>
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
-<div class="left-sidebar-pro">
+        <div class="left-sidebar-pro">
             <nav id="sidebar" class="">              
                 <div class="nalika-profile">
                     <div class="profile-dtl">
@@ -325,7 +241,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                     </li>
                                 </ul>
                             </li>
-                            <li class="active">
+                            <li>
                                 <a class="has-arrow" href="inventory-1.php" aria-expanded="false"><i class="icon nalika-diamond icon-wrap"></i> <span class="mini-click-non">Warehouse</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Inventory" href="inventory-1.php"><span class="mini-sub-pro">Inventory</span></a></li>
@@ -346,15 +262,15 @@ for ($index = 0; $index < @count($data); $index++) {
                                     <li><a title="Peity Charts" href="peity.html"><span class="mini-sub-pro">Peity Charts</span></a></li>
                                 </ul>
                             </li>
-                            <li>
-                              <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                            <li class="active">
+                             <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
                                     <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
                                 </ul>
                             </li>
-                            <li>
+                            <li id="removable">
                                 <a class="has-arrow" href="#" aria-expanded="false"><i class="icon nalika-new-file icon-wrap"></i> <span class="mini-click-non">Website Link</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Finance" href="bookmark.php"><span class="mini-sub-pro">Bookmark</span></a></li>
@@ -365,7 +281,7 @@ for ($index = 0; $index < @count($data); $index++) {
                 </div>
             </nav>
         </div>
-        <!-- Mobile Menu end -->
+        <!-- Start Welcome area -->
         <div class="all-content-wrapper">
             <div class="header-advance-area">
                 <div class="header-top-area">
@@ -401,7 +317,6 @@ for ($index = 0; $index < @count($data); $index++) {
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
                                             <div class="header-right-info">
                                                 <ul class="nav navbar-nav mai-top-nav header-right-menu">
-
                                                     <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-menu-task"></i></a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
                                                             <li><a href="#"><span class="icon nalika-home author-log-ic"></span> Dashboard</a>
@@ -440,7 +355,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -462,23 +377,24 @@ for ($index = 0; $index < @count($data); $index++) {
                                                             <li><a href="logout.php"><span class="icon nalika-unlocked author-log-ic"></span> Log Out</a>
                                                             </li>
                                                         </ul>
-                                                    </li>
+                                                    </li>                                                    
                                                 </ul>
                                             </div>
+
+
                                         </div>
                                     </div>
+
                                 </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
 
 
-                <!-- Mobile Menu start -->
 
                 <!-- Mobile Menu end -->
-
-
                 <div class="breadcome-area">
                     <div class="container-fluid">
                         <div class="row">
@@ -488,10 +404,10 @@ for ($index = 0; $index < @count($data); $index++) {
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                                             <div class="breadcomb-wp">
                                                 <div class="breadcomb-icon">
-                                                    <i class="icon nalika-diamond"></i>
+                                                    <i class="icon nalika-edit"></i>
                                                 </div>
                                                 <div class="breadcomb-ctn">
-                                                    <h2>Shanghai Warehouse</h2>
+                                                    <h2>添加批次</h2>
                                                     <p>Welcome to Unihorn Management System <span class="bread-ntd"></span></p>
                                                 </div>
                                             </div>
@@ -504,122 +420,46 @@ for ($index = 0; $index < @count($data); $index++) {
                     </div>
                 </div>
             </div>
+            <!-- Single pro tab start-->
+            <div class="single-product-tab-area mg-b-30">
+                <!-- Single pro tab review Start-->
+                <div class="single-pro-review-area">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <div class="review-tab-pro-inner">
+                                    <ul id="myTab3" class="tab-review-design">
+                                        <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> Add Batch</a></li>
+                                    </ul>
+                                    <div id="myTabContent" class="tab-content custom-product-edit">
 
-            <div class="product-status mg-b-30">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div class="product-status-wrap">
-                                <h4>Record</h4>
+                                        <div class="product-tab-list tab-pane fade active in" id="description">
+                                            <form name="form" method="post" action="" enctype="multipart/form-data">
+                                                <div class="row">
 
-                                <div>
-                                    <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                        <div class="header-top-menu tabl-d-n">
-                                            <div class="breadcome-heading">
-                                                <form method="post" role="search" class="">
+                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="review-content-section">                                                            
 
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <input name="file" type="file" size="16" maxlength="200" accept="application/csv">
 
-                                                    <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_POST['searchtext'])) {
-                                                            print $_POST['searchtext'];
-                                                        }
-                                                        ?>" ></div>
-                                                    <div style="color:#fff;width:000px;float:left;">
-                                                        <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
+                                                            </div>
 
+                                                        </div>
                                                     </div>
-                                                </form>
-                                            </div>
+                                                    <div class="row">
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                            <div class="text-center custom-pro-edt-ds">
+                                                                <input name="save" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="ADD NEW">                                                            
+                                                                <a href='data-table.php' class="btn btn-ctl-bt waves-effect waves-light">Discard
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
-                                <form action="" method="post" name="form">
-
-
-                                    <table style="width:98%;margin:auto;color: #fff">
-
-                                        <tr>
-                                            <th><a style="color: #fff" href="recordsh.php?column=date&order=<?php echo $asc_or_desc; ?>">Date <i class=" fa fa-sort<?php echo $column == 'date' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=subject&order=<?php echo $asc_or_desc; ?>">Subject <i class=" fa fa-sort<?php echo $column == 'subject' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=market&order=<?php echo $asc_or_desc; ?>">Market Place <i class="fa fa-sort<?php echo $column == 'market' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=ordernumber&order=<?php echo $asc_or_desc; ?>">Order No. <i class="fa fa-sort<?php echo $column == 'ordernumber' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=ship&order=<?php echo $asc_or_desc; ?>">Ship Carrier <i class="fa fa-sort<?php echo $column == 'ship' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=tracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'tracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=productlist&order=<?php echo $asc_or_desc; ?>">Product List <i class="fa fa-sort<?php echo $column == 'productlist' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" >Note</a></th>
-                                        </tr>
-
-
-
-                                        <?php
-// if ($totalrow != 0) {
-//    for ($i = 0; $i < $perpage; $i++) {
-//       $index = ($page - 1) * $perpage + $i;
-//      if ($index >= count($data))
-//           break;
-//      else {
-                                        for ($index = 0; $index < @count($data); $index++) {
-                                            print '<tr>';
-                                            print "<td>{$data[$index]['date']}</td>";
-                                            print "<td>{$data[$index]['subject']}</td>";
-                                            print "<td>{$data[$index]['market']}</td>";
-                                            print "<td>{$data[$index]['ordernumber']}</td>";
-                                            print "<td>{$data[$index]['ship']}</td>";
-                                            switch ($data[$index]['ship']) {
-                                                case "DHL":
-                                                    ?>
-                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php
-                                                    break;
-                                                case "USPS":
-                                                    ?>
-                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://tools.usps.com/go/TrackConfirmAction?tLabels=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php
-                                                    break;
-                                                case "UPS":
-                                                    ?>
-                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.ups.com/track?loc=en_US&tracknum=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php
-                                                    break;
-                                                case "Fedex":
-                                                    ?>
-                                                    <td><a href='#' style="color:#ff4" onclick='openNewWin("https://www.fedex.com/apps/fedextrack/?tracknumbers=<?php print $data[$index]['tracking']; ?>")'><?php print $data[$index]['tracking']; ?></a></td>
-                                                    <?php
-                                                    break;
-                                                case "":
-                                                    print "<td>{$data[$index]['tracking']}</td>";
-                                                    break;
-                                            }
-                                            print "<td>{$data[$index]['productlist']}</td>";
-                                            print "<td>{$data[$index]['log']}</td>";
-                                            $ca = "cancel" . $index;
-                                            if ((strtotime($str) - strtotime($data[$index]['date'])) < 10800) {
-                                                print "<td><input type='submit' style='color:#000' onclick='return confirmation()' name='$ca' value='Cancel'></td></tr>";
-                                            } else {
-                                                print "</tr>";
-                                            }
-                                        }
-                                        ?>
-                                    </table>
-                                    <!--
-            <div class="custom-pagination "  >
-                <ul class="pagination ">
-
-                                    <?php /*
-                                      for ($i = 1; $i <= $totalpage; $i++) {
-                                      if ($i == $page) {
-                                      printf("<li ><a >%d</a></li>", $i);
-                                      } else {
-                                      printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
-                                      }
-                                      } */
-                                    ?>
-
-
-                </ul>
-            </div>-->
-
-                                </form>
                             </div>
                         </div>
                     </div>
@@ -693,17 +533,10 @@ for ($index = 0; $index < @count($data); $index++) {
 
 
         <script type="text/javascript">
-                                            function openNewWin(url)
-                                            {
-                                                window.open(url);
-                                            }
-
-                                            function confirmation(url) {
-
-                                                return confirm('Are you sure?');
-                                            }
-
-
+                                function openNewWin(url)
+                                {
+                                    window.open(url);
+                                }
         </script>
     </body>
 

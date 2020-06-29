@@ -5,11 +5,14 @@ require 'header.php';
 <?php
 if (isset($_SESSION['yhy'])) {
     $user = $_SESSION['yhy'];
-    $sql = "select firstname, lastname approved from employees where username='" . $user . "'";
+    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
     $fn = $row[0];
-    $ln = $row[1];
+    $ln = $row[1];$of = $row[2];
+    if ($of == "gst") {
+      print '<script> location.replace("data-table.php"); </script>';
+    }
 } else {
     echo '<script> alert("Please Re-login!")</script>';
     print '<script> location.replace("index.php"); </script>';
@@ -198,10 +201,11 @@ if ($totalrow != 0) {
                                 </ul>
                             </li>
                             <li>
-                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">Data Tables</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
-                                    <li><a title="Peity Charts" href="static-table.html"><span class="mini-sub-pro">Static Table</span></a></li>
-                                    <li><a title="Data Table" href="data-table.html"><span class="mini-sub-pro">Data Table</span></a></li>
+
+                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
                                 </ul>
                             </li>
                             <li>

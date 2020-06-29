@@ -5,11 +5,15 @@ require 'header.php';
 <?php
 if (isset($_SESSION['yhy'])) {
     $user = $_SESSION['yhy'];
-    $sql = "select firstname, lastname approved from employees where username='" . $user . "'";
+    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
     $fn = $row[0];
     $ln = $row[1];
+    $of = $row[2];
+    if ($of == "gst") {
+      print '<script> location.replace("data-table.php"); </script>';
+    }
 } else {
     echo '<script> alert("Please Re-login!")</script>';
     print '<script> location.replace("index.php"); </script>';
@@ -239,10 +243,11 @@ for ($i = 0; $i < count($data); $i++) {
                                 </ul>
                             </li>
                             <li>
-                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">Data Tables</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
-                                    <li><a title="Peity Charts" href="static-table.html"><span class="mini-sub-pro">Static Table</span></a></li>
-                                    <li><a title="Data Table" href="data-table.html"><span class="mini-sub-pro">Data Table</span></a></li>
+
+                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
                                 </ul>
                             </li>
                             <li>
@@ -312,23 +317,23 @@ for ($i = 0; $i < count($data); $i++) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-<?php
-for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-    print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-    print $datanote[$i]['date'];
-    print "</h2>
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-}
-?>
+                                                                }
+                                                                ?>
                                                             </ul>
                                                             <div class="notification-view">
                                                                 <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
@@ -414,10 +419,10 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['listsearchtext'])) {
-                                                                    print $_SESSION['listsearchtext'];
-                                                                }
-                                                                ?>" ></div>
+                                                        if (isset($_SESSION['listsearchtext'])) {
+                                                            print $_SESSION['listsearchtext'];
+                                                        }
+                                                        ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -448,25 +453,25 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
 
 
 
-<?php
+                                        <?php
 // if ($totalrow != 0) {
 //    for ($i = 0; $i < $perpage; $i++) {
 //       $index = ($page - 1) * $perpage + $i;
 //      if ($index >= count($data))
 //           break;
 //      else {
-for ($index = 0; $index < @count($data); $index++) {
-    print '<tr>';
-    print "<td>{$data[$index]['sku']}</td>";
-    print "<td>{$data[$index]['brand']}</td>";
-    print "<td>{$data[$index]['category']}</td>";
-    print "<td>{$data[$index]['price']}</td>";
-    print "<td>{$data[$index]['ram']}</td>";
-    print "<td>{$data[$index]['cpu']}</td>";
-    print "<td>{$data[$index]['quality']}</td>";
-    $edit = "edit" . $index;
-    $trash = "trash" . $index;
-    ?>
+                                        for ($index = 0; $index < @count($data); $index++) {
+                                            print '<tr>';
+                                            print "<td>{$data[$index]['sku']}</td>";
+                                            print "<td>{$data[$index]['brand']}</td>";
+                                            print "<td>{$data[$index]['category']}</td>";
+                                            print "<td>{$data[$index]['price']}</td>";
+                                            print "<td>{$data[$index]['ram']}</td>";
+                                            print "<td>{$data[$index]['cpu']}</td>";
+                                            print "<td>{$data[$index]['quality']}</td>";
+                                            $edit = "edit" . $index;
+                                            $trash = "trash" . $index;
+                                            ?>
 
                                             <td>
                                                 <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="Edit" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
@@ -474,22 +479,22 @@ for ($index = 0; $index < @count($data); $index++) {
 
                                             </td >  
                                             </tr>
-    <?php
-}
-?>
+                                            <?php
+                                        }
+                                        ?>
                                     </table><!--
             <div class="custom-pagination "  >
                 <ul class="pagination ">
 
-<?php
-for ($i = 1; $i <= $totalpage; $i++) {
-    if ($i == $page) {
-        printf("<li ><a >%d</a></li>", $i);
-    } else {
-        printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
-    }
-}
-?>
+                                    <?php
+                                    for ($i = 1; $i <= $totalpage; $i++) {
+                                        if ($i == $page) {
+                                            printf("<li ><a >%d</a></li>", $i);
+                                        } else {
+                                            printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
+                                        }
+                                    }
+                                    ?>
 
 
                 </ul>
@@ -569,15 +574,15 @@ for ($i = 1; $i <= $totalpage; $i++) {
 
 
         <script type="text/javascript">
-                                                    function openNewWin(url)
-                                                    {
-                                                        window.open(url);
-                                                    }
+                                                function openNewWin(url)
+                                                {
+                                                    window.open(url);
+                                                }
 
-                                                    function confirmation(url) {
+                                                function confirmation(url) {
 
-                                                        return confirm('Are you sure?');
-                                                    }
+                                                    return confirm('Are you sure?');
+                                                }
 
 
         </script>
