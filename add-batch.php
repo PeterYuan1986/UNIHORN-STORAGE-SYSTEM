@@ -19,9 +19,6 @@ if (isset($_SESSION['yhy'])) {
 
 
 <?php
-
-
-
 if (isset($_POST['save'])) {
     $daifabatchname = @$_POST['daifabatchname'];
     $daifadhl = @$_POST['daifadhl'];
@@ -90,7 +87,6 @@ if (isset($_POST['save'])) {
 
 
                 @fclose(@$filepath);
-                unlink("./upload/" . $daifabatchname . ".csv");
                 //header("Location:data-table.php");
             }
         }
@@ -259,7 +255,7 @@ if (isset($_POST['save'])) {
                                 </ul>
                             </li>
                             <li class="active">
-                                  <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
@@ -332,25 +328,25 @@ if (isset($_POST['save'])) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-<?php
-if ($of != 'gst') {
-    for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-        print "<li>
+                                                                <?php
+                                                                if ($of != 'gst') {
+                                                                    for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                        print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-        print $datanote[$i]['date'];
-        print "</h2>
+                                                                        print $datanote[$i]['date'];
+                                                                        print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-    }
-}
-?>
+                                                                    }
+                                                                }
+                                                                ?>
                                                             </ul>
                                                             <div class="notification-view">
                                                                 <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
@@ -440,11 +436,11 @@ if ($of != 'gst') {
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="icon nalika-edit" aria-hidden="true"></i></span>
                                                                 <input name='daifabatchname' type="text" required="" class="form-control" placeholder="Batch Name"
-<?php
-if (isset($_SESSION['daifabatchname'])) {
-    print "value='" . $_SESSION['daifabatchname'] . "'";
-} unset($_SESSION['daifabatchname']);
-?>
+                                                                <?php
+                                                                if (isset($_SESSION['daifabatchname'])) {
+                                                                    print "value='" . $_SESSION['daifabatchname'] . "'";
+                                                                } unset($_SESSION['daifabatchname']);
+                                                                ?>
 
                                                                        >
                                                             </div>
@@ -455,7 +451,7 @@ if (isset($_SESSION['daifabatchname'])) {
                                                                 if (isset($_SESSION['daifadhl'])) {
                                                                     print "value='" . $_SESSION['daifadhl'] . "'";
                                                                 } unset($_SESSION['daifadhl']);
-?>>
+                                                                ?>>
                                                             </div>                                                                                                                    
 
                                                         </div>
@@ -468,26 +464,39 @@ if (isset($_SESSION['daifabatchname'])) {
                                                                 <span class="input-group-addon"><i class="icon nalika-menu" aria-hidden="true"></i></span>
                                                                 <span class="input-group-addon">Shipping Service</span>
                                                                 <select name="daifaservice" class="form-control pro-edt-select form-control-primary" required>
+
                                                                     <option value="Letter"  <?php
-                                                                if (@$_SESSION['daifaservice'] == 'Letter') {
-                                                                    echo "selected";
-                                                                };
-?>   >Letter</option>
-                                                                    <option value="Package" <?php
-                                                                    if (@$_SESSION['daifaservice'] == 'Package') {
+                                                                    if (@$_SESSION['daifaservice'] == 'Letter') {
                                                                         echo "selected";
                                                                     };
-                                                                    ?>>Package</option>
+                                                                    ?>>Letter</option>
+                                                                    <option value="First Class Package" <?php
+                                                                    if (@$_SESSION['daifaservice'] == 'First Class Package') {
+                                                                        echo "selected";
+                                                                    };
+                                                                    ?>>First Class Package</option>
+
+                                                                    <option value="Priority Package" <?php
+                                                                    if (@$_SESSION['daifaservice'] == 'Priority Package') {
+                                                                        echo "selected";
+                                                                    };
+                                                                    ?>>Priority Package</option>
+
+                                                                    <option value="UPS Package" <?php
+                                                                    if (@$_SESSION['daifaservice'] == 'UPS Package') {
+                                                                        echo "selected";
+                                                                    };
+                                                                    ?>>UPS Package</option>
 
 
                                                                 </select></div>
 
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <button><a onclick="window.open('download.php')">点击下载模板，请勿更改表格顺序</a></button>
-                                                                 </div>
-                                                             <div class="input-group mg-b-pro-edt">
-                                                                 <a style="color:yellow">上传CSV文件</a>
-                                                                 <input name="file" style="color:yellow" type="file" size="16" maxlength="80" accept="application/csv" >
+                                                            </div>
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <a style="color:yellow">上传CSV文件</a>
+                                                                <input name="file" style="color:yellow" type="file" size="16" maxlength="80" accept="application/csv" >
 
                                                             </div>
 
@@ -579,10 +588,10 @@ if (isset($_SESSION['daifabatchname'])) {
 
 
         <script type="text/javascript">
-                                function openNewWin(url)
-                                {
-                                    window.open(url);
-                                }
+                                                                    function openNewWin(url)
+                                                                    {
+                                                                        window.open(url);
+                                                                    }
         </script>
     </body>
 

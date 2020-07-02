@@ -376,7 +376,7 @@ if ($totalrow != 0) {
                                 <h4><?php print $batch; ?></h4>
                                 <div class="add-product" >                                    
 
-                                    <a  href="add-batch.php">Add Batch</a>
+                                    <a  href="<?php print 'exportbatch.php?id='.$batch ?>">Download Batch Info</a>
                                 </div>
                                 <div>
                                     <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
