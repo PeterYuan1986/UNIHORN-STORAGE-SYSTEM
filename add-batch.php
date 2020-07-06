@@ -64,14 +64,14 @@ if (isset($_POST['save'])) {
                     $a = 0;
                     while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容                           
                         $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,service, batch) 
-                    VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $daifaservice . "','" . $daifabatchname . "')";
+                    VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . str_replace("'", "\'",$content[3])  . "','" . str_replace("'", "\'",$content[4]) . "','" . str_replace("'", "\'",$content[5]) . "','" . str_replace("'", "\'",$content[6]) . "','" . str_replace("'", "\'",$content[7]) . "','" . str_replace("'", "\'",$content[8]) . "','" . $daifaservice . "','" . $daifabatchname . "')";
 
                         $result = mysqli_query($conn, $sql);
                         $a++;
                         if (!$result) {
-                            $sql = "DELETE FROM daifaorders WHERE batch==" . $daifabatchname;
+                            $sql = "DELETE FROM daifaorders WHERE batch=." . $daifabatchname."'";
                             mysqli_query($conn, $sql);
-                            echo "<script> alert('重复单号：" . $content[0] . "！请修改后重新上传！')</script>";
+                            echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查是否此单信息中含有冒号等特殊符号，请修改后重新上传！')</script>";
                             break;
                         }
                     }

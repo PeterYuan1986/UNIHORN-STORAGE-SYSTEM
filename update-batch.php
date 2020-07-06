@@ -15,8 +15,8 @@ if (isset($_SESSION['yhy'])) {
     $row = mysqli_fetch_array($result);
     $fn = $row[0];
     $ln = $row[1];
-    $of =$row[2];
-    if($of=='gst'){
+    $of = $row[2];
+    if ($of == 'gst') {
         print '<script> location.replace("data-table.php"); </script>';
     }
 } else {
@@ -66,27 +66,35 @@ if (isset($_POST['save'])) {
                     @$filepath = @fopen("./upload/tempupload.csv", 'r');
                     @$content = fgetcsv($filepath);
                     try {
-                        $uspscost = 0;
-                        $servicefee = 0;
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
-                           
-                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . $content[4] . "' WHERE orderid='" . $content[27]."'";
-                            
+                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . $content[4] . "' WHERE orderid='" . $content[27] . "'";
                             $result = mysqli_query($conn, $sql);
-                            if ($content[4] > 2.5) {
-                                $servicefee = $servicefee+0.4;
-                            } else {
-                                $servicefee = $servicefee +0.2;
+                            if ($content[4] < 2.5) {
+                                $sql = "UPDATE daifaorders SET fee=0.2";                                
                             }
-                            $uspscost = $uspscost+ $content[4];
+                            else{
+                                $sql = "UPDATE daifaorders SET fee=0.4";      
+                            }
+                            $result = mysqli_query($conn, $sql);
                         }
                         if ($result) {
-                            $sql = "UPDATE daifa SET status='SHIPPED', shippingcost='" . $uspscost . "', servicefee='" . $servicefee . "' WHERE batchname='" . $batch."'";                           
+                            $sql = "SELECT cost, fee FROM daifaorders where batch='" . $batch . "'";
+                            $result = mysqli_query($conn, $sql);
+                            while ($arr = mysqli_fetch_array($result)) {
+                                $data[] = $arr;
+                            }
+                            $totalcost = 0;
+                            $totalfee = 0;
+                            for ($index = 0; $index < @count($data); $index++) {
+                                $totalcost = $totalcost+$data[$index][0];
+                                $totalfee = $totalfee+$data[$index][1];
+                            }
+
+                            $sql = "UPDATE daifa SET status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE batchname='" . $batch . "'";
                             mysqli_query($conn, $sql);
-                            
-                            
+
                             echo "<script> alert('文件上传成功！')</script>";
-                           // header("Location:data-table.php");
+                            // header("Location:data-table.php");
                         }
                     } catch (Exception $ex) {
                         
@@ -263,7 +271,7 @@ if (isset($_POST['save'])) {
                                 </ul>
                             </li>
                             <li class="active">
-                             <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>

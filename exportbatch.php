@@ -10,7 +10,7 @@ if (isset($_GET['id']) && ($_GET['id'] != '')) {
     header('location: data-table.php');
 }
 
-$sql = "SELECT * FROM daifaorders where batch='" . $batch."'";
+$sql = "SELECT * FROM daifaorders where batch='" . $batch."' ORDER by orderid ASC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
 $result = mysqli_query($conn, $sql);
 //$totalpage = ceil($totalrow / $perpage);
 
