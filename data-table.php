@@ -19,7 +19,7 @@ if (isset($_SESSION['yhy'])) {
 
 
 <?php
-$columns = array('batchname', 'time', 'type', 'orders', 'status', 'paid');
+$columns = array('batchname', 'time', 'type', 'dhltracking', 'orders', 'status', 'paid');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[1];
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
 //$perpage = 20;
@@ -27,22 +27,35 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'AS
 
 if (isset($_POST['search'])) {
     $_SESSION['listsearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $pendingsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' ORDER BY " . $column . ' ' . $sort_order;
+    $shippedsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0' ORDER BY " . $column . ' ' . $sort_order;
+    $paidsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM daifa where batchname LIKE '%" . @$_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $pendingsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' ORDER BY " . $column . ' ' . $sort_order;
+    $shippedsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0'or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0'or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0' ORDER BY " . $column . ' ' . $sort_order;
+    $paidsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' ORDER BY " . $column . ' ' . $sort_order;
 }
-$result = mysqli_query($conn, $sql);
-$totalrow = mysqli_num_rows($result);
+$pendingresult = mysqli_query($conn, $pendingsql);
+$shippedresult = mysqli_query($conn, $shippedsql);
+$paidresult = mysqli_query($conn, $paidsql);
+$totalrow = mysqli_num_rows($pendingresult);
 //$totalpage = ceil($totalrow / $perpage);
-if ($totalrow != 0) {
-    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-    $add_class = ' class="highlight"';
 
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
-    }
+
+$up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+$asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+$add_class = ' class="highlight"';
+
+while ($arr1 = mysqli_fetch_array($pendingresult)) {
+    $pendingdata[] = $arr1;
 }
+while ($arr2 = mysqli_fetch_array($shippedresult)) {
+    $shippeddata[] = $arr2;
+}
+while ($arr3 = mysqli_fetch_array($paidresult)) {
+    $paiddata[] = $arr3;
+}
+
 //    if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
 //       $page = 1;
 //    } else
@@ -56,38 +69,49 @@ if ($totalrow != 0) {
 //        break;
 //   else {
 
-if(isEmpty($data)){
-    for ($i = 0; $i < count($data); $i++) {
+if (isEmpty(@$pendingdata)) {
+    for ($i = 0; $i < @count(@$pendingdata); $i++) {
         $tem = "trash" . $i;
         if (isset($_REQUEST["{$tem}"])) {
             $_REQUEST["{$tem}"] = 0;
-            $sql = "DELETE FROM daifa WHERE batchname='" . $data[$i]['batchname'] . "'";
+            $sql = "DELETE FROM daifa WHERE batchname='" . $pendingdata[$i]['batchname'] . "'";
             mysqli_query($conn, $sql);
-            $sql = "DELETE FROM daifaorders WHERE batch='" . $data[$i]['batchname'] . "'";
+            $sql = "DELETE FROM daifaorders WHERE batch='" . $pendingdata[$i]['batchname'] . "'";
             mysqli_query($conn, $sql);
-            unlink("./upload/".$data[$i]['batchname'].".csv");
+            unlink("./upload/" . $pendingdata[$i]['batchname'] . ".csv");
             header('location: ' . $_SERVER['HTTP_REFERER']);
             break;
         }
     }
 
-    for ($i = 0; $i < count($data); $i++) {
+    for ($i = 0; $i < @count(@$pendingdata); $i++) {
         $tem = "edit" . $i;
         if (isset($_REQUEST["{$tem}"])) {
             $_REQUEST["{$tem}"] = 0;
-            print "<script>window.open('./update-batch.php?id=" . $data[$i]['batchname']."')</script>";
+            print "<script>window.open('./update-batch.php?id=" . $pendingdata[$i]['batchname'] . "')</script>";
             break;
         }
     }
+}
 
-    for ($i = 0; $i < count($data); $i++) {
+if (isEmpty(@shippeddata)) {
+
+    for ($i = 0; $i < @count(@$shippeddata); $i++) {
+        $tem = "shippededit" . $i;
+        if (isset($_REQUEST["{$tem}"])) {
+            $_REQUEST["{$tem}"] = 0;
+            print "<script>window.open('./update-batch.php?id=" . $shippeddata[$i]['batchname'] . "')</script>";
+            break;
+        }
+    }
+    for ($i = 0; $i < @count(@$shippeddata); $i++) {
         $tem = "pay" . $i;
         if (isset($_REQUEST["{$tem}"])) {
             $_REQUEST["{$tem}"] = 0;
-            $cost = $data[$i]['shippingcost'] + $data[$i]['servicefee'];
-            if($cost>0){
-            print "<script>window.open('./pay/pay.php?id=" . $data[$i]['batchname'] . "&cost=" . $cost . "')</script>";}
-            else{
+            $cost = $pendingdata[$i]['shippingcost'] + $shippeddata[$i]['servicefee'];
+            if ($cost > 0) {
+                print "<script>window.open('./pay/pay.php?id=" . $shippeddata[$i]['batchname'] . "&cost=" . $cost . "')</script>";
+            } else {
                 echo "<script> alert('请等待USPS单号上传后结算！')</script>";
             }
 
@@ -100,7 +124,7 @@ if(isEmpty($data)){
 
 
 
-<html class="no-js" lang="en">   
+<html class="no-js" lang="en">
 
     <head>
         <meta charset="utf-8">
@@ -170,7 +194,7 @@ if(isEmpty($data)){
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
         <div class="left-sidebar-pro">
-            <nav id="sidebar" class="">              
+            <nav id="sidebar" class="">
                 <div class="nalika-profile">
                     <div class="profile-dtl">
                         <a href="homepage.php"><img src="img/uni.jpg" alt="" /></a>
@@ -194,7 +218,7 @@ if(isEmpty($data)){
                                     <span class="mini-click-non">Dashboard</span>
                                 </a>
                                 <ul class="submenu-angle" aria-expanded="false">
-                                    <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>                                
+                                    <li><a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a></li>
                                     <li><a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a></li>
                                 </ul>
                             </li>
@@ -205,7 +229,7 @@ if(isEmpty($data)){
                                     <i class="icon nalika-table icon-wrap"></i>
                                     <span class="mini-click-non">Product</span>
                                 </a>
-                                <ul class="submenu-angle" aria-expanded="false">                                   
+                                <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Product List" href="product-list.php"><span class="mini-sub-pro">Product List</span></a></li>
                                     <li><a title="Product Edit" href="product-edit.php"><span class="mini-sub-pro">Product Edit</span></a></li>
                                     <li><a title="Product Detail" href="product-detail.php"><span class="mini-sub-pro">Product Detail</span></a></li>
@@ -215,17 +239,17 @@ if(isEmpty($data)){
                                 <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-mail icon-wrap"></i> <span class="mini-click-non">Export & Import</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a class="has-arrow" title="Import" href="supply.php"><span >Incoming</span></a>
-                                        <ul class="submenu-angle" aria-expanded="false">     
+                                        <ul class="submenu-angle" aria-expanded="false">
                                             <li><a title="Supply" href="supply.php"><span class="mini-sub-pro">Supply & Return(NC)</span></a></li>
                                             <li><a title="Supply" href="supplysh.php"><span class="mini-sub-pro">Supply & Return(SH)</span></a></li>
-                                            <li><a title="Import Stock" href="stockaccept.php"><span class="mini-sub-pro">Import Stock</span></a></li>                                             
+                                            <li><a title="Import Stock" href="stockaccept.php"><span class="mini-sub-pro">Import Stock</span></a></li>
                                         </ul>
                                     </li>
                                     <li><a class="has-arrow" title="Export" href="outgoingnc.php"><span >Outgoing</span></a>
-                                        <ul class="submenu-angle" aria-expanded="false">   
+                                        <ul class="submenu-angle" aria-expanded="false">
                                             <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replace(NC)</span></a></li>
                                             <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replace(SH)</span></a></li>
-                                            <li><a title="Export Stock" href="stocktrans.php"><span class="mini-sub-pro">Export Stock</span></a></li>                                             
+                                            <li><a title="Export Stock" href="stocktrans.php"><span class="mini-sub-pro">Export Stock</span></a></li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -252,11 +276,12 @@ if(isEmpty($data)){
                                 </ul>
                             </li>
                             <li class="active">
-                                  <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                    
+                                    <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
                             <li id="removable">
@@ -309,7 +334,7 @@ if(isEmpty($data)){
                                                     <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-menu-task"></i></a>
                                                         <ul role="menu" class="dropdown-header-top author-log dropdown-menu animated zoomIn">
                                                             <li><a href="#"><span class="icon nalika-home author-log-ic"></span> Dashboard</a>
-                                                                <a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a>                       
+                                                                <a title="Dashboard" href="homepage.php"><span class="mini-sub-pro">Dashboard</span></a>
                                                                 <a title="Notification" href="notification.php"><span class="mini-sub-pro">Notification</span></a>
                                                             </li>
 
@@ -327,25 +352,26 @@ if(isEmpty($data)){
                                                             <ul class="notification-menu">
                                                                 <?php
                                                                 if ($of != 'gst') {
-                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                    print "<li>
+                                                                    for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                        print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
-                                                                        <div class='notification-content'>                                                                            
+                                                                        <div class='notification-content'>
                                                                             <h2>";
-                                                                    print $datanote[$i]['date'];
-                                                                    print "</h2>
+                                                                        print $datanote[$i]['date'];
+                                                                        print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                }}
+                                                                    }
+                                                                }
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -367,7 +393,7 @@ if(isEmpty($data)){
                                                             <li><a href="logout.php"><span class="icon nalika-unlocked author-log-ic"></span> Log Out</a>
                                                             </li>
                                                         </ul>
-                                                    </li>                                                    
+                                                    </li>
                                                 </ul>
                                             </div>
 
@@ -419,7 +445,7 @@ if(isEmpty($data)){
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <div class="product-status-wrap">
                                 <h4>一件代发汇总</h4>
-                                <div class="add-product" >                                    
+                                <div class="add-product" >
 
                                     <a  href="add-batch.php">Add Batch</a>
                                 </div>
@@ -444,92 +470,215 @@ if(isEmpty($data)){
                                         </div>
                                     </div>
                                 </div>
-                                <form action="" method="post" name="form">
+
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <div class="product-payment-inner-st">
+                                        <ul id="myTab4" class="tab-review-design">
+                                            <li class="active"><a href="#pending">PENDING</a></li>
+                                            <li><a href="#shipped"> SHIPPED</a></li>
+                                            <li><a href="#paid">PAID</a></li>
+                                        </ul>
+                                        <div id="myTabContent" class="tab-content custom-product-edit">
+                                            <div class="product-tab-list tab-pane fade active in" id="pending">
+                                                <form action="" method="post" name="form">
+                                                    <div>
+                                                        <table >
+                                                            <tr>
+                                                                <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">创建时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" >批次USPS邮费</a></th>
+                                                                <th><a style="color: #fff" >批次服务费</a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=status&order=<?php echo $asc_or_desc; ?>">状态<i class="fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th>Setting</th>
 
 
-                                    <table >
-                                        <tr>
-                                            <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">创建时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" >DHL追踪号</a></th>
-                                            <th><a style="color: #fff" >批次USPS邮费</a></th>
-                                            <th><a style="color: #fff" >批次服务费</a></th>
-                                            <th><a style="color: #fff" href="data-table.php?column=status&order=<?php echo $asc_or_desc; ?>">状态<i class="fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="data-table.php?column=paid&order=<?php echo $asc_or_desc; ?>">结算<i class="fa fa-sort<?php echo $column == 'paid' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th>Setting</th>
+
+                                                            </tr>
 
 
 
-                                        </tr>
-
-
-
-                                        <?php
+                                                            <?php
 // if ($totalrow != 0) {
 //    for ($i = 0; $i < $perpage; $i++) {
 //       $index = ($page - 1) * $perpage + $i;
 //      if ($index >= count($data))
 //           break;
 //      else {
-                                        for ($index = 0; $index < @count($data); $index++) {
-                                            print '<tr>';
-                                            print "<td><a href='batchinfo.php?id={$data[$index]['batchname']}' style='color: #ff0'>{$data[$index]['batchname']}</a></td>";
-                                            print "<td>{$data[$index]['time']}</td>";
-                                            print "<td>{$data[$index]['type']}</td>";
-                                            print "<td>{$data[$index]['orders']}</td>";
-                                            print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$data[$index]['dhltracking']}')\" >{$data[$index]['dhltracking']}</td>";
-                                            print "<td>{$data[$index]['shippingcost']}</td>";
-                                            print "<td>{$data[$index]['servicefee']}</td>";
-                                            print "<td>{$data[$index]['status']}</td>";
-                                            if (!$data[$index]['paid']) {
-                                                $pay = "pay" . $index;
-                                                ?>
-                                                <td>
-                                                    <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
+                                                            for ($index = 0; $index < @count($pendingdata); $index++) {
+                                                                print '<tr>';
+                                                                print "<td><a href='batchinfo.php?id={$pendingdata[$index]['batchname']}' style='color: #ff0'>{$pendingdata[$index]['batchname']}</a></td>";
+                                                                print "<td>{$pendingdata[$index]['time']}</td>";
+                                                                print "<td>{$pendingdata[$index]['type']}</td>";
+                                                                print "<td>{$pendingdata[$index]['orders']}</td>";
+                                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$pendingdata[$index]['dhltracking']}')\" >{$pendingdata[$index]['dhltracking']}</td>";
+                                                                print "<td>{$pendingdata[$index]['shippingcost']}</td>";
+                                                                if ($pendingdata[$index]['type'] == "Letter") {
+                                                                    $rate = 0.2;
+                                                                } else {
+                                                                    $rate = 0.4;
+                                                                }
+                                                                print "<td>" . $rate * $pendingdata[$index]['orders'] . "</td>";
+                                                                print "<td>{$pendingdata[$index]['status']}</td>";
+                                                                $edit = "edit" . $index;
+                                                                $trash = "trash" . $index;
+                                                                ?>
+
+                                                                <td>
+                                                                    <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="上传USPS单号" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+
+                                                                    <?php
+                                                                    if ((strtotime($str) - strtotime($pendingdata[$index]['time']) ) < 24 * 3600)
+                                                                        print "<button data-toggle='tooltip' name =" . $trash . " type='submit' title='删除批次，仅批次创建后24小时之内有效' onclick='return confirmation()' class='pd-setting-ed'><i class='fa fa-trash-o' aria-hidden='true'></i></button>";
+                                                                    ?>
+                                                                </td >
+                                                                </tr>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                        </table>
+                                                    </div>
+
+                                                </form>
+                                            </div>
+                                            <div class="product-tab-list tab-pane fade" id="shipped">
+                                                <div>
+                                                    <table >
+                                                        <tr>
+                                                            <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">创建时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" >批次USPS邮费</a></th>
+                                                            <th><a style="color: #fff" >批次服务费</a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=status&order=<?php echo $asc_or_desc; ?>">状态<i class="fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=paid&order=<?php echo $asc_or_desc; ?>">结算<i class="fa fa-sort<?php echo $column == 'paid' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th>Setting</th>
 
 
-                                                    <?php
-                                                } else {
-                                                    print "<td>PAID</td>";
-                                                }
-                                                
-                                                $edit = "edit" . $index;
-                                                $trash = "trash" . $index;
-                                                ?>
 
-                                            <td>
-                                                <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="上传USPS单号" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-
-                                                <?php
-                                                if ((strtotime($str) - strtotime($data[$index]['time']) ) < 24 * 3600)
-                                                    print "<button data-toggle='tooltip' name =" . $trash . " type='submit' title='删除批次，仅批次创建后24小时之内有效' onclick='return confirmation()' class='pd-setting-ed'><i class='fa fa-trash-o' aria-hidden='true'></i></button>";
-                                                ?>
-                                            </td >  
-                                            </tr>
-                                            <?php
-                                        }
-                                        ?>
-                                    </table><!--
-            <div class="custom-pagination "  >
-                <ul class="pagination ">
-
-                                    <?php
-                                    for ($i = 1; $i <= $totalpage; $i++) {
-                                        if ($i == $page) {
-                                            printf("<li ><a >%d</a></li>", $i);
-                                        } else {
-                                            printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
-                                        }
-                                    }
-                                    ?>
+                                                        </tr>
 
 
-                </ul>
-            </div>-->
 
-                                </form>
+                                                        <?php
+// if ($totalrow != 0) {
+//    for ($i = 0; $i < $perpage; $i++) {
+//       $index = ($page - 1) * $perpage + $i;
+//      if ($index >= count($shippeddata))
+//           break;
+//      else {/*
+                                                        for ($index = 0; $index < @count($shippeddata); $index++) {
+                                                            print '<tr>';
+                                                            print "<td><a href='batchinfo.php?id={$shippeddata[$index]['batchname']}' style='color: #ff0'>{$shippeddata[$index]['batchname']}</a></td>";
+                                                            print "<td>{$shippeddata[$index]['time']}</td>";
+                                                            print "<td>{$shippeddata[$index]['type']}</td>";
+                                                            print "<td>{$shippeddata[$index]['orders']}</td>";
+                                                            print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$shippeddata[$index]['dhltracking']}')\" >{$shippeddata[$index]['dhltracking']}</td>";
+                                                            print "<td>{$shippeddata[$index]['shippingcost']}</td>";
+                                                            if ($shippeddata[$index]['type'] == "Letter") {
+                                                                $rate = 0.2;
+                                                            } else {
+                                                                $rate = 0.4;
+                                                            }
+                                                            print "<td>" . $rate * $shippeddata[$index]['orders'] . "</td>";
+                                                            print "<td>{$shippeddata[$index]['status']}</td>";
+                                                            if (!$shippeddata[$index]['paid']) {
+                                                                $pay = "pay" . $index;
+                                                                ?>
+                                                                <td>
+                                                                    <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
+
+
+                                                                    <?php
+                                                                } else {
+                                                                    print "<td>PAID</td>";
+                                                                }
+
+                                                                $edit = "shippededit" . $index;
+                                                                ?>
+
+                                                            <td>
+                                                                <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="上传USPS单号" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                                            </td >
+                                                            </tr>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="product-tab-list tab-pane fade" id="paid">
+                                                <div>
+                                                    <table >
+                                                        <tr>
+                                                            <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">创建时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" >批次USPS邮费</a></th>
+                                                            <th><a style="color: #fff" >批次服务费</a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=status&order=<?php echo $asc_or_desc; ?>">状态<i class="fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=paid&order=<?php echo $asc_or_desc; ?>">结算<i class="fa fa-sort<?php echo $column == 'paid' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+
+
+
+
+                                                        </tr>
+
+
+
+                                                        <?php
+// if ($totalrow != 0) {
+//    for ($i = 0; $i < $perpage; $i++) {
+//       $index = ($page - 1) * $perpage + $i;
+//      if ($index >= count($paiddata))
+//           break;
+//      else {
+                                                        for ($index = 0; $index < @count($paiddata); $index++) {
+                                                            print '<tr>';
+                                                            print "<td><a href='batchinfo.php?id={$paiddata[$index]['batchname']}' style='color: #ff0'>{$paiddata[$index]['batchname']}</a></td>";
+                                                            print "<td>{$paiddata[$index]['time']}</td>";
+                                                            print "<td>{$paiddata[$index]['type']}</td>";
+                                                            print "<td>{$paiddata[$index]['orders']}</td>";
+                                                            print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$paiddata[$index]['dhltracking']}')\" >{$paiddata[$index]['dhltracking']}</td>";
+                                                            print "<td>{$paiddata[$index]['shippingcost']}</td>";
+                                                            if ($paiddata[$index]['type'] == "Letter") {
+                                                                $rate = 0.2;
+                                                            } else {
+                                                                $rate = 0.4;
+                                                            }
+                                                            print "<td>" . $rate * $paiddata[$index]['orders'] . "</td>";
+                                                            print "<td>{$paiddata[$index]['status']}</td>";
+                                                            if (!$paiddata[$index]['paid']) {
+                                                                $pay = "pay" . $index;
+                                                                ?>
+                                                                <td>
+                                                                    <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
+
+
+                                                                    <?php
+                                                                } else {
+                                                                    print "<td>PAID</td>";
+                                                                }
+                                                                ?>
+
+                                                                </tr>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                             </div>
                         </div>
                     </div>
@@ -603,15 +752,15 @@ if(isEmpty($data)){
 
 
         <script type="text/javascript">
-                                                    function openNewWin(url)
-                                                    {
-                                                        window.open(url);
-                                                    }
+                                                                function openNewWin(url)
+                                                                {
+                                                                    window.open(url);
+                                                                }
 
-                                                    function confirmation(url) {
+                                                                function confirmation(url) {
 
-                                                        return confirm('Are you sure?');
-                                                    }
+                                                                    return confirm('Are you sure?');
+                                                                }
 
 
         </script>

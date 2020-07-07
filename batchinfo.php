@@ -211,7 +211,8 @@ if ($totalrow != 0) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                   
+                                    <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
                             <li id="removable">
@@ -376,7 +377,7 @@ if ($totalrow != 0) {
                                 <h4><?php print $batch; ?></h4>
                                 <div class="add-product" >                                    
 
-                                    <a  href="<?php print 'exportbatch.php?id='.$batch ?>">Download Batch Info</a>
+                                    <a  href="<?php print 'exportbatch.php?id='.$batch ?>">Export Batch Info</a>
                                 </div>
                                 <div>
                                     <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">

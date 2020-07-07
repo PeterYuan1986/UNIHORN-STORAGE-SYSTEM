@@ -1,10 +1,5 @@
 <?php
 require 'header.php';
-if (isset($_GET['id'])) {
-    $batch = $_GET['id'];
-} else {
-    header('location: data-table.php');
-}
 ?>
 
 <?php
@@ -16,98 +11,35 @@ if (isset($_SESSION['yhy'])) {
     $fn = $row[0];
     $ln = $row[1];
     $of = $row[2];
-    if ($of == 'gst') {
-        print '<script> location.replace("data-table.php"); </script>';
-    }
 } else {
     echo '<script> alert("Please Re-login!")</script>';
     print '<script> location.replace("index.php"); </script>';
 }
 ?>
 
-
 <?php
-if (isset($_POST['save'])) {
-    if (!isset($_FILES["file"])) {
-        echo "<script> alert('请上传csv文件!')</script>";
-    } else { {
-            $allowedExts = array(
-                'text/txt',
-                'text/csv',
-                'text/plain',
-                'application/csv',
-                'text/comma-separated-values',
-                'application/excel',
-                'application/xlsx',
-                'application/vnd.ms-excel',
-                'application/vnd.msexcel',
-                'text/anytext',
-                'application/octet-stream',
-                'application/txt',
-            );
-            $temp = explode(".", @$_FILES["file"]["name"]);
-            $_FILES["file"]["size"];
-            $extension = end($temp);     // 获取文件后缀名
-            if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
-                if (@$_FILES["file"]["error"] > 0) {
-                    // echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
-                    echo "<script> alert('Error,请联系管理员！')</script>";
-                } else {
-                    // echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
-                    // echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
-                    // echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
-                    // echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
-                    //判断当期目录下的 upload 目录是否存在该文件
-                    //如果没有 upload 目录，你需要创建它，upload 目录权限为 777
-                    move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/tempupload.csv");
-                    //echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
+$columns = array('orderid');
+$column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
+$sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
+//$perpage = 20;
 
 
-                    @$filepath = @fopen("./upload/tempupload.csv", 'r');
-                    @$content = fgetcsv($filepath);
-                    try {
-                        while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
-                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . $content[4] . "' WHERE orderid='" . $content[27] . "'";
-                            $result = mysqli_query($conn, $sql);
-                            if ($content[4] < 2.5) {
-                                $sql = "UPDATE daifaorders SET fee=0.2";                                
-                            }
-                            else{
-                                $sql = "UPDATE daifaorders SET fee=0.4";      
-                            }
-                            $result = mysqli_query($conn, $sql);
-                        }
-                        if ($result) {
-                            $sql = "SELECT cost, fee FROM daifaorders where batch='" . $batch . "'";
-                            $result = mysqli_query($conn, $sql);
-                            while ($arr = mysqli_fetch_array($result)) {
-                                $data[] = $arr;
-                            }
-                            $totalcost = 0;
-                            $totalfee = 0;
-                            for ($index = 0; $index < @count($data); $index++) {
-                                $totalcost = $totalcost+$data[$index][0];
-                                $totalfee = $totalfee+$data[$index][1];
-                            }
+if (isset($_POST['search'])) {
+    $_SESSION['listsearchtext'] = $_POST['searchtext'];
+    $sql = "SELECT * FROM daifaorders where orderid LIKE '%" . $_SESSION['listsearchtext'] . "%' or service LIKE '%" . $_SESSION['listsearchtext'] . "%' or tracking LIKE '%" . $_SESSION['listsearchtext'] . "%' or name LIKE '%" . $_SESSION['listsearchtext'] . "%' or company LIKE '%" . $_SESSION['listsearchtext'] . "%' or address LIKE '%" . $_SESSION['listsearchtext'] . "%' or city LIKE '%" . $_SESSION['listsearchtext'] . "%' or state LIKE '%" . $_SESSION['listsearchtext'] . "%' or zipcode LIKE '%" . $_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+} else {
+    $sql = "SELECT * FROM daifaorders ORDER BY " . $column . ' ' . $sort_order;
+}
+$result = mysqli_query($conn, $sql);
+$totalrow = mysqli_num_rows($result);
+//$totalpage = ceil($totalrow / $perpage);
+if ($totalrow != 0) {
+    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+    $add_class = ' class="highlight"';
 
-                            $sql = "UPDATE daifa SET status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE batchname='" . $batch . "'";
-                            mysqli_query($conn, $sql);
-
-                            echo "<script> alert('文件上传成功！')</script>";
-                            // header("Location:data-table.php");
-                        }
-                    } catch (Exception $ex) {
-                        
-                    }
-
-
-                    @fclose(@$filepath);
-                    @unlink("./upload/tempupload.csv");
-                }
-            } else {
-                echo "<script> alert('请上传csv文件!')</script>";
-            }
-        }
+    while ($arr = mysqli_fetch_array($result)) {
+        $data[] = $arr;
     }
 }
 ?>
@@ -115,11 +47,7 @@ if (isset($_POST['save'])) {
 
 
 
-
-
-
-
-<html class="no-js" lang="en">
+<html class="no-js" lang="en">   
 
     <head>
         <meta charset="utf-8">
@@ -207,7 +135,7 @@ if (isset($_POST['save'])) {
                     <nav class="sidebar-nav left-sidebar-menu-pro">
                         <ul class="metismenu" id="menu1">
 
-                            <li>
+                            <li >
                                 <a class="has-arrow" href="homepage.php">
                                     <i class="icon nalika-home icon-wrap"></i>
                                     <span class="mini-click-non">Dashboard</span>
@@ -275,7 +203,7 @@ if (isset($_POST['save'])) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                   
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
@@ -346,20 +274,22 @@ if (isset($_POST['save'])) {
                                                             </div>
                                                             <ul class="notification-menu">
                                                                 <?php
-                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                    print "<li>
+                                                                if ($of != 'gst') {
+                                                                    for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                        print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                    print $datanote[$i]['date'];
-                                                                    print "</h2>
+                                                                        print $datanote[$i]['date'];
+                                                                        print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
+                                                                    }
                                                                 }
                                                                 ?>
                                                             </ul>
@@ -404,6 +334,8 @@ if (isset($_POST['save'])) {
 
 
                 <!-- Mobile Menu end -->
+
+
                 <div class="breadcome-area">
                     <div class="container-fluid">
                         <div class="row">
@@ -416,7 +348,7 @@ if (isset($_POST['save'])) {
                                                     <i class="icon nalika-edit"></i>
                                                 </div>
                                                 <div class="breadcomb-ctn">
-                                                    <h2>添加批次</h2>
+                                                    <h2>批次信息</h2>
                                                     <p>Welcome to Unihorn Management System <span class="bread-ntd"></span></p>
                                                 </div>
                                             </div>
@@ -429,46 +361,93 @@ if (isset($_POST['save'])) {
                     </div>
                 </div>
             </div>
-            <!-- Single pro tab start-->
-            <div class="single-product-tab-area mg-b-30">
-                <!-- Single pro tab review Start-->
-                <div class="single-pro-review-area">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                <div class="review-tab-pro-inner">
-                                    <ul id="myTab3" class="tab-review-design">
-                                        <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> Add Batch</a></li>
-                                    </ul>
-                                    <div id="myTabContent" class="tab-content custom-product-edit">
 
-                                        <div class="product-tab-list tab-pane fade active in" id="description">
-                                            <form name="form" method="post" action="" enctype="multipart/form-data">
-                                                <div class="row">
+            <div class="product-status mg-b-30">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="product-status-wrap">
+                                <h4>订单汇总</h4>
+                                <div class="add-product" >                                    
 
-                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                                        <div class="review-content-section">                                                            
+                                    <a  href="exportbatch.php">Export Order Summary</a>
+                                </div>
+                                <div>
+                                    <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                        <div class="header-top-menu tabl-d-n">
+                                            <div class="breadcome-heading">
+                                                <form method="post" role="search" class="">
 
-                                                            <div class="input-group mg-b-pro-edt">
-                                                                <input name="file" type="file" size="16" maxlength="200" accept="application/csv">
 
-                                                            </div>
+                                                    <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
+                                                        if (isset($_SESSION['listsearchtext'])) {
+                                                            print $_SESSION['listsearchtext'];
+                                                        }
+                                                        ?>" ></div>
+                                                    <div style="color:#fff;width:000px;float:left;">
+                                                        <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
-                                                        </div>
                                                     </div>
-                                                    <div class="row">
-                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                            <div class="text-center custom-pro-edt-ds">
-                                                                <input name="save" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="ADD NEW">                                                            
-                                                                <a href='data-table.php' class="btn btn-ctl-bt waves-effect waves-light">Discard
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                            </form>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                <form action="" method="post" name="form">
+
+
+                                    <table >
+
+                                        <tr>
+                                            <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                            <th><a style="color: #fff" >批次</a></th>
+                                            <th><a style="color: #fff" >邮寄类型</a></th>
+                                            <th><a style="color: #fff" >USPS单号</a></th>
+                                            <th><a style="color: #fff" >USPS邮费</a></th>
+                                            <th><a style="color: #fff" >收件人</a></th>
+                                            <th><a style="color: #fff" >公司</a></th>
+                                            <th><a style="color: #fff" >地址</a></th>
+                                            <th><a style="color: #fff" >城市</a></th>
+                                            <th><a style="color: #fff" >州</a></th>
+                                            <th><a style="color: #fff" >邮编</a></th>
+                                            <th><a style="color: #fff" >手机</a></th>
+                                            <th><a style="color: #fff" >重量</a></th>
+
+
+                                        </tr>
+
+
+
+                                        <?php
+// if ($totalrow != 0) {
+//    for ($i = 0; $i < $perpage; $i++) {
+//       $index = ($page - 1) * $perpage + $i;
+//      if ($index >= count($data))
+//           break;
+//      else {
+
+                                        for ($index = 0; $index < @count($data); $index++) {
+                                            print '<tr>';
+                                            print "<td>{$data[$index]['orderid']}</td>";
+                                            print "<td>{$data[$index]['batch']}</td>";
+                                            print "<td>{$data[$index]['service']}</td>";
+                                            print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                            print "<td>{$data[$index]['cost']}</td>";
+                                            print "<td>{$data[$index]['name']}</td>";
+                                            print "<td>{$data[$index]['company']}</td>";
+                                            print "<td>{$data[$index]['address']}</td>";
+                                            print "<td>{$data[$index]['city']}</td>";
+                                            print "<td>{$data[$index]['state']}</td>";
+                                            print "<td>{$data[$index]['zipcode']}</td>";
+                                            print "<td>{$data[$index]['phone']}</td>";
+                                            print "<td>{$data[$index]['weight']}</td>";
+                                            print '</tr>';
+                                        }
+                                        ?>
+
+                                    </table>
+
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -546,6 +525,13 @@ if (isset($_POST['save'])) {
                                 {
                                     window.open(url);
                                 }
+
+                                function confirmation(url) {
+
+                                    return confirm('Are you sure?');
+                                }
+
+
         </script>
     </body>
 
