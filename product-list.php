@@ -58,7 +58,7 @@ if ($totalrow != 0) {
 //   if ($ind >= count($data))
 //        break;
 //   else {
-for ($i = 0; $i < count($data); $i++) {
+for ($i = 0; $i < @count(@$data); $i++) {
     $tem = "trash" . $i;
     if (isset($_REQUEST["{$tem}"])) {
         $_REQUEST["{$tem}"] = 0;
@@ -77,7 +77,7 @@ for ($i = 0; $i < count($data); $i++) {
 //   break;
 //  else {
 
-for ($i = 0; $i < count($data); $i++) {
+for ($i = 0; $i < @count(@$data); $i++) {
     $tem = "edit" . $i;
     if (isset($_REQUEST["{$tem}"])) {
         $_REQUEST["{$tem}"] = 0;
@@ -247,7 +247,8 @@ for ($i = 0; $i < count($data); $i++) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                   
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>          
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                                      
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>

@@ -9,9 +9,10 @@ if (isset($_SESSION['yhy'])) {
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
     $fn = $row[0];
-    $ln = $row[1];$of = $row[2];
+    $ln = $row[1];
+    $of = $row[2];
     if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+        print '<script> location.replace("data-table.php"); </script>';
     }
 } else {
     echo '<script> alert("Please Re-login!")</script>';
@@ -19,36 +20,127 @@ if (isset($_SESSION['yhy'])) {
 }
 ?>
 
-
 <?php
-$columns = array('sku', 'brand', 'category', 'price', 'ram', 'cpu', 'quality', 'shanghai', 'transit', 'nc','sold');
-$column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
-$sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'DESC' : 'ASC';
-$search = "";
-
-if (isset($_POST['search'])) {
-
-    $sql = "SELECT * FROM product where sku LIKE '%" . @$_POST['inventorysearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+if (isset($_REQUEST['search'])) {
+    $sku = $_POST['searcheditorder'];
+    $sql = "SELECT `batch`, `service`,  `name`, `address`, `city`, `state`, `zipcode`, `phone`, `weight` FROM `daifaorders` WHERE orderid ='" . $sku . "'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_array($result);
+    $batch = $row['batch'];
+    $category = $row['service'];
+    $receiver = $row['name'];
+    $address = $row['address'];
+    $city = $row['city'];
+    $state = $row['state'];
+    $zipcode = $row['zipcode'];
+    $phone = $row['phone'];
+    $weight = $row['weight'];
 } else {
-    $sql = "SELECT * FROM product ORDER BY " . $column . ' ' . $sort_order;
+    $sku = 0;
+    $batch = 0;
+    $category = 0;
+    $receiver = 0;
+    $phone = 0;
+    $weight = 0;
+    $state = 0;
+    $address = 0;
+    $city = 0;
+    $zipcode = 0;
 }
-$result = mysqli_query($conn, $sql);
-$totalrow = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-if ($totalrow != 0) {
-    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-    $add_class = ' class="highlight"';
 
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
+$sql = "SELECT `batchname` FROM `daifa` where paid='0' ORDER BY time DESC";
+$result = mysqli_query($conn, $sql);
+while ($arr = mysqli_fetch_array($result)) {
+    $data[] = $arr;
+}
+
+
+
+
+if (isset($_POST["save"])) {
+    $isku = @$_POST["isku"];
+    $ibatch = @$_POST['ibatch'];
+    $icategory = @$_POST['icategory'];
+    $ireceiver = @$_POST["ireceiver"];
+    $iaddress = @$_POST["iaddress"];
+
+    $icity = @$_POST["icity"];
+    $istate = @$_POST["istate"];
+    $izipcode = @$_POST["izipcode"];
+    $iphone = @$_POST["iphone"];
+    $iweight = @$_POST["iweight"];
+    if (checkinput($isku)) {
+        $sql = "select * from daifaorders where orderid='" . $isku . "'";
+        $result = mysqli_query($conn, $sql);
+        if (!$result || mysqli_num_rows($result) == 0) {
+            $sql = "select paid from daifa where batchname='" . $ibatch . "'";
+            $result = mysqli_query($conn, $sql);
+            $tem = mysqli_fetch_array($result);
+            if ($tem[0]) {
+                print '<script>alert("此批次已结算，无法添加到此批次")</script>';
+            } else {
+                $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`, `city`, `state`, `zipcode`, `phone`, `weight`) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "')";
+                $result = mysqli_query($conn, $sql);
+
+                $sql = "UPDATE daifa SET orders= orders+1 WHERE batchname='" . $ibatch . "'";
+                $result = mysqli_query($conn, $sql);
+                print '<script>alert("Add Successful!")</script>';
+                // print '<script> location.replace("orderupdate.php"); </script>';
+            }
+        } else {
+            print '<script>alert("The Order ID has existed, please use a different ID or update it.")</script>';
+        }
     }
+}
+
+if (isset($_POST["update"])) {
+    $isku = @$_POST["isku"];
+    $ibatch = @$_POST['ibatch'];
+    $icategory = @$_POST['icategory'];
+    $ireceiver = @$_POST["ireceiver"];
+    $iaddress = @$_POST["iaddress"];
+    $icity = @$_POST["icity"];
+    $istate = @$_POST["istate"];
+    $izipcode = @$_POST["izipcode"];
+    $iphone = @$_POST["iphone"];
+    $iweight = @$_POST["iweight"];
+    $sql = "select batch from daifaorders where orderid='" . $isku . "'";
+    $result = mysqli_query($conn, $sql);
+    if (!$result || mysqli_num_rows($result) == 0) {
+
+        print '<script>alert("This Order ID is not existed, Please add a new Order!")</script>';
+    } else {
+        $originalbatch = mysqli_fetch_row($result);
+        $sql = "select paid from daifa where batchname='" . $ibatch . "'";
+        $result = mysqli_query($conn, $sql);
+        $tem = mysqli_fetch_array($result);
+
+        if ($tem[0]) {
+            print '<script>alert("此批次已结算，无法添加到此批次")</script>';
+        } else {
+            $sql = "UPDATE daifa SET orders= orders-1 WHERE batchname='" . $originalbatch[0] . "'";
+            mysqli_query($conn, $sql);
+            $sql = "UPDATE daifaorders SET batch='" . $ibatch . "',service='" . $icategory . "',address='" . $ireceiver . "',city='" . $icity . "',state='" . $istate . "',zipcode='" . $izipcode . "',phone='" . $iphone . "',weight='" . $iweight . "' WHERE orderid='" . $isku . "'";
+
+            mysqli_query($conn, $sql);
+            $sql = "UPDATE daifa SET orders= orders+1 WHERE batchname='" . $ibatch . "'";
+            $result = mysqli_query($conn, $sql);
+            print '<script>alert("Edit Successful!")</script>';
+            print '<script> location.replace("orderupdate.php"); </script>';
+        }
+    }
+}
+
+function checkinput($isku) {
+    if (isEmpty($isku)) {
+        print '<script>alert("The user name should not be empty!")</script>';
+        return FALSE;
+    }
+    return TRUE;
 }
 ?>
 
-
-
-<html class="no-js" lang="en">   
+<html class="no-js" lang="en">
 
     <head>
         <meta charset="utf-8">
@@ -117,7 +209,6 @@ if ($totalrow != 0) {
         <!--[if lt IE 8]>
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
-
         <div class="left-sidebar-pro">
             <nav id="sidebar" class="">              
                 <div class="nalika-profile">
@@ -137,7 +228,7 @@ if ($totalrow != 0) {
                     <nav class="sidebar-nav left-sidebar-menu-pro">
                         <ul class="metismenu" id="menu1">
 
-                            <li>
+                            <li >
                                 <a class="has-arrow" href="homepage.php">
                                     <i class="icon nalika-home icon-wrap"></i>
                                     <span class="mini-click-non">Dashboard</span>
@@ -148,7 +239,7 @@ if ($totalrow != 0) {
                                 </ul>
                             </li>
 
-                            <li>
+                            <li >
                                 <a class="has-arrow" href="product-list.php">
 
                                     <i class="icon nalika-table icon-wrap"></i>
@@ -179,7 +270,7 @@ if ($totalrow != 0) {
                                     </li>
                                 </ul>
                             </li>
-                            <li class="active">
+                            <li>
                                 <a class="has-arrow" href="inventory-1.php" aria-expanded="false"><i class="icon nalika-diamond icon-wrap"></i> <span class="mini-click-non">Warehouse</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a title="Inventory" href="inventory-1.php"><span class="mini-sub-pro">Inventory</span></a></li>
@@ -200,13 +291,13 @@ if ($totalrow != 0) {
                                     <li><a title="Peity Charts" href="peity.html"><span class="mini-sub-pro">Peity Charts</span></a></li>
                                 </ul>
                             </li>
-                            <li>
+                            <li class="active">
                                 <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>       
-                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                                   
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>              
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                        
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
@@ -221,8 +312,9 @@ if ($totalrow != 0) {
                 </div>
             </nav>
         </div>
-        <!-- Mobile Menu end -->
+        <!-- Start Welcome area -->
         <div class="all-content-wrapper">
+
             <div class="header-advance-area">
                 <div class="header-top-area">
                     <div class="container-fluid">
@@ -233,8 +325,8 @@ if ($totalrow != 0) {
 
                                         <div class="col-lg-1 col-md-0 col-sm-1 col-xs-12">
                                             <div class="menu-switcher-pro">
-                                                <button type="button"  class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
-                                                    <i class="fa fa-bars"></i>
+                                                <button type="button" id="sidebarCollapse" class="btn bar-button-pro header-drl-controller-btn btn-info navbar-btn">
+                                                    <i class="icon nalika-menu-task"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -271,31 +363,33 @@ if ($totalrow != 0) {
                                                                 <a title="Greensboro" href="recordnc.php"><span class="mini-sub-pro">Record NC</span></a></li>
                                                         </ul>
                                                     </li>
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php 
-                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
-                                                                print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
-                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
-                                                                            <p>".$datanote[$i]['subject']."</p>
+                                                                            <h2>";
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
+                                                                            <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>";}
-                                                                
+                                                                </li>";
+                                                                }
                                                                 ?>
                                                             </ul>
-                                                             <div class="notification-view">
-                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
-                                                        </div>
+                                                            <div class="notification-view">
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -317,7 +411,6 @@ if ($totalrow != 0) {
                                                             </li>
                                                         </ul>
                                                     </li>
-                                                    
                                                 </ul>
                                             </div>
                                         </div>
@@ -328,12 +421,9 @@ if ($totalrow != 0) {
                     </div>
                 </div>
 
-
                 <!-- Mobile Menu start -->
 
                 <!-- Mobile Menu end -->
-
-
                 <div class="breadcome-area">
                     <div class="container-fluid">
                         <div class="row">
@@ -343,30 +433,31 @@ if ($totalrow != 0) {
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                                             <div class="breadcomb-wp">
                                                 <div class="breadcomb-icon">
-                                                    <i class="icon nalika-diamond"></i>
+                                                    <i class="icon nalika-edit"></i>
                                                 </div>
                                                 <div class="breadcomb-ctn">
-                                                    <h2>Warehouse</h2>
+                                                    <h2>添加/修改订单信息</h2>
                                                     <p>Welcome to Unihorn Management System <span class="bread-ntd"></span></p>
                                                 </div>
+
                                             </div>
                                         </div>
 
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="product-status mg-b-30">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div class="product-status-wrap">
-                                <h4>Inventory</h4>
-
+            <!-- Single pro tab start-->
+            <div class="single-product-tab-area mg-b-30">
+                <!-- Single pro tab review Start-->
+                <div class="single-pro-review-area">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                 <div>
                                     <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
                                         <div class="header-top-menu tabl-d-n">
@@ -374,100 +465,168 @@ if ($totalrow != 0) {
                                                 <form method="post" role="search" class="">
 
 
-                                                    <div style="width:200px;float:left;"><input name="inventorysearchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_POST['inventorysearchtext'])) {
-                                                            print $_POST['inventorysearchtext'];
+                                                    <div style="width:200px;float:left;"><input name="searcheditorder" type="text" placeholder="搜索订单号" value="<?php
+                                                        if (isset($_SESSION['orderidserchtext'])) {
+                                                            print $_SESSION['orderidserchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
-
                                                     </div>
-                                                    
                                                 </form>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <form action="" method="post" name="form">
 
 
-                                    <table >
+                                <div class="review-tab-pro-inner">
 
-                                        <tr>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=brand&order=<?php echo $asc_or_desc; ?>">Brand <i class=" fa fa-sort<?php echo $column == 'brand' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=category&order=<?php echo $asc_or_desc; ?>">Category <i class="fa fa-sort<?php echo $column == 'category' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=price&order=<?php echo $asc_or_desc; ?>">Original Price <i class="fa fa-sort<?php echo $column == 'price' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=ram&order=<?php echo $asc_or_desc; ?>">RAM Type <i class="fa fa-sort<?php echo $column == 'ram' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=cpu&order=<?php echo $asc_or_desc; ?>">Cpu Type <i class="fa fa-sort<?php echo $column == 'cpu' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=quality&order=<?php echo $asc_or_desc; ?>">Quality <i class="fa fa-sort<?php echo $column == 'quality' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=sold&order=<?php echo $asc_or_desc; ?>">Sold <i class="fa fa-sort<?php echo $column == 'sold' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=shanghai&order=<?php echo $asc_or_desc; ?>">SH Inventory <i class="fa fa-sort<?php echo $column == 'shanghai' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=transit&order=<?php echo $asc_or_desc; ?>">In Transit <i class="fa fa-sort<?php echo $column == 'transit' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=nc&order=<?php echo $asc_or_desc; ?>">NC Inventory <i class="fa fa-sort<?php echo $column == 'nc' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                    <div id="myTabContent" class="tab-content custom-product-edit">
 
-                                        </tr>
+                                        <div class="product-tab-list tab-pane fade active in" id="description">
+                                            <form name="form" method="post" action="">
+                                                <div class="row">
+                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="review-content-section">
 
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="icon nalika-edit" aria-hidden="true"></i></span>
+                                                                <input name='isku' type="text" required="" class="form-control" placeholder="订单号" <?php
+                                                                if ($sku) {
+                                                                    print "value='" . $sku . "'";
+                                                                }
+                                                                ?>>
+                                                            </div>
 
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="icon nalika-menu" aria-hidden="true"></i></span>
+                                                                <span class="input-group-addon">批次</span>
+                                                                <select name="ibatch" class="form-control pro-edt-select form-control-primary">
+                                                                    <?php
+                                                                    for ($index = 0; $index < @count($data); $index++) {
+                                                                        print "<option value='" . $data[$index]['batchname'] . "'";
+                                                                        if ($batch == $data[$index]['batchname']) {
+                                                                            print " selected";
+                                                                        }
 
-                                        <?php
-                                        if ($totalrow != 0) {
-                                            //for ($i = 0; $i < $perpage; $i++) {
-                                                //$index = ($page - 1) * $perpage + $i;
-                                                //if ($index >= count($data))
-                                                    //break;
-                                                //else {
-                                            $ncall=0;
-                                            $shall=0;
-                                            $transitall=0;
-                                            $all=0;
-                                            for ($index = 0; $index < count($data); $index++) {
-                                                    print '<tr>';
+                                                                        print ">" . $data[$index]['batchname'] . "</option>";
+                                                                    }
+                                                                    ?>                                                                   
 
-                                                    print "<td>{$data[$index]['sku']}</td>";
-                                                    print "<td>{$data[$index]['brand']}</td>";
-                                                    print "<td>{$data[$index]['category']}</td>";
-                                                    print "<td>{$data[$index]['price']}</td>";
-                                                    print "<td>{$data[$index]['ram']}</td>";
-                                                    print "<td>{$data[$index]['cpu']}</td>";
-                                                    print "<td>{$data[$index]['quality']}</td>";
-                                                    print "<td>{$data[$index]['sold']}</td>";
-                                                    print "<td>{$data[$index]['shanghai']}</td>";
-                                                    print "<td>{$data[$index]['transit']}</td>";
-                                                    print "<td>{$data[$index]['nc']}</td>";
+                                                                </select></div>
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="icon nalika-info" aria-hidden="true"></i></span>
+                                                                <span class="input-group-addon">邮寄类型</span>
+                                                                <select name="icategory" class="form-control pro-edt-select form-control-primary">
 
-                                                    print "</tr>";
-                                                    $transitall=$data[$index]['transit']+$transitall;
-                                                    $shall=$data[$index]['shanghai']+$shall;
-                                                    $ncall=$data[$index]['nc']+$ncall;
-                                                    $all = $transitall + $shall + $ncall ;
-                                                }
-                                            }
-                                        
-                                        ?>
-                                    </table>
-                                   <!-- <div class="custom-pagination "  >
-                                        <ul class="pagination ">
+                                                                    <option value="Letter"    <?php
+                                                                    if ($category == 'Letter') {
+                                                                        print "selected";
+                                                                    }
+                                                                    ?>>Letter</option>
+                                                                    <option value="First Class Package"    <?php
+                                                                    if ($category == 'First Class Package') {
+                                                                        print "selected";
+                                                                    }
+                                                                    ?>>First Class Package</option>
+                                                                    <option value="Priority Package"    <?php
+                                                                    if ($category == 'Priority Package') {
+                                                                        print "selected";
+                                                                    }
+                                                                    ?>>Priority Package</option>
+                                                                    <option value="UPS Package"    <?php
+                                                                    if ($category == 'UPS Package') {
+                                                                        print "selected";
+                                                                    }
+                                                                    ?>>UPS Package</option>
 
-                                   
-                                            <?php
-                                            for ($i = 1; $i <= $totalpage; $i++) {
-                                                if ($i == $page) {
-                                                    printf("<li ><a >%d</a></li>", $i);
-                                                } else {
-                                                    printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
-                                                }
-                                            }
-                                            ?>
+                                                                </select></div>
 
 
-                                        </ul>
-                                    </div>-->
-                                   <p style="color:#ff4">  NC Inventory: <?php print $ncall;?> &nbsp; &nbsp;&nbsp; SH Inventory: <?php print $shall;?>  &nbsp; &nbsp;&nbsp; In Transit Total: <?php print $transitall;?></p>
-                                 
-                                </form>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="review-content-section">                                                            
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="fa fa-male" aria-hidden="true">收件人</i></span>
+
+                                                                <input name="ireceiver" type="text" required="" class="form-control" placeholder="" <?php
+                                                                if ($receiver) {
+                                                                    print "value='" . $receiver . "'";
+                                                                }
+                                                                ?>>
+                                                            </div>
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true">地址</i></span>
+
+                                                                <input name="iaddress" type="text" required="" class="form-control" placeholder="" <?php
+                                                                if ($address) {
+                                                                    print "value='" . $address . "'";
+                                                                }
+                                                                ?>>
+                                                            </div>   
+
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true">城市</i></span>
+
+                                                                <input name="icity" type="text" required="" class="form-control" placeholder="" <?php
+                                                                if ($city) {
+                                                                    print "value='" . $city . "'";
+                                                                }
+                                                                ?>>
+                                                                <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true">州</i></span>
+                                                                <input name="istate" type="text" required="" class="form-control" placeholder="" <?php
+                                                                if ($city) {
+                                                                    print "value='" . $state . "'";
+                                                                }
+                                                                ?>>
+                                                                <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true">邮编</i></span>
+                                                                <input name="izipcode" type="text" class="form-control" placeholder="" <?php
+                                                                if ($zipcode) {
+                                                                    print "value='" . $zipcode . "'";
+                                                                }
+                                                                ?>>
+                                                            </div>
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="fa fa-phone" aria-hidden="true">手机</i></span>
+
+                                                                <input name="iphone" type="text" required="" class="form-control" placeholder="" <?php
+                                                                if ($phone) {
+                                                                    print "value='" . $phone . "'";
+                                                                }
+                                                                ?>>
+                                                                <span class="input-group-addon"><i class="fa fa-car" aria-hidden="true">重量</i></span>
+                                                                <input name="iweight" type="text" required="" class="form-control" placeholder="" <?php
+                                                                if ($weight) {
+                                                                    print "value='" . $weight . "'";
+                                                                }
+                                                                ?>>
+                                                            </div>
+
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="text-center custom-pro-edt-ds">
+                                                            <input name="save" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="添加订单">
+                                                            <input name="update" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="更新订单">
+                                                            <a href='product-edit.php' class="btn btn-ctl-bt waves-effect waves-light">取消
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                            <div>
+                                                
+                                                <a>说明：可添加新订单到选定批次，或者更新现有订单信息。</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -545,13 +704,6 @@ if ($totalrow != 0) {
                                 {
                                     window.open(url);
                                 }
-
-                                function confirmation(url) {
-
-                                    return confirm('Are you sure?');
-                                }
-
-
         </script>
     </body>
 

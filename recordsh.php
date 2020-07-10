@@ -35,7 +35,7 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'AS
 $search = "";
 
 if (isset($_POST['search'])) {
-    $sql = "SELECT * FROM shstock where productlist LIKE '%" . @$_POST['searchtext'] . "%' OR tracking LIKE '%" . @$_POST['searchtext'] . "%' OR subject LIKE '%" . @$_POST['searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM shstock where productlist LIKE '%" . @$_POST['recordsearchtext'] . "%' OR tracking LIKE '%" . @$_POST['recordsearchtext'] . "%' OR subject LIKE '%" . @$_POST['recordsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 } else {
     $sql = "SELECT * FROM shstock ORDER BY " . $column . ' ' . $sort_order;
 }
@@ -351,7 +351,8 @@ for ($index = 0; $index < @count($data); $index++) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                   
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>            
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                                    
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
@@ -520,9 +521,9 @@ for ($index = 0; $index < @count($data); $index++) {
                                                 <form method="post" role="search" class="">
 
 
-                                                    <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_POST['searchtext'])) {
-                                                            print $_POST['searchtext'];
+                                                    <div style="width:200px;float:left;"><input name="recordsearchtext" type="text" placeholder="Search Content....." value="<?php
+                                                        if (isset($_POST['recordsearchtext'])) {
+                                                            print $_POST['recordsearchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">

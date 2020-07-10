@@ -67,15 +67,8 @@ if (isset($_POST['save'])) {
                     @$content = fgetcsv($filepath);
                     try {
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
-                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . $content[4] . "' WHERE orderid='" . $content[27] . "'";
-                            $result = mysqli_query($conn, $sql);
-                            if ($content[4] < 2.5) {
-                                $sql = "UPDATE daifaorders SET fee=0.2";                                
-                            }
-                            else{
-                                $sql = "UPDATE daifaorders SET fee=0.4";      
-                            }
-                            $result = mysqli_query($conn, $sql);
+                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . str_replace('$', '', $content[4]) . "' WHERE orderid='" . $content[27] . "'";
+                            $result = mysqli_query($conn, $sql);                            
                         }
                         if ($result) {
                             $sql = "SELECT cost, fee FROM daifaorders where batch='" . $batch . "'";
@@ -89,10 +82,9 @@ if (isset($_POST['save'])) {
                                 $totalcost = $totalcost+$data[$index][0];
                                 $totalfee = $totalfee+$data[$index][1];
                             }
-
                             $sql = "UPDATE daifa SET status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE batchname='" . $batch . "'";
+                            print $sql;
                             mysqli_query($conn, $sql);
-
                             echo "<script> alert('文件上传成功！')</script>";
                             // header("Location:data-table.php");
                         }
@@ -275,7 +267,8 @@ if (isset($_POST['save'])) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                   
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>            
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                                    
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>

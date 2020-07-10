@@ -20,7 +20,7 @@ if (isset($_GET['id']) && ($_GET['id'] != '')) {
     fwrite($fw, "Order ID (required), Service, Tracking No, Cost,	Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz,\n");
 
     for ($index = 0; $index < @count($data); $index++) {
-        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",'" . $data[$index]['tracking'] . "," . $data[$index]['cost'] . "," . $data[$index]['name'] . "," . $data[$index]['company'] . ",\"" . $data[$index]['address'] . "\"," . $data[$index]['city'] . "," . $data[$index]['state'] . ",\"" . $data[$index]['zipcode'] . "\",\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . "\n";
+        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\t" . $data[$index]['tracking'] . "\t," . $data[$index]['cost'] . "," . $data[$index]['name'] . "," . $data[$index]['company'] . ",\"" . $data[$index]['address'] . "\"," . $data[$index]['city'] . "," . $data[$index]['state'] . ",\"" . $data[$index]['zipcode'] . "\",\t" . $data[$index]['phone'] . "\t," . $data[$index]['weight'] . "\n";
 
         fwrite($fw, $text);
     }
@@ -52,7 +52,7 @@ if (isset($_GET['id']) && ($_GET['id'] != '')) {
     fwrite($fw, "Order ID (required),Batch, Service, Tracking No, Cost,	Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz,\n");
 
     for ($index = 0; $index < @count($data); $index++) {
-        $text = "\"" . $data[$index]['orderid'] . "\"," . $text = "\"" . $data[$index]['batch'] . "\"," . $data[$index]['service'] . ",'" . $data[$index]['tracking'] . "," . $data[$index]['cost'] . "," . $data[$index]['name'] . "," . $data[$index]['company'] . ",\"" . $data[$index]['address'] . "\"," . $data[$index]['city'] . "," . $data[$index]['state'] . ",\"" . $data[$index]['zipcode'] . "\",\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . "\n";
+        $text = "\"" . $data[$index]['orderid'] . "\"," . $text = "\"" . $data[$index]['batch'] . "\"," . $data[$index]['service'] . ",\"" . $data[$index]['tracking'] . "\"," . $data[$index]['cost'] . "," . $data[$index]['name'] . "," . $data[$index]['company'] . ",\"" . $data[$index]['address'] . "\"," . $data[$index]['city'] . "," . $data[$index]['state'] . ",\"" . $data[$index]['zipcode'] . "\",\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . "\n";
 
         fwrite($fw, $text);
     }

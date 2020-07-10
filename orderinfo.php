@@ -21,18 +21,18 @@ if (isset($_SESSION['yhy'])) {
 $columns = array('orderid');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
-//$perpage = 20;
+$perpage = 50;
 
 
 if (isset($_POST['search'])) {
-    $_SESSION['listsearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM daifaorders where orderid LIKE '%" . $_SESSION['listsearchtext'] . "%' or service LIKE '%" . $_SESSION['listsearchtext'] . "%' or tracking LIKE '%" . $_SESSION['listsearchtext'] . "%' or name LIKE '%" . $_SESSION['listsearchtext'] . "%' or company LIKE '%" . $_SESSION['listsearchtext'] . "%' or address LIKE '%" . $_SESSION['listsearchtext'] . "%' or city LIKE '%" . $_SESSION['listsearchtext'] . "%' or state LIKE '%" . $_SESSION['listsearchtext'] . "%' or zipcode LIKE '%" . $_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['orderserchtext'] = $_POST['searchtext'];
+    $sql = "SELECT * FROM daifaorders where orderid LIKE '%" . $_SESSION['orderserchtext'] . "%' or service LIKE '%" . $_SESSION['orderserchtext'] . "%' or tracking LIKE '%" . $_SESSION['orderserchtext'] . "%' or name LIKE '%" . $_SESSION['orderserchtext'] . "%' or company LIKE '%" . $_SESSION['orderserchtext'] . "%' or address LIKE '%" . $_SESSION['orderserchtext'] . "%' or city LIKE '%" . $_SESSION['orderserchtext'] . "%' or state LIKE '%" . $_SESSION['orderserchtext'] . "%' or zipcode LIKE '%" . $_SESSION['orderserchtext'] . "%' or batch LIKE '%" . $_SESSION['orderserchtext'] . "%'  ORDER BY " . $column . ' ' . $sort_order;
 } else {
     $sql = "SELECT * FROM daifaorders ORDER BY " . $column . ' ' . $sort_order;
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
+$totalpage = ceil($totalrow / $perpage);
 if ($totalrow != 0) {
     $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
     $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
@@ -41,6 +41,11 @@ if ($totalrow != 0) {
     while ($arr = mysqli_fetch_array($result)) {
         $data[] = $arr;
     }
+}
+if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
+    $page = 1;
+} else {
+    $page = $_GET['page'];
 }
 ?>
 
@@ -203,7 +208,8 @@ if ($totalrow != 0) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>         
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>   
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
@@ -380,8 +386,8 @@ if ($totalrow != 0) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_SESSION['listsearchtext'])) {
-                                                            print $_SESSION['listsearchtext'];
+                                                        if (isset($_SESSION['orderserchtext'])) {
+                                                            print $_SESSION['orderserchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
@@ -419,34 +425,48 @@ if ($totalrow != 0) {
 
 
                                         <?php
-// if ($totalrow != 0) {
-//    for ($i = 0; $i < $perpage; $i++) {
-//       $index = ($page - 1) * $perpage + $i;
-//      if ($index >= count($data))
-//           break;
-//      else {
-
-                                        for ($index = 0; $index < @count($data); $index++) {
-                                            print '<tr>';
-                                            print "<td>{$data[$index]['orderid']}</td>";
-                                            print "<td>{$data[$index]['batch']}</td>";
-                                            print "<td>{$data[$index]['service']}</td>";
-                                            print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
-                                            print "<td>{$data[$index]['cost']}</td>";
-                                            print "<td>{$data[$index]['name']}</td>";
-                                            print "<td>{$data[$index]['company']}</td>";
-                                            print "<td>{$data[$index]['address']}</td>";
-                                            print "<td>{$data[$index]['city']}</td>";
-                                            print "<td>{$data[$index]['state']}</td>";
-                                            print "<td>{$data[$index]['zipcode']}</td>";
-                                            print "<td>{$data[$index]['phone']}</td>";
-                                            print "<td>{$data[$index]['weight']}</td>";
-                                            print '</tr>';
+                                        if ($totalrow != 0) {
+                                            for ($i = 0; $i < $perpage; $i++) {
+                                                $index = ($page - 1) * $perpage + $i;
+                                                if ($index >= count($data))
+                                                    break;
+                                                else {
+                                                    //for (; $index < $perpage && $index < @count($data); $index++) {
+                                                    print '<tr>';
+                                                    print "<td>{$data[$index]['orderid']}</td>";
+                                                    print "<td>{$data[$index]['batch']}</td>";
+                                                    print "<td>{$data[$index]['service']}</td>";
+                                                    print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                                    print "<td>{$data[$index]['cost']}</td>";
+                                                    print "<td>{$data[$index]['name']}</td>";
+                                                    print "<td>{$data[$index]['company']}</td>";
+                                                    print "<td>{$data[$index]['address']}</td>";
+                                                    print "<td>{$data[$index]['city']}</td>";
+                                                    print "<td>{$data[$index]['state']}</td>";
+                                                    print "<td>{$data[$index]['zipcode']}</td>";
+                                                    print "<td>{$data[$index]['phone']}</td>";
+                                                    print "<td>{$data[$index]['weight']}</td>";
+                                                    print '</tr>';
+                                                    //}
+                                                }
+                                            }
                                         }
                                         ?>
 
                                     </table>
-
+                                    <div class="custom-pagination "  >
+                                        <ul class="pagination ">
+                                            <?php
+                                            for ($i = 1; $i <= $totalpage; $i++) {
+                                                if ($i == $page) {
+                                                    printf("<li class='page-item'><a style='color:#ff0'>%d</a></li>", $i);
+                                                } else {
+                                                    printf("<li class='page-item'><a class='page-link' href='%s?page=%d'  style='color:#fff' >%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
+                                                }
+                                            }
+                                            ?>
+                                        </ul>
+                                    </div>
                                 </form>
                             </div>
                         </div>

@@ -31,67 +31,83 @@ if (isset($_POST['save'])) {
         'application/excel',
         'application/vnd.ms-excel'
     );
-    $temp = explode(".", @$_FILES["file"]["name"]);
-    //echo @$_FILES["file"]["size"];
-    $extension = end($temp);     // 获取文件后缀名
-    if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
-        if (@$_FILES["file"]["error"] > 0) {
-            // echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
-            echo "<script> alert('Error,请联系管理员！')</script>";
-        } else {
-            // echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
-            // echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
-            // echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
-            // echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
-            //判断当期目录下的 upload 目录是否存在该文件
-            //如果没有 upload 目录，你需要创建它，upload 目录权限为 777
-            $sql = "SELECT * FROM daifa where batchname='" . $daifabatchname . "'";
-            $result = mysqli_query($conn, $sql);
-            $totalrow = mysqli_num_rows($result);
+    if (@$_POST['empty']!=NULL) {
+        $sql = "SELECT * FROM daifa where batchname='" . $daifabatchname . "'";
+                $result = mysqli_query($conn, $sql);
+                $totalrow = mysqli_num_rows($result);
 
-            if ($totalrow > 0) {
-                //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
-                echo "<script> alert('批次名已存在，请重新输入！')</script>";
-            } else {
-                // 如果 upload 目录不存在该文件则将文件上传到 upload 目录下
-                move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/" . $daifabatchname . ".csv");
-                //echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
-
-
-                @$filepath = @fopen("./upload/" . $daifabatchname . ".csv", 'r');
-                @$content = fgetcsv($filepath);
-                try {
-                    $a = 0;
-                    while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容                           
-                        $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,service, batch) 
-                    VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . str_replace("'", "\'",$content[3])  . "','" . str_replace("'", "\'",$content[4]) . "','" . str_replace("'", "\'",$content[5]) . "','" . str_replace("'", "\'",$content[6]) . "','" . str_replace("'", "\'",$content[7]) . "','" . str_replace("'", "\'",$content[8]) . "','" . $daifaservice . "','" . $daifabatchname . "')";
-
-                        $result = mysqli_query($conn, $sql);
-                        $a++;
-                        if (!$result) {
-                            $sql = "DELETE FROM daifaorders WHERE batch=." . $daifabatchname."'";
-                            mysqli_query($conn, $sql);
-                            echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查是否此单信息中含有冒号等特殊符号，请修改后重新上传！')</script>";
-                            break;
-                        }
-                    }
-                    if ($result) {
-                        $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $a . "','" . $daifadhl . "','PENDING')";
-
-                        mysqli_query($conn, $sql);
-                        echo "<script> alert('文件上传成功！')</script>";
-                    }
-                } catch (Exception $ex) {
-                    
+                if ($totalrow > 0) {
+                    //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
+                    echo "<script> alert('批次名已存在，请重新输入！')</script>";
+                } else {
+                    $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','','" . $daifadhl . "','PENDING')";
+                            $result = mysqli_query($conn, $sql);
+                            echo "<script> alert('批次新建成功！')</script>";
                 }
-
-
-                @fclose(@$filepath);
-                //header("Location:data-table.php");
-            }
-        }
     } else {
-        echo "<script> alert('请上传csv文件!')</script>";
+
+        $temp = explode(".", @$_FILES["file"]["name"]);
+        //echo @$_FILES["file"]["size"];
+        $extension = end($temp);     // 获取文件后缀名
+        if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
+            if (@$_FILES["file"]["error"] > 0) {
+                // echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
+                echo "<script> alert('Error,请联系管理员！')</script>";
+            } else {
+                // echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
+                // echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
+                // echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
+                // echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
+                //判断当期目录下的 upload 目录是否存在该文件
+                //如果没有 upload 目录，你需要创建它，upload 目录权限为 777
+                $sql = "SELECT * FROM daifa where batchname='" . $daifabatchname . "'";
+                $result = mysqli_query($conn, $sql);
+                $totalrow = mysqli_num_rows($result);
+
+                if ($totalrow > 0) {
+                    //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
+                    echo "<script> alert('批次名已存在，请重新输入！')</script>";
+                } else {
+                    // 如果 upload 目录不存在该文件则将文件上传到 upload 目录下
+                    move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/" . $daifabatchname . ".csv");
+                    //echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
+
+
+                    @$filepath = @fopen("./upload/" . $daifabatchname . ".csv", 'r');
+                    @$content = fgetcsv($filepath);
+                    try {
+                        $a = 0;
+                        while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容                           
+                            $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,service, batch) 
+                    VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . str_replace("'", "\'", $content[3]) . "','" . str_replace("'", "\'", $content[4]) . "','" . str_replace("'", "\'", $content[5]) . "','" . str_replace("'", "\'", $content[6]) . "','" . str_replace("'", "\'", $content[7]) . "','" . str_replace("'", "\'", $content[8]) . "','" . $daifaservice . "','" . $daifabatchname . "')";
+
+                            $result = mysqli_query($conn, $sql);
+                            $a++;
+                            if (!$result) {
+                                $sql = "DELETE FROM daifaorders WHERE batch='" . $daifabatchname . "'";
+                                mysqli_query($conn, $sql);
+                                echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查是否此单信息中含有冒号等特殊符号，请修改后重新上传！')</script>";
+                                break;
+                            }
+                        }
+                        if ($result) {
+                            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $a . "','" . $daifadhl . "','PENDING')";
+
+                            mysqli_query($conn, $sql);
+                            echo "<script> alert('文件上传成功！')</script>";
+                        }
+                    } catch (Exception $ex) {
+                        
+                    }
+
+
+                    @fclose(@$filepath);
+                    //header("Location:data-table.php");
+                }
+            }
+        } else {
+            echo "<script> alert('请上传csv文件!')</script>";
+        }
     }
 }
 ?>
@@ -259,7 +275,8 @@ if (isset($_POST['save'])) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                                                       
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>       
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
@@ -350,7 +367,7 @@ if (isset($_POST['save'])) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -495,12 +512,16 @@ if (isset($_POST['save'])) {
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <button><a onclick="window.open('download.php')">点击下载模板，请勿更改表格顺序</a></button>
                                                             </div>
-                                                            <div class="input-group mg-b-pro-edt">
-                                                                <a style="color:yellow">上传CSV文件</a>
-                                                                <input name="file" style="color:yellow" type="file" size="16" maxlength="80" accept="application/csv" >
+                                                            <div>
 
-                                                            </div>
+                                                                <div class="input-group mg-b-pro-edt">
+                                                                    <a style="color:yellow">上传CSV文件</a>
+                                                                    <input name="file" style="color:yellow" type="file" size="16" maxlength="80" accept="application/csv" >
 
+                                                                </div>
+                                                                <div>                                                                   
+                                                                    <input name="empty" type="checkbox" value='0'> <a style="color:yellow">点击创建空白批次</a>
+                                                                </div></div>
                                                         </div>
                                                     </div>
                                                     <div class="row">

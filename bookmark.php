@@ -13,7 +13,7 @@ if (isset($_SESSION['yhy'])) {
     $ln = $row[1];
     $of = $row[2];
     if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+        print '<script> location.replace("data-table.php"); </script>';
     }
 } else {
     echo '<script> alert("Please Re-login!")</script>';
@@ -170,11 +170,12 @@ if (isset($_SESSION['yhy'])) {
                                 </ul>
                             </li>
                             <li>
-                               <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                   
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>           
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>   
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>

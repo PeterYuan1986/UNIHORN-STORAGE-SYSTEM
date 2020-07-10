@@ -32,10 +32,10 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'AS
 
 
 if (isset($_POST['search'])) {
-    $_SESSION['listsearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and orderid LIKE '%" . $_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['batchinfosearchtext'] = $_POST['searchtext'];
+    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and orderid LIKE '%" . $_SESSION['batchinfosearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and orderid LIKE '%" . @$_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and orderid LIKE '%" . @$_SESSION['batchinfosearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 
 }
 $result = mysqli_query($conn, $sql);
@@ -211,7 +211,8 @@ if ($totalrow != 0) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                   
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>       
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
@@ -387,8 +388,8 @@ if ($totalrow != 0) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_SESSION['listsearchtext'])) {
-                                                            print $_SESSION['listsearchtext'];
+                                                        if (isset($_SESSION['batchinfosearchtext'])) {
+                                                            print $_SESSION['batchinfosearchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">

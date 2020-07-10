@@ -26,14 +26,14 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'AS
 
 
 if (isset($_POST['search'])) {
-    $_SESSION['listsearchtext'] = $_POST['searchtext'];
-    $pendingsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' ORDER BY " . $column . ' ' . $sort_order;
-    $shippedsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0' ORDER BY " . $column . ' ' . $sort_order;
-    $paidsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['batchserchtext'] = $_POST['searchtext'];
+    $pendingsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['batchserchtext'] . "%' and status='PENDING' or dhltracking LIKE '%" . $_SESSION['batchserchtext'] . "%' and status='PENDING' or type LIKE '%" . $_SESSION['batchserchtext'] . "%' and status='PENDING' ORDER BY " . $column . ' ' . $sort_order;
+    $shippedsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['batchserchtext'] . "%' and status='SHIPPED' and paid ='0' or dhltracking LIKE '%" . $_SESSION['batchserchtext'] . "%' and status='SHIPPED' and paid ='0' or type LIKE '%" . $_SESSION['batchserchtext'] . "%' and status='SHIPPED' and paid ='0' ORDER BY " . $column . ' ' . $sort_order;
+    $paidsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['batchserchtext'] . "%' and paid='1' or dhltracking LIKE '%" . $_SESSION['batchserchtext'] . "%' and paid='1' or type LIKE '%" . $_SESSION['batchserchtext'] . "%' and paid='1' ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $pendingsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='PENDING' ORDER BY " . $column . ' ' . $sort_order;
-    $shippedsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0'or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0'or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and status='SHIPPED' and paid ='0' ORDER BY " . $column . ' ' . $sort_order;
-    $paidsql = "SELECT * FROM daifa where batchname LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' or dhltracking LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' or type LIKE '%" . $_SESSION['listsearchtext'] . "%' and paid='1' ORDER BY " . $column . ' ' . $sort_order;
+    $pendingsql = "SELECT * FROM daifa where status='PENDING' ORDER BY " . $column . ' ' . $sort_order;
+    $shippedsql = "SELECT * FROM daifa where status='SHIPPED' and paid ='0' ORDER BY " . $column . ' ' . $sort_order;
+    $paidsql = "SELECT * FROM daifa where paid='1' ORDER BY " . $column . ' ' . $sort_order;
 }
 $pendingresult = mysqli_query($conn, $pendingsql);
 $shippedresult = mysqli_query($conn, $shippedsql);
@@ -85,32 +85,33 @@ if (isEmpty(@$pendingdata)) {
     }
 
     for ($i = 0; $i < @count(@$pendingdata); $i++) {
-        $tem = "edit" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
+        $tem = "pendingedit" . $i;
+        if (isset($_POST["{$tem}"])) {
             print "<script>window.open('./update-batch.php?id=" . $pendingdata[$i]['batchname'] . "')</script>";
             break;
         }
     }
 }
-
-if (isEmpty(@shippeddata)) {
-
-    for ($i = 0; $i < @count(@$shippeddata); $i++) {
-        $tem = "shippededit" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            print "<script>window.open('./update-batch.php?id=" . $shippeddata[$i]['batchname'] . "')</script>";
+?>
+<?php
+if (isEmpty(@$shippeddata)) {
+    for ($a = 0; $a < @count(@$shippeddata); $a++) {
+        $temm = "ship" . $a;
+        if (isset($_POST["{$temm}"])) {
+            print $a . "+++++++++++++++++++++++++++++++";
+            print "<script>window.open('./update-batch.php?id=" . $shippeddata[$a]['batchname'] . "')</script>";
             break;
         }
     }
-    for ($i = 0; $i < @count(@$shippeddata); $i++) {
-        $tem = "pay" . $i;
+
+    for ($a = 0; $a < @count(@$shippeddata); $a++) {
+
+        $tem = "shippay" . $a;
         if (isset($_REQUEST["{$tem}"])) {
             $_REQUEST["{$tem}"] = 0;
-            $cost = $pendingdata[$i]['shippingcost'] + $shippeddata[$i]['servicefee'];
+            $cost = $pendingdata[$a]['shippingcost'] + $shippeddata[$a]['servicefee'];
             if ($cost > 0) {
-                print "<script>window.open('./pay/pay.php?id=" . $shippeddata[$i]['batchname'] . "&cost=" . $cost . "')</script>";
+                print "<script>window.open('./pay/pay.php?id=" . $shippeddata[$a]['batchname'] . "&cost=" . $cost . "')</script>";
             } else {
                 echo "<script> alert('请等待USPS单号上传后结算！')</script>";
             }
@@ -280,7 +281,8 @@ if (isEmpty(@shippeddata)) {
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
-                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>                                    
+                                    <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>        
+                                    <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                               
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
                                 </ul>
                             </li>
@@ -457,8 +459,8 @@ if (isEmpty(@shippeddata)) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_SESSION['listsearchtext'])) {
-                                                            print $_SESSION['listsearchtext'];
+                                                        if (isset($_SESSION['batchserchtext'])) {
+                                                            print $_SESSION['batchserchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
@@ -479,6 +481,7 @@ if (isEmpty(@shippeddata)) {
                                             <li><a href="#paid">PAID</a></li>
                                         </ul>
                                         <div id="myTabContent" class="tab-content custom-product-edit">
+
                                             <div class="product-tab-list tab-pane fade active in" id="pending">
                                                 <form action="" method="post" name="form">
                                                     <div>
@@ -522,7 +525,7 @@ if (isEmpty(@shippeddata)) {
                                                                 }
                                                                 print "<td>" . $rate * $pendingdata[$index]['orders'] . "</td>";
                                                                 print "<td>{$pendingdata[$index]['status']}</td>";
-                                                                $edit = "edit" . $index;
+                                                                $edit = "pendingedit" . $index;
                                                                 $trash = "trash" . $index;
                                                                 ?>
 
@@ -539,141 +542,140 @@ if (isEmpty(@shippeddata)) {
                                                             }
                                                             ?>
                                                         </table>
-                                                    </div>
-
+                                                    </div> 
                                                 </form>
                                             </div>
                                             <div class="product-tab-list tab-pane fade" id="shipped">
-                                                <div>
-                                                    <table >
-                                                        <tr>
-                                                            <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">创建时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" >批次USPS邮费</a></th>
-                                                            <th><a style="color: #fff" >批次服务费</a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=status&order=<?php echo $asc_or_desc; ?>">状态<i class="fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=paid&order=<?php echo $asc_or_desc; ?>">结算<i class="fa fa-sort<?php echo $column == 'paid' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th>Setting</th>
+                                                <form action="" method="post" name="form">
+                                                    <div>
+                                                        <table >
+                                                            <tr>
+                                                                <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">创建时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" >批次USPS邮费</a></th>
+                                                                <th><a style="color: #fff" >批次服务费</a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=status&order=<?php echo $asc_or_desc; ?>">状态<i class="fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=paid&order=<?php echo $asc_or_desc; ?>">结算<i class="fa fa-sort<?php echo $column == 'paid' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th>Setting</th>
+                                                            </tr>
 
-
-
-                                                        </tr>
-
-
-
-                                                        <?php
+                                                            <?php
 // if ($totalrow != 0) {
 //    for ($i = 0; $i < $perpage; $i++) {
 //       $index = ($page - 1) * $perpage + $i;
 //      if ($index >= count($shippeddata))
 //           break;
 //      else {/*
-                                                        for ($index = 0; $index < @count($shippeddata); $index++) {
-                                                            print '<tr>';
-                                                            print "<td><a href='batchinfo.php?id={$shippeddata[$index]['batchname']}' style='color: #ff0'>{$shippeddata[$index]['batchname']}</a></td>";
-                                                            print "<td>{$shippeddata[$index]['time']}</td>";
-                                                            print "<td>{$shippeddata[$index]['type']}</td>";
-                                                            print "<td>{$shippeddata[$index]['orders']}</td>";
-                                                            print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$shippeddata[$index]['dhltracking']}')\" >{$shippeddata[$index]['dhltracking']}</td>";
-                                                            print "<td>{$shippeddata[$index]['shippingcost']}</td>";
-                                                            if ($shippeddata[$index]['type'] == "Letter") {
-                                                                $rate = 0.2;
-                                                            } else {
-                                                                $rate = 0.4;
-                                                            }
-                                                            print "<td>" . $rate * $shippeddata[$index]['orders'] . "</td>";
-                                                            print "<td>{$shippeddata[$index]['status']}</td>";
-                                                            if (!$shippeddata[$index]['paid']) {
-                                                                $pay = "pay" . $index;
-                                                                ?>
-                                                                <td>
-                                                                    <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
-
-
-                                                                    <?php
+                                                            for ($shippedindex = 0; $shippedindex < @count($shippeddata); $shippedindex++) {
+                                                                print '<tr>';
+                                                                print "<td><a href='batchinfo.php?id={$shippeddata[$shippedindex]['batchname']}' style='color: #ff0'>{$shippeddata[$shippedindex]['batchname']}</a></td>";
+                                                                print "<td>{$shippeddata[$shippedindex]['time']}</td>";
+                                                                print "<td>{$shippeddata[$shippedindex]['type']}</td>";
+                                                                print "<td>{$shippeddata[$shippedindex]['orders']}</td>";
+                                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$shippeddata[$shippedindex]['dhltracking']}')\" >{$shippeddata[$shippedindex]['dhltracking']}</td>";
+                                                                print "<td>{$shippeddata[$shippedindex]['shippingcost']}</td>";
+                                                                if ($shippeddata[$shippedindex]['type'] == "Letter") {
+                                                                    $rate = 0.2;
                                                                 } else {
-                                                                    print "<td>PAID</td>";
+                                                                    $rate = 0.4;
                                                                 }
+                                                                print "<td>" . $rate * $shippeddata[$shippedindex]['orders'] . "</td>";
+                                                                print "<td>{$shippeddata[$shippedindex]['status']}</td>";
+                                                                if (!$shippeddata[$shippedindex]['paid']) {
+                                                                    $pay = "shippay" . $shippedindex;
+                                                                    ?>
+                                                                    <td>
+                                                                        <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
 
-                                                                $edit = "shippededit" . $index;
-                                                                ?>
 
-                                                            <td>
-                                                                <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="上传USPS单号" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                                                            </td >
-                                                            </tr>
-                                                            <?php
-                                                        }
-                                                        ?>
-                                                    </table>
-                                                </div>
+                                                                        <?php
+                                                                    } else {
+                                                                        print "<td>PAID</td>";
+                                                                    }
+
+                                                                    $edit = "ship" . $shippedindex;
+                                                                    ?>
+
+                                                                <td>
+                                                                    <button data-toggle="tooltip"   name ="<?php print $edit; ?>"  type="submit" title="上传USPS单号" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                                                </td >
+                                                                </tr>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                        </table>
+                                                    </div>
+                                                </form>
                                             </div>
                                             <div class="product-tab-list tab-pane fade" id="paid">
-                                                <div>
-                                                    <table >
-                                                        <tr>
-                                                            <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">创建时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" >批次USPS邮费</a></th>
-                                                            <th><a style="color: #fff" >批次服务费</a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=status&order=<?php echo $asc_or_desc; ?>">状态<i class="fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=paid&order=<?php echo $asc_or_desc; ?>">结算<i class="fa fa-sort<?php echo $column == 'paid' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                <form action="" method="post" name="form">
+                                                    <div>
+                                                        <table >
+                                                            <tr>
+                                                                <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">创建时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" >批次USPS邮费</a></th>
+                                                                <th><a style="color: #fff" >批次服务费</a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=status&order=<?php echo $asc_or_desc; ?>">状态<i class="fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                                <th><a style="color: #fff" href="data-table.php?column=paid&order=<?php echo $asc_or_desc; ?>">结算<i class="fa fa-sort<?php echo $column == 'paid' ? '-' . $up_or_down : ''; ?>"></i></a></th>
 
 
 
 
-                                                        </tr>
+                                                            </tr>
 
 
 
-                                                        <?php
+                                                            <?php
 // if ($totalrow != 0) {
 //    for ($i = 0; $i < $perpage; $i++) {
 //       $index = ($page - 1) * $perpage + $i;
 //      if ($index >= count($paiddata))
 //           break;
 //      else {
-                                                        for ($index = 0; $index < @count($paiddata); $index++) {
-                                                            print '<tr>';
-                                                            print "<td><a href='batchinfo.php?id={$paiddata[$index]['batchname']}' style='color: #ff0'>{$paiddata[$index]['batchname']}</a></td>";
-                                                            print "<td>{$paiddata[$index]['time']}</td>";
-                                                            print "<td>{$paiddata[$index]['type']}</td>";
-                                                            print "<td>{$paiddata[$index]['orders']}</td>";
-                                                            print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$paiddata[$index]['dhltracking']}')\" >{$paiddata[$index]['dhltracking']}</td>";
-                                                            print "<td>{$paiddata[$index]['shippingcost']}</td>";
-                                                            if ($paiddata[$index]['type'] == "Letter") {
-                                                                $rate = 0.2;
-                                                            } else {
-                                                                $rate = 0.4;
-                                                            }
-                                                            print "<td>" . $rate * $paiddata[$index]['orders'] . "</td>";
-                                                            print "<td>{$paiddata[$index]['status']}</td>";
-                                                            if (!$paiddata[$index]['paid']) {
-                                                                $pay = "pay" . $index;
-                                                                ?>
-                                                                <td>
-                                                                    <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
-
-
-                                                                    <?php
+                                                            for ($index = 0; $index < @count($paiddata); $index++) {
+                                                                print '<tr>';
+                                                                print "<td><a href='batchinfo.php?id={$paiddata[$index]['batchname']}' style='color: #ff0'>{$paiddata[$index]['batchname']}</a></td>";
+                                                                print "<td>{$paiddata[$index]['time']}</td>";
+                                                                print "<td>{$paiddata[$index]['type']}</td>";
+                                                                print "<td>{$paiddata[$index]['orders']}</td>";
+                                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$paiddata[$index]['dhltracking']}')\" >{$paiddata[$index]['dhltracking']}</td>";
+                                                                print "<td>{$paiddata[$index]['shippingcost']}</td>";
+                                                                if ($paiddata[$index]['type'] == "Letter") {
+                                                                    $rate = 0.2;
                                                                 } else {
-                                                                    print "<td>PAID</td>";
+                                                                    $rate = 0.4;
+                                                                }
+                                                                print "<td>" . $rate * $paiddata[$index]['orders'] . "</td>";
+                                                                print "<td>{$paiddata[$index]['status']}</td>";
+                                                                if (!$paiddata[$index]['paid']) {
+                                                                    $pay = "pay" . $index;
+                                                                    ?>
+                                                                    <td>
+                                                                        <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
+
+
+                                                                        <?php
+                                                                    } else {
+                                                                        print "<td>PAID</td>";
+                                                                    }
+                                                                    ?>
+
+                                                                    </tr>
+                                                                    <?php
                                                                 }
                                                                 ?>
-
-                                                                </tr>
-                                                                <?php
-                                                            }
-                                                            ?>
-                                                    </table>
-                                                </div>
+                                                        </table>
+                                                    </div>
+                                                </form>
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -752,15 +754,15 @@ if (isEmpty(@shippeddata)) {
 
 
         <script type="text/javascript">
-                                                                function openNewWin(url)
-                                                                {
-                                                                    window.open(url);
-                                                                }
+                                                                    function openNewWin(url)
+                                                                    {
+                                                                        window.open(url);
+                                                                    }
 
-                                                                function confirmation(url) {
+                                                                    function confirmation(url) {
 
-                                                                    return confirm('Are you sure?');
-                                                                }
+                                                                        return confirm('Are you sure?');
+                                                                    }
 
 
         </script>
