@@ -3,8 +3,8 @@ require 'header.php';
 ?>
 
 <?php
-if (isset($_SESSION['yhy'])) {
-    $user = $_SESSION['yhy'];
+if (isset($_SESSION['userid'])) {
+    $user = $_SESSION['userid'];
     $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
@@ -408,8 +408,8 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                             <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                             <th><a style="color: #fff" >批次</a></th>
                                             <th><a style="color: #fff" >邮寄类型</a></th>
-                                            <th><a style="color: #fff" >USPS单号</a></th>
-                                            <th><a style="color: #fff" >USPS邮费</a></th>
+                                            <th><a style="color: #fff" >快递单号</a></th>
+                                            <th><a style="color: #fff" >邮费</a></th>
                                             <th><a style="color: #fff" >收件人</a></th>
                                             <th><a style="color: #fff" >公司</a></th>
                                             <th><a style="color: #fff" >地址</a></th>
@@ -436,7 +436,11 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                     print "<td>{$data[$index]['orderid']}</td>";
                                                     print "<td>{$data[$index]['batch']}</td>";
                                                     print "<td>{$data[$index]['service']}</td>";
-                                                    print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                                    if (stripos($data[$index]['service'], 'ups') !== false) {
+                                                        print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.ups.com/track?loc=en_US&tracknum={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                                    } else {
+                                                        print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                                    }
                                                     print "<td>{$data[$index]['cost']}</td>";
                                                     print "<td>{$data[$index]['name']}</td>";
                                                     print "<td>{$data[$index]['company']}</td>";

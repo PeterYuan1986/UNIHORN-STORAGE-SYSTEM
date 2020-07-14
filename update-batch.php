@@ -8,8 +8,8 @@ if (isset($_GET['id'])) {
 ?>
 
 <?php
-if (isset($_SESSION['yhy'])) {
-    $user = $_SESSION['yhy'];
+if (isset($_SESSION['userid'])) {
+    $user = $_SESSION['userid'];
     $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
@@ -82,7 +82,7 @@ if (isset($_POST['save'])) {
                                 $totalcost = $totalcost+$data[$index][0];
                                 $totalfee = $totalfee+$data[$index][1];
                             }
-                            $sql = "UPDATE daifa SET status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE batchname='" . $batch . "'";
+                            $sql = "UPDATE daifa SET time=CURRENT_TIME, status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE batchname='" . $batch . "'";
                             print $sql;
                             mysqli_query($conn, $sql);
                             echo "<script> alert('文件上传成功！')</script>";

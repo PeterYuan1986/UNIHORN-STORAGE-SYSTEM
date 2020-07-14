@@ -3,8 +3,8 @@ require 'header.php';
 ?>
 
 <?php
-if (isset($_SESSION['yhy'])) {
-    $user = $_SESSION['yhy'];
+if (isset($_SESSION['userid'])) {
+    $user = $_SESSION['userid'];
     $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
@@ -36,7 +36,6 @@ if (isset($_POST['search'])) {
     $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and orderid LIKE '%" . $_SESSION['batchinfosearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 } else {
     $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and orderid LIKE '%" . @$_SESSION['batchinfosearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -207,7 +206,7 @@ if ($totalrow != 0) {
                                 </ul>
                             </li>
                             <li class="active">
-                                  <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
@@ -284,21 +283,22 @@ if ($totalrow != 0) {
                                                             <ul class="notification-menu">
                                                                 <?php
                                                                 if ($of != 'gst') {
-                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                    print "<li>
+                                                                    for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                        print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                    print $datanote[$i]['date'];
-                                                                    print "</h2>
+                                                                        print $datanote[$i]['date'];
+                                                                        print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                }}
+                                                                    }
+                                                                }
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
@@ -378,7 +378,7 @@ if ($totalrow != 0) {
                                 <h4><?php print $batch; ?></h4>
                                 <div class="add-product" >                                    
 
-                                    <a  href="<?php print 'exportbatch.php?id='.$batch ?>">Export Batch Info</a>
+                                    <a  href="<?php print 'exportbatch.php?id=' . $batch ?>">Export Batch Info</a>
                                 </div>
                                 <div>
                                     <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
@@ -407,10 +407,10 @@ if ($totalrow != 0) {
                                     <table >
 
                                         <tr>
-                                            <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc."&id=".$batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                            <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                             <th><a style="color: #fff" >邮寄类型</a></th>
-                                            <th><a style="color: #fff" >USPS单号</a></th>
-                                            <th><a style="color: #fff" >USPS邮费</a></th>
+                                            <th><a style="color: #fff" >快递单号</a></th>
+                                            <th><a style="color: #fff" >邮费</a></th>
                                             <th><a style="color: #fff" >收件人</a></th>
                                             <th><a style="color: #fff" >公司</a></th>
                                             <th><a style="color: #fff" >地址</a></th>
@@ -431,12 +431,16 @@ if ($totalrow != 0) {
 //      if ($index >= count($data))
 //           break;
 //      else {
-                                        
+
                                         for ($index = 0; $index < @count($data); $index++) {
                                             print '<tr>';
                                             print "<td>{$data[$index]['orderid']}</td>";
                                             print "<td>{$data[$index]['service']}</td>";
-                                            print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                            if (stripos($data[$index]['service'], 'UPS') !== false) {
+                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.ups.com/track?loc=en_US&tracknum={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                            } else {
+                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                            }
                                             print "<td>{$data[$index]['cost']}</td>";
                                             print "<td>{$data[$index]['name']}</td>";
                                             print "<td>{$data[$index]['company']}</td>";

@@ -3,8 +3,8 @@ require 'header.php';
 ?>
 
 <?php
-if (isset($_SESSION['yhy'])) {
-    $user = $_SESSION['yhy'];
+if (isset($_SESSION['userid'])) {
+    $user = $_SESSION['userid'];
     $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
@@ -79,8 +79,7 @@ if (isset($_POST['save'])) {
                         $a = 0;
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容                           
                             $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,service, batch) 
-                    VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . str_replace("'", "\'", $content[3]) . "','" . str_replace("'", "\'", $content[4]) . "','" . str_replace("'", "\'", $content[5]) . "','" . str_replace("'", "\'", $content[6]) . "','" . str_replace("'", "\'", $content[7]) . "','" . str_replace("'", "\'", $content[8]) . "','" . $daifaservice . "','" . $daifabatchname . "')";
-
+                    VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" .  $content[3]. "','" . $content[4]. "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" .$content[8] . "','" . $daifaservice . "','" . $daifabatchname . "')";
                             $result = mysqli_query($conn, $sql);
                             $a++;
                             if (!$result) {

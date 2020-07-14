@@ -20,7 +20,7 @@ if (isset($_POST["login"])) {
             } elseif ($row[1] == 0) {
                 print "<script> alert('You account is still waiting for validation by admin!');</script>";
             } else {                
-                $_SESSION['yhy']=$user;
+                $_SESSION['userid']=$user;
                 header("Location:homepage.php");
                 
             }

@@ -2,11 +2,11 @@
 require 'header.php';
 ?>
 <?php
-if (isset($_SESSION['yhy'])) {
+if (isset($_SESSION['userid'])) {
 
 
 
-    $user = $_SESSION['yhy'];
+    $user = $_SESSION['userid'];
     $sql = "select firstname, lastname ,office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
@@ -549,7 +549,7 @@ while ($arr = mysqli_fetch_array($result)) {
                                                     for ($ind = 0; $ind < count($updoc); $ind++) {
                                                         $flagl = false;
                                                         for ($i = 0; $i < @count($alldata) && !$flagl; $i++) {
-                                                            if ($updoc[$ind][0] == $alldata[$i]['sku'])
+                                                            if (strtoupper($updoc[$ind][0]) ==strtoupper($alldata[$i]['sku']))
                                                                 $flagl = true;
                                                         }
                                                         if (!$flagl) {
@@ -562,7 +562,7 @@ while ($arr = mysqli_fetch_array($result)) {
                                                         for ($i = 0; $i < @count($alldata); $i++) {
                                                             $num = 0;
                                                             for ($ind = 0; $ind < count($updoc); $ind++) {
-                                                                if ($alldata[$i]['sku'] == $updoc[$ind][0]) {
+                                                                if (strtoupper($alldata[$i]['sku']) == strtoupper($updoc[$ind][0])) {
                                                                     $a = $i;
                                                                     $num++;
                                                                 }

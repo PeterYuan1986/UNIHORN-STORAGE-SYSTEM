@@ -4,11 +4,11 @@ require 'header.php';
 
 
 <?php
-if (isset($_SESSION['yhy'])) {
+if (isset($_SESSION['userid'])) {
 
 
 
-    $user = $_SESSION['yhy'];
+    $user = $_SESSION['userid'];
     $sql = "select firstname, lastname,office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
@@ -16,7 +16,7 @@ if (isset($_SESSION['yhy'])) {
     $ln = $row[1];
     $of = $row[2];
     if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+        print '<script> location.replace("data-table.php"); </script>';
     }
     if ($of == "sh" || $of == "admin") {
         
@@ -226,7 +226,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                 </ul>
                             </li>
                             <li>
-                                  <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
@@ -523,14 +523,14 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
 
                                                 //这段控制upload部分      将updoc中的重复项统计并查错                                          
                                                 if (@isset($_POST['subfile'])) {
-                                                    $flag = true;
+                                                   $flag = true;
                                                     $a = 0;
                                                     $total = 0;
                                                     $todo = array();
                                                     for ($ind = 0; $ind < count($updoc); $ind++) {
                                                         $flagl = true;
                                                         for ($i = 0; $i < @count($alldata) && $flagl; $i++) {
-                                                            if (trim($updoc[$ind][0]) == $alldata[$i]['sku']) {
+                                                            if (strtoupper(trim($updoc[$ind][0])) == strtoupper($alldata[$i]['sku'])) {
                                                                 $flagl = FALSE;
                                                             }
                                                         }
@@ -544,7 +544,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                         for ($i = 0; $i < @count($alldata); $i++) {
                                                             $num = 0;
                                                             for ($ind = 0; $ind < count($updoc); $ind++) {
-                                                                if ($alldata[$i]['sku'] == $updoc[$ind][0]) {
+                                                                if (strtoupper($alldata[$i]['sku']) == strtoupper($updoc[$ind][0])) {
                                                                     $a = $i;
                                                                     $num++;
                                                                 }
@@ -562,8 +562,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                                 $total += $num;
                                                             }
                                                         }
-                                                    }
-
+                                                    }                                                    
                                                     $_SESSION['todo'] = $todo;
                                                 }
                                                 ?>

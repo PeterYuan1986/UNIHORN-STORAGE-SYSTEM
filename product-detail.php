@@ -4,11 +4,11 @@ require 'header.php';
 
 
 <?php
-if (isset($_SESSION['yhy'])) {
+if (isset($_SESSION['userid'])) {
 
 
 
-    $user = $_SESSION['yhy'];
+    $user = $_SESSION['userid'];
     $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);

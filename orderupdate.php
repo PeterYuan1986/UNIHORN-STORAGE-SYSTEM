@@ -3,8 +3,8 @@ require 'header.php';
 ?>
 
 <?php
-if (isset($_SESSION['yhy'])) {
-    $user = $_SESSION['yhy'];
+if (isset($_SESSION['userid'])) {
+    $user = $_SESSION['userid'];
     $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
@@ -82,7 +82,7 @@ if (isset($_POST["save"])) {
                 $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`, `city`, `state`, `zipcode`, `phone`, `weight`) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "')";
                 $result = mysqli_query($conn, $sql);
 
-                $sql = "UPDATE daifa SET orders= orders+1 WHERE batchname='" . $ibatch . "'";
+                $sql = "UPDATE daifa SET time=CURRENT_TIME, orders= orders+1 WHERE batchname='" . $ibatch . "'";
                 $result = mysqli_query($conn, $sql);
                 print '<script>alert("Add Successful!")</script>';
                 // print '<script> location.replace("orderupdate.php"); </script>';
@@ -118,12 +118,12 @@ if (isset($_POST["update"])) {
         if ($tem[0]) {
             print '<script>alert("此批次已结算，无法添加到此批次")</script>';
         } else {
-            $sql = "UPDATE daifa SET orders= orders-1 WHERE batchname='" . $originalbatch[0] . "'";
+            $sql = "UPDATE daifa SET time=CURRENT_TIME, orders= orders-1 WHERE batchname='" . $originalbatch[0] . "'";
             mysqli_query($conn, $sql);
-            $sql = "UPDATE daifaorders SET batch='" . $ibatch . "',service='" . $icategory . "',address='" . $ireceiver . "',city='" . $icity . "',state='" . $istate . "',zipcode='" . $izipcode . "',phone='" . $iphone . "',weight='" . $iweight . "' WHERE orderid='" . $isku . "'";
+            $sql = "UPDATE daifaorders SET batch='" . $ibatch . "',service='" . $icategory . "',name='" . $ireceiver . "',address='" . $iaddress . "',city='" . $icity . "',state='" . $istate . "',zipcode='" . $izipcode . "',phone='" . $iphone . "',weight='" . $iweight . "' WHERE orderid='" . $isku . "'";
 
             mysqli_query($conn, $sql);
-            $sql = "UPDATE daifa SET orders= orders+1 WHERE batchname='" . $ibatch . "'";
+            $sql = "UPDATE daifa SET time=CURRENT_TIME, orders= orders+1 WHERE batchname='" . $ibatch . "'";
             $result = mysqli_query($conn, $sql);
             print '<script>alert("Edit Successful!")</script>';
             print '<script> location.replace("orderupdate.php"); </script>';
