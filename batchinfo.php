@@ -1,24 +1,31 @@
 <?php
-require 'header.php';
-?>
+require_once 'header.php';
+$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+$pagelevel = 2;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+check_session_expiration();
+$user = $_SESSION['user_info']['userid'];
+$fn = $_SESSION['user_info']['firstname'];
+$ln = $_SESSION['user_info']['lastname'];
+$useroffice = $_SESSION['user_info']['office'];
+$userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
+$cmpid = $_SESSION['user_info']['cmpid'];
+$childid = $_SESSION['user_info']['childid'];
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
-<?php
-if (isset($_SESSION['userid'])) {
-    $user = $_SESSION['userid'];
-    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_array($result);
-    $fn = $row[0];
-    $ln = $row[1];
-    $of = $row[2];
-} else {
-    echo '<script> alert("Please Re-login!")</script>';
-    print '<script> location.replace("index.php"); </script>';
+
+// 换cmpid在页面顶端
+if (sizeof($childid) > 1) {
+    foreach ($childid as $x) {
+        $title = "UCMP" . $x;
+        if (isset($_POST["{$title}"])) {
+            $_SESSION['user_info']['cmpid'] = $x;
+            $cmpid = $_SESSION['user_info']['cmpid'];
+        }
+    }
 }
-?>
 
-
-<?php
 if (isset($_GET['id']) && ($_GET['id'] != '')) {
     $batch = $_GET['id'];
 } else {
@@ -33,9 +40,9 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'AS
 
 if (isset($_POST['search'])) {
     $_SESSION['batchinfosearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and orderid LIKE '%" . $_SESSION['batchinfosearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' and batch='" . $batch . "' and (orderid LIKE '%" . $_SESSION['batchinfosearchtext'] . "%' or note LIKE '%" . $_SESSION['batchinfosearchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and orderid LIKE '%" . @$_SESSION['batchinfosearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' and batch='" . $batch . "' ORDER BY " . $column . ' ' . $sort_order;
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -245,18 +252,28 @@ if ($totalrow != 0) {
                                         </div>
 
                                         <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                            <div class="header-top-menu tabl-d-n">
-                                                <ul class="nav navbar-nav mai-top-nav">
-                                                    <li class="nav-item"><a href="#" class="nav-link">Home</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">About</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Services</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Support</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            <form method="post">
+                                                <div class="header-top-menu tabl-d-n">
+
+                                                    
+                                                    <ul class="nav navbar-nav mai-top-nav">
+                                                        <li><a>ACCOUNT_ID：</a></li>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
+                                                                <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
+                                                                </li>
+                                                            <?php } else { ?>
+                                                                <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
+                                                                </li>
+                                                            <?php }
+                                                        } ?>
+                                                    </ul>
+
+                                                </div>
+                                            </form>
                                         </div>
 
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
@@ -282,22 +299,20 @@ if ($totalrow != 0) {
                                                             </div>
                                                             <ul class="notification-menu">
                                                                 <?php
-                                                                if ($of != 'gst') {
-                                                                    for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                        print "<li>
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                        print $datanote[$i]['date'];
-                                                                        print "</h2>
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                    }
                                                                 }
                                                                 ?>
                                                             </ul>
@@ -407,19 +422,19 @@ if ($totalrow != 0) {
                                     <table >
 
                                         <tr>
-                                            <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" >邮寄类型</a></th>
-                                            <th><a style="color: #fff" >快递单号</a></th>
-                                            <th><a style="color: #fff" >邮费</a></th>
-                                            <th><a style="color: #fff" >收件人</a></th>
-                                            <th><a style="color: #fff" >公司</a></th>
-                                            <th><a style="color: #fff" >地址</a></th>
-                                            <th><a style="color: #fff" >城市</a></th>
-                                            <th><a style="color: #fff" >州</a></th>
-                                            <th><a style="color: #fff" >邮编</a></th>
-                                            <th><a style="color: #fff" >手机</a></th>
-                                            <th><a style="color: #fff" >重量</a></th>
-
+                                        <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" >邮寄类型</a></th>
+                                        <th><a style="color: #fff" >快递单号</a></th>
+                                        <th><a style="color: #fff" >邮费</a></th>
+                                        <th><a style="color: #fff" >收件人</a></th>
+                                        <th><a style="color: #fff" >公司</a></th>
+                                        <th><a style="color: #fff" >地址</a></th>
+                                        <th><a style="color: #fff" >城市</a></th>
+                                        <th><a style="color: #fff" >州</a></th>
+                                        <th><a style="color: #fff" >邮编</a></th>
+                                        <th><a style="color: #fff" >手机</a></th>
+                                        <th><a style="color: #fff" >重量</a></th>
+                                        <th><a style="color: #fff" >备注</a></th>
                                         </tr>
 
 
@@ -450,6 +465,7 @@ if ($totalrow != 0) {
                                             print "<td>{$data[$index]['zipcode']}</td>";
                                             print "<td>{$data[$index]['phone']}</td>";
                                             print "<td>{$data[$index]['weight']}</td>";
+                                            print "<td>{$data[$index]['note']}</td>";
                                             print '</tr>';
                                         }
                                         ?>

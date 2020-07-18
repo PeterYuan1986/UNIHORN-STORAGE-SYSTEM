@@ -1,62 +1,70 @@
 <?php
-require 'header.php';
-?>
+require_once 'header.php';
+$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+$pagelevel = 2;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+check_session_expiration();
+$user = $_SESSION['user_info']['userid'];
+$fn = $_SESSION['user_info']['firstname'];
+$ln = $_SESSION['user_info']['lastname'];
+$useroffice = $_SESSION['user_info']['office'];
+$userlevel = $_SESSION['user_info']['level'];
+$cmpid = $_SESSION['user_info']['cmpid'];
+$childid = $_SESSION['user_info']['childid'];
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
-<?php
-if (isset($_SESSION['userid'])) {
-    $user = $_SESSION['userid'];
-    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_array($result);
-    $fn = $row[0];
-    $ln = $row[1];$of = $row[2];
-    if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+    
+    // 换cmpid在页面顶端
+    if (sizeof($childid) > 1) {
+    foreach ($childid as $x) {
+        $title = "UCMP" . $x;
+        if (isset($_POST["{$title}"])) {
+            $_SESSION['user_info']['cmpid'] = $x;
+            $cmpid = $_SESSION['user_info']['cmpid'];
+        }
     }
-} else {
-    echo '<script> alert("Please Re-login!")</script>';
-    print '<script> location.replace("index.php"); </script>';
 }
 
-$sql = "SELECT * FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon'";
-$result = mysqli_query($conn, $sql);
-$ncamazon = mysqli_num_rows($result);
+$sql = "SELECT * FROM `ncstock` WHERE (date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon') and cmpid='" . $cmpid . "'";
 
-$sql = "SELECT * FROM `ncstock` WHERE date BETWEEN  SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Ebay'";
-$result = mysqli_query($conn, $sql);
-$ncebay = mysqli_num_rows($result);
+$ncamazon = mysqli_num_rows(mysqli_query($conn, $sql));
 
-$sql = "SELECT * FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='NewEgg'";
-$result = mysqli_query($conn, $sql);
-$ncnewegg = mysqli_num_rows($result);
+$sql = "SELECT * FROM `ncstock` WHERE (date BETWEEN  SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Ebay') and cmpid='" . $cmpid . "'";
 
-$sql = "SELECT * FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon'";
-$result = mysqli_query($conn, $sql);
-$shamazon = mysqli_num_rows($result);
+$ncebay = mysqli_num_rows(mysqli_query($conn, $sql));
 
-$sql = "SELECT * FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Ebay'";
-$result = mysqli_query($conn, $sql);
-$shebay = mysqli_num_rows($result);
+$sql = "SELECT * FROM `ncstock` WHERE (date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='NewEgg') and cmpid='" . $cmpid . "'";
 
-$sql = "SELECT * FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='NewEgg'";
-$result = mysqli_query($conn, $sql);
-$shnewegg = mysqli_num_rows($result);
+$ncnewegg = mysqli_num_rows(mysqli_query($conn, $sql));
+
+$sql = "SELECT * FROM `shstock` WHERE (date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon') and cmpid='" . $cmpid . "'";
+
+$shamazon = mysqli_num_rows(mysqli_query($conn, $sql));
+
+$sql = "SELECT * FROM `shstock` WHERE (date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Ebay') and cmpid='" . $cmpid . "'";
+
+$shebay = mysqli_num_rows(mysqli_query($conn, $sql));
+
+$sql = "SELECT * FROM `shstock` WHERE (date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='NewEgg') and cmpid='" . $cmpid . "'";
+
+$shnewegg = mysqli_num_rows(mysqli_query($conn, $sql));
 
 $amazon = $shamazon + $ncamazon;
 $ebay = $shebay + $ncebay;
 $newegg = $shnewegg + $ncnewegg;
 $all = $newegg + $ebay + $amazon;
-$sql = "SELECT * FROM `ncstock` WHERE date BETWEEN '2019-12-31' AND '2020-12-31' AND subject='order'";
-$result = mysqli_query($conn, $sql);
-$yearnc = mysqli_num_rows($result);
+$sql = "SELECT * FROM `ncstock` WHERE (date BETWEEN '2019-12-31' AND '2020-12-31' AND subject='order') and cmpid='" . $cmpid . "'";
+
+$yearnc = mysqli_num_rows(mysqli_query($conn, $sql));
 
 
-$sql = "SELECT * FROM `shstock` WHERE date BETWEEN '2019-12-31' AND '2020-12-31' AND subject='order'";
-$result = mysqli_query($conn, $sql);
-$yearsh = mysqli_num_rows($result);
+$sql = "SELECT * FROM `shstock` WHERE (date BETWEEN '2019-12-31' AND '2020-12-31' AND subject='order') and cmpid='" . $cmpid . "'";
+
+$yearsh = mysqli_num_rows(mysqli_query($conn, $sql));
 $year = $yearnc + $yearsh;
 
-$sql = "SELECT sku,sold FROM `product` order by sold DESC";
+$sql = "SELECT sku,sold FROM `product` where cmpid='" . $cmpid . "' order by sold DESC";
 $result = mysqli_query($conn, $sql);
 $inex = 0;
 $tota = 0;
@@ -260,19 +268,29 @@ while ($row = mysqli_fetch_array($result)) {
                                             </div>
                                         </div>
 
-                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                            <div class="header-top-menu tabl-d-n">
-                                                <ul class="nav navbar-nav mai-top-nav">
-                                                    <li class="nav-item"><a href="#" class="nav-link">Home</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">About</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Services</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Support</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                      <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                            <form method="post">
+                                                <div class="header-top-menu tabl-d-n">
+
+                                                   
+                                                    <ul class="nav navbar-nav mai-top-nav">
+                                                        <li><a>ACCOUNT_ID：</a></li>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
+                                                                <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
+                                                                </li>
+                                                            <?php } else { ?>
+                                                                <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
+                                                                </li>
+                                                            <?php }
+                                                        } ?>
+                                                    </ul>
+
+                                                </div>
+                                            </form>
                                         </div>
 
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
@@ -503,39 +521,39 @@ while ($row = mysqli_fetch_array($result)) {
                         </div>
                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <div class="white-box analytics-info-cs mg-b-30 res-mg-t-30">
-                                <h3 class="box-title"><?php print $topsku0; ?></h3>
+                                <h3 class="box-title"><?php print @$topsku0; ?></h3>
                                 <ul class="list-inline two-part-sp">
                                     <li>
                                         <div id="sparklinedash"> </div>
                                     </li>
-                                    <li class="text-right sp-cn-r"><i class="fa fa-level-up" aria-hidden="true"></i><span class="counter sales-sts-ctn">Top1 Sales: <?php print $topam0; ?> </span></li>
+                                    <li class="text-right sp-cn-r"><i class="fa fa-level-up" aria-hidden="true"></i><span class="counter sales-sts-ctn">Top1 Sales: <?php print @$topam0; ?> </span></li>
                                 </ul>
                             </div>
                             <div class="white-box analytics-info-cs mg-b-30">
-                                <h3 class="box-title"><?php print $topsku1; ?></h3>
+                                <h3 class="box-title"><?php print @$topsku1; ?></h3>
                                 <ul class="list-inline two-part-sp">
                                     <li>
                                         <div id="sparklinedash2"></div>
                                     </li>
-                                    <li class="text-right"><i class="fa fa-level-up" aria-hidden="true"></i> <span class="counter sales-sts-ctn">Top2 Sales: <?php print $topam1; ?></span></li>
+                                    <li class="text-right"><i class="fa fa-level-up" aria-hidden="true"></i> <span class="counter sales-sts-ctn">Top2 Sales: <?php print @$topam1; ?></span></li>
                                 </ul>
                             </div>
                             <div class="white-box analytics-info-cs mg-b-30">
-                                <h3 class="box-title"><?php print $topsku2; ?></h3>
+                                <h3 class="box-title"><?php print @$topsku2; ?></h3>
                                 <ul class="list-inline two-part-sp">
                                     <li>
                                         <div id="sparklinedash3"></div>
                                     </li>
-                                    <li class="text-right"><i class="fa fa-level-up" aria-hidden="true"></i> <span class="counter sales-sts-ctn">Top3 Sales: <?php print $topam2; ?></span></li>
+                                    <li class="text-right"><i class="fa fa-level-up" aria-hidden="true"></i> <span class="counter sales-sts-ctn">Top3 Sales: <?php print @$topam2; ?></span></li>
                                 </ul>
                             </div>
                             <div class="white-box analytics-info-cs">
-                                <h3 class="box-title"><?php print $topsku3; ?></h3>
+                                <h3 class="box-title"><?php print @$topsku3; ?></h3>
                                 <ul class="list-inline two-part-sp">
                                     <li>
                                         <div id="sparklinedash4"></div>
                                     </li>
-                                    <li class="text-right"><i class="fa fa-level-up" aria-hidden="true"></i> <span class="sales-sts-ctn">Top4 Sales: <?php print $topam3; ?></span></li>
+                                    <li class="text-right"><i class="fa fa-level-up" aria-hidden="true"></i> <span class="sales-sts-ctn">Top4 Sales: <?php print @$topam3; ?></span></li>
                                 </ul>
                             </div>
                         </div>

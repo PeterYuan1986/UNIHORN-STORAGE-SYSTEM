@@ -1,16 +1,20 @@
 <!doctype html>
 <?php
-unset($_SESSION);
 require 'header.php';
+session_unset();
+session_destroy();
 
 ?>
 
 <?php
 if (isset($_POST["login"])) {
-    $user = @$_POST["username"];
-    $password = @$_POST["password"];
+    session_unset();
+    session_destroy();
+    session_start();
+    $user = $_POST["username"];
+    $password = $_POST["password"];
     if (!isEmpty($user) && !isEmpty($password)) {
-        $sql = "select password,approved from employees where username='" . $user . "'";
+        $sql = "select password,approved,firstname, lastname, office, level,cmpid, childid from employees where username='" . $user . "'";
         $result = mysqli_query($conn, $sql);
         if (!$result || mysqli_num_rows($result) == 0) {
             print "<script> alert('The username doesn\'t exist, please registe first!');</script>";
@@ -21,10 +25,16 @@ if (isset($_POST["login"])) {
                 print "<script> alert('The password is not right!');</script>";
             } elseif ($row[1] == 0) {
                 print "<script> alert('You account is still waiting for validation by admin!');</script>";
-            } else {                
-                $_SESSION['userid']=$user;
+            } else {
+                $_SESSION['user_info']['userid'] = $user;
+                $_SESSION['user_info']['firstname'] = $row[2];
+                $_SESSION['user_info']['lastname'] = $row[3];
+                $_SESSION['user_info']['office'] = $row[4];
+                $_SESSION['user_info']['level'] = $row[5];
+                $_SESSION['user_info']['cmpid'] = $row[6];
+                $_SESSION['user_info']['childid'] = json_decode($row[7],true);
+                $_SESSION['discard_after'] = time() + 900;
                 header("Location:homepage.php");
-                
             }
         }
     }

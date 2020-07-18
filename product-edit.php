@@ -1,29 +1,33 @@
 <?php
-require 'header.php';
-?>
+require_once 'header.php';
+$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+$pagelevel = 1;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+check_session_expiration();
+$user = $_SESSION['user_info']['userid'];
+$fn = $_SESSION['user_info']['firstname'];
+$ln = $_SESSION['user_info']['lastname'];
+$useroffice = $_SESSION['user_info']['office'];
+$userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
+$cmpid = $_SESSION['user_info']['cmpid'];
+$childid = $_SESSION['user_info']['childid'];
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
-<?php
-if (isset($_SESSION['userid'])) {
-    $user = $_SESSION['userid'];
-    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_array($result);
-    $fn = $row[0];
-    $ln = $row[1];
-    $of = $row[2];
-    if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+// 换cmpid在页面顶端
+if (sizeof($childid) > 1) {
+    foreach ($childid as $x) {
+        $title = "UCMP" . $x;
+        if (isset($_POST["{$title}"])) {
+            $_SESSION['user_info']['cmpid'] = $x;
+            $cmpid = $_SESSION['user_info']['cmpid'];
+        }
     }
-} else {
-    echo '<script> alert("Please Re-login!")</script>';
-    print '<script> location.replace("index.php"); </script>';
 }
-?>
 
-<?php
 if (isset($_SESSION['editsku'])) {
     $sku = $_SESSION['editsku'];
-    $sql = "select sku,brand, category, price, ram,cpu,quality,web from product where sku='" . $sku . "'";
+    $sql = "select sku,brand, category, price, ram,cpu,quality,web from product where (cmpid='". $cmpid."') and sku='" . $sku . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
     $brand = $row['brand'];
@@ -57,11 +61,11 @@ if (isset($_POST["save"])) {
     $iqulity = @$_POST["iqulity"];
     $iweb = @$_POST["iweb"];
     if (checkinput($isku)) {
-        $sql = "select * from product where sku='" . $isku . "'";
+        $sql = "select * from product where (cmpid='". $cmpid."') and sku='" . $isku . "'";
         $result = mysqli_query($conn, $sql);
         if (!$result || mysqli_num_rows($result) == 0) {
 
-            $sql = "insert into product(sku,brand, category, price, ram,cpu,quality,web) values('" . $isku . "','" . $ibrand . "','" . $icategory . "','" . $iprice . "','" . $iram . "','" . $icpu . "','" . $iquality ."','" . $iweb . "')"; "')";
+            $sql = "insert into product(sku,brand, category, price, ram,cpu,quality,web, cmpid) values('" . $isku . "','" . $ibrand . "','" . $icategory . "','" . $iprice . "','" . $iram . "','" . $icpu . "','" . $iquality ."','" . $iweb ."','". $cmpid . "')";
             $result = mysqli_query($conn, $sql);
             print '<script>alert("Add Successful!")</script>';
             print '<script> location.replace("product-list.php"); </script>';
@@ -80,13 +84,13 @@ if (isset($_POST["update"])) {
     $iweb = @$_POST["iweb"];
     $icpu = @$_POST["icpu"];
     $iquality = @$_POST["iquality"];    
-    $sql = "select * from product where sku='" . $isku . "'";
+    $sql = "select * from product where (cmpid='". $cmpid."') and sku='" . $isku . "'";
     $result = mysqli_query($conn, $sql);
     if (!$result || mysqli_num_rows($result) == 0) {
 
         print '<script>alert("This SKU is not existed, Please add a new product!")</script>';
     } else {
-        $sql = "UPDATE product SET brand='$ibrand',category='$icategory',price='$iprice',ram='$iram',cpu='$icpu',quality='$iquality',web='$iweb' WHERE sku='$isku'";
+        $sql = "UPDATE product SET brand='$ibrand',category='$icategory',price='$iprice',ram='$iram',cpu='$icpu',quality='$iquality',web='$iweb' WHERE (cmpid='". $cmpid."') AND sku='$isku'";
 
         $result = mysqli_query($conn, $sql);
         print '<script>alert("Edit Successful!")</script>';
@@ -295,18 +299,28 @@ function checkinput($isku) {
                                         </div>
 
                                         <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                            <div class="header-top-menu tabl-d-n">
-                                                <ul class="nav navbar-nav mai-top-nav">
-                                                    <li class="nav-item"><a href="#" class="nav-link">Home</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">About</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Services</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Support</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            <form method="post">
+                                                <div class="header-top-menu tabl-d-n">
+
+                                                    
+                                                    <ul class="nav navbar-nav mai-top-nav">
+                                                        <li><a>ACCOUNT_ID：</a></li>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
+                                                                <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
+                                                                </li>
+                                                            <?php } else { ?>
+                                                                <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
+                                                                </li>
+                                                            <?php }
+                                                        } ?>
+                                                    </ul>
+
+                                                </div>
+                                            </form>
                                         </div>
 
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">

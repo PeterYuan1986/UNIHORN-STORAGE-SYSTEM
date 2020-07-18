@@ -1,166 +1,179 @@
-<?php // content="text/plain; charset=utf-8"
-require 'header.php';
+<?php
+require_once 'header.php';
+//$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+//$pagelevel = 2;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+//check_session_expiration();
+//$user = $_SESSION['user_info']['userid'];
+//$fn = $_SESSION['user_info']['firstname'];
+//$ln = $_SESSION['user_info']['lastname'];
+//$useroffice = $_SESSION['user_info']['office'];
+//$userlevel = $_SESSION['user_info']['level'];
+$cmpid = $_SESSION['user_info']['cmpid'];
+//$childid = $_SESSION['user_info']['childid'];
+//$datanote = check_note($cmpid);
+//check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
+
 require_once ('jpgraph/jpgraph.php');
 require_once ('jpgraph/jpgraph_bar.php');
 
-$sql1 = "SELECT productlist FROM `shstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon'";
+$sql1 = "SELECT productlist FROM `shstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'"; 
 $result1 = mysqli_query($conn, $sql1);
 $sh01 = @mysqli_num_rows($result1);
-$sql2 = "SELECT productlist FROM `shstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Ebay'";
+$sql2 = "SELECT productlist FROM `shstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $result2 = mysqli_query($conn, $sql2);
 $sh02 = @mysqli_num_rows($result2);
-$sql3 = "SELECT productlist FROM `shstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='NewEgg'";
+$sql3 = "SELECT productlist FROM `shstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $result3 = mysqli_query($conn, $sql3);
 $sh03 = @mysqli_num_rows($result3);
 
 
-$sql4 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='Amazon'";
+$sql4 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $result4 = mysqli_query($conn, $sql4);
 $sh11 = @mysqli_num_rows($result4);
-$sql5 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='Ebay'";
+$sql5 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $result5 = mysqli_query($conn, $sql5);
 $sh12 = @mysqli_num_rows($result5);
-$sql6 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='NewEgg'";
+$sql6 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $result6 = mysqli_query($conn, $sql6);
 $sh13 = @mysqli_num_rows($result6);
 
-$sql7 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='Amazon'";
+$sql7 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='Amazon' and cmpid='" . $cmpid . "'";
 $result7 = mysqli_query($conn, $sql7);
 $sh21 = @mysqli_num_rows($result7);
-$sql8 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='Ebay'";
+$sql8 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='Ebay' and cmpid='" . $cmpid . "'";
 $result8 = mysqli_query($conn, $sql8);
 $sh22 = @mysqli_num_rows($result8);
-$sql9 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='NewEgg'";
+$sql9 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $result9 = mysqli_query($conn, $sql9);
 $sh23 = @mysqli_num_rows($result9);
 
-$sql10 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='Amazon'";
+$sql10 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $result10 = mysqli_query($conn, $sql10);
 $sh31 = @mysqli_num_rows($result10);
-$sql11 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='Ebay'";
+$sql11 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $result11 = mysqli_query($conn, $sql11);
 $sh32 = @mysqli_num_rows($result11);
-$sql12 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='NewEgg'";
+$sql12 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $result12 = mysqli_query($conn, $sql12);
 $sh33 = @mysqli_num_rows($result12);
 
-$sql13 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='Amazon'";
+$sql13 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $result13 = mysqli_query($conn, $sql13);
 $sh41 = @mysqli_num_rows($result13);
-$sql14 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='Ebay'";
+$sql14 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $result14 = mysqli_query($conn, $sql14);
 $sh42 = @mysqli_num_rows($result14);
-$sql15 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='NewEgg'";
+$sql15 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $result15 = mysqli_query($conn, $sql15);
 $sh43= @mysqli_num_rows($result15);
 
-$sql16 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='Amazon'";
+$sql16 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $result16 = mysqli_query($conn, $sql16);
 $sh51 = @mysqli_num_rows($result16);
-$sql17 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='Ebay'";
+$sql17 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $result17 = mysqli_query($conn, $sql17);
 $sh52 = @mysqli_num_rows($result17);
-$sql18 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='NewEgg'";
+$sql18 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $sh53 = @mysqli_num_rows($result18);
 
-$sql19 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='Amazon'";
+$sql19 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $result19 = mysqli_query($conn, $sql19);
 $sh61 = @mysqli_num_rows($result19);
-$sql20 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='Ebay'";
+$sql20 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $result20 = mysqli_query($conn, $sql20);
 $sh62 = @mysqli_num_rows($result20);
-$sql21 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='NewEgg'";
+$sql21 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $result21 = mysqli_query($conn, $sql21);
 $sh63 = @mysqli_num_rows($result21);
 
-$sql22 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='Amazon'";
+$sql22 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $result22 = mysqli_query($conn, $sql22);
 $sh71 = @mysqli_num_rows($result22);
-$sql23 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='Ebay'";
+$sql23 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $result23 = mysqli_query($conn, $sql23);
 $sh72 = @mysqli_num_rows($result23);
-$sql24 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='NewEgg'";
+$sql24 = "SELECT productlist FROM `shstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $result24 = mysqli_query($conn, $sql24);
 $sh73 = @mysqli_num_rows($result24);
 
-$mysql1 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon'";
+$mysql1 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $jieguo1 = mysqli_query($conn, $mysql1);
 $nc01 = @mysqli_num_rows($jieguo1);
-$mysql2 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Ebay'";
+$mysql2 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $jieguo2 = mysqli_query($conn, $mysql2);
 $nc02 = @mysqli_num_rows($jieguo2);
-$mysql3 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='NewEgg'";
+$mysql3 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN CURRENT_DATE() AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $jieguo3 = mysqli_query($conn, $mysql3);
 $nc03 = @mysqli_num_rows($jieguo3);
 
 
-$mysql4 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='Amazon'";
+$mysql4 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $jieguo4 = mysqli_query($conn, $mysql4);
 $nc11 = @mysqli_num_rows($jieguo4);
-$mysql5 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='Ebay'";
+$mysql5 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $jieguo5 = mysqli_query($conn, $mysql5);
 $nc12 = @mysqli_num_rows($jieguo5);
-$mysql6 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='NewEgg'";
+$mysql6 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND CURRENT_DATE() AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $jieguo6 = mysqli_query($conn, $mysql6);
 $nc13 = @mysqli_num_rows($jieguo6);
 
-$mysql7 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='Amazon'";
+$mysql7 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='Amazon' and cmpid='" . $cmpid . "'";
 $jieguo7 = mysqli_query($conn, $mysql7);
 $nc21 = @mysqli_num_rows($jieguo7);
-$mysql8 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='Ebay'";
+$mysql8 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='Ebay' and cmpid='" . $cmpid . "'";
 $jieguo8 = mysqli_query($conn, $mysql8);
 $nc22 = @mysqli_num_rows($jieguo8);
-$mysql9 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='NewEgg'";
+$mysql9 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order'AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $jieguo9 = mysqli_query($conn, $mysql9);
 $nc23 = @mysqli_num_rows($jieguo9);
 
-$mysql10 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='Amazon'";
+$mysql10 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $jieguo10 = mysqli_query($conn, $mysql10);
 $nc31 = @mysqli_num_rows($jieguo10);
-$mysql11 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='Ebay'";
+$mysql11 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $jieguo11 = mysqli_query($conn, $mysql11);
 $nc32 = @mysqli_num_rows($jieguo11);
-$mysql12 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='NewEgg'";
+$mysql12 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 2 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $jieguo12 = mysqli_query($conn, $mysql12);
 $nc33 = @mysqli_num_rows($jieguo12);
 
-$mysql13 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='Amazon'";
+$mysql13 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $jieguo13 = mysqli_query($conn, $mysql13);
 $nc41 = @mysqli_num_rows($jieguo13);
-$mysql14 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='Ebay'";
+$mysql14 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $jieguo14 = mysqli_query($conn, $mysql14);
 $nc42 = @mysqli_num_rows($jieguo14);
-$mysql15 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='NewEgg'";
+$mysql15 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 3 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $jieguo15 = mysqli_query($conn, $mysql15);
 $nc43= @mysqli_num_rows($jieguo15);
 
-$mysql16 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='Amazon'";
+$mysql16 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $jieguo16 = mysqli_query($conn, $mysql16);
 $nc51 = @mysqli_num_rows($jieguo16);
-$mysql17 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='Ebay'";
+$mysql17 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $jieguo17 = mysqli_query($conn, $mysql17);
 $nc52 = @mysqli_num_rows($jieguo17);
-$mysql18 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='NewEgg'";
+$mysql18 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 4 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $jieguo18 = mysqli_query($conn, $mysql18);
 $nc53 = @mysqli_num_rows($jieguo18);
 
-$mysql19 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='Amazon'";
+$mysql19 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $jieguo19 = mysqli_query($conn, $mysql19);
 $nc61 = @mysqli_num_rows($jieguo19);
-$mysql20 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='Ebay'";
+$mysql20 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $jieguo20 = mysqli_query($conn, $mysql20);
 $nc62 = @mysqli_num_rows($jieguo20);
-$mysql21 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='NewEgg'";
+$mysql21 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 5 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $jieguo21 = mysqli_query($conn, $mysql21);
 $nc63 = @mysqli_num_rows($jieguo21);
 
-$mysql22 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='Amazon'";
+$mysql22 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='Amazon' and cmpid='" . $cmpid . "'";
 $jieguo22 = mysqli_query($conn, $mysql22);
 $nc71 = @mysqli_num_rows($jieguo22);
-$mysql23 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='Ebay'";
+$mysql23 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='Ebay' and cmpid='" . $cmpid . "'";
 $jieguo23 = mysqli_query($conn, $mysql23);
 $nc72 = @mysqli_num_rows($jieguo23);
-$mysql24 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='NewEgg'";
+$mysql24 = "SELECT productlist FROM `ncstock` WHERE date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND SUBDATE(CURRENT_DATE(),INTERVAL 6 day) AND subject='order' AND market='NewEgg' and cmpid='" . $cmpid . "'";
 $jieguo24 = mysqli_query($conn, $mysql24);
 $nc73 = @mysqli_num_rows($jieguo24);
 

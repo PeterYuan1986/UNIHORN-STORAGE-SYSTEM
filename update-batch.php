@@ -1,32 +1,29 @@
 <?php
-require 'header.php';
-if (isset($_GET['id'])) {
-    $batch = $_GET['id'];
-} else {
-    header('location: data-table.php');
-}
-?>
-
-<?php
-if (isset($_SESSION['userid'])) {
-    $user = $_SESSION['userid'];
-    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_array($result);
-    $fn = $row[0];
-    $ln = $row[1];
-    $of = $row[2];
-    if ($of == 'gst') {
-        print '<script> location.replace("data-table.php"); </script>';
+require_once 'header.php';
+$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+$pagelevel = 2;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+check_session_expiration();
+$user = $_SESSION['user_info']['userid'];
+$fn = $_SESSION['user_info']['firstname'];
+$ln = $_SESSION['user_info']['lastname'];
+$useroffice = $_SESSION['user_info']['office'];
+$userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
+$cmpid = $_SESSION['user_info']['cmpid'];
+$childid = $_SESSION['user_info']['childid'];
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
+// 换cmpid在页面顶端
+if (sizeof($childid) > 1) {
+    foreach ($childid as $x) {
+        $title = "UCMP" . $x;
+        if (isset($_POST["{$title}"])) {
+            $_SESSION['user_info']['cmpid'] = $x;
+            $cmpid = $_SESSION['user_info']['cmpid'];
+        }
     }
-} else {
-    echo '<script> alert("Please Re-login!")</script>';
-    print '<script> location.replace("index.php"); </script>';
 }
-?>
 
-
-<?php
 if (isset($_POST['save'])) {
     if (!isset($_FILES["file"])) {
         echo "<script> alert('请上传csv文件!')</script>";
@@ -67,11 +64,11 @@ if (isset($_POST['save'])) {
                     @$content = fgetcsv($filepath);
                     try {
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
-                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . str_replace('$', '', $content[4]) . "' WHERE orderid='" . $content[27] . "'";
-                            $result = mysqli_query($conn, $sql);                            
+                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . str_replace('$', '', $content[4]) . "' WHERE (cmpid='" . $cmpid . "') AND orderid='" . $content[27] . "'";
+                            $result = mysqli_query($conn, $sql);
                         }
                         if ($result) {
-                            $sql = "SELECT cost, fee FROM daifaorders where batch='" . $batch . "'";
+                            $sql = "SELECT cost, fee FROM daifaorders where (cmpid='" . $cmpid . "') AND batch='" . $batch . "'";
                             $result = mysqli_query($conn, $sql);
                             while ($arr = mysqli_fetch_array($result)) {
                                 $data[] = $arr;
@@ -79,10 +76,10 @@ if (isset($_POST['save'])) {
                             $totalcost = 0;
                             $totalfee = 0;
                             for ($index = 0; $index < @count($data); $index++) {
-                                $totalcost = $totalcost+$data[$index][0];
-                                $totalfee = $totalfee+$data[$index][1];
+                                $totalcost = $totalcost + $data[$index][0];
+                                $totalfee = $totalfee + $data[$index][1];
                             }
-                            $sql = "UPDATE daifa SET time=CURRENT_TIME, status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE batchname='" . $batch . "'";
+                            $sql = "UPDATE daifa SET time=CURRENT_TIME, status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $batch . "'";
                             print $sql;
                             mysqli_query($conn, $sql);
                             echo "<script> alert('文件上传成功！')</script>";
@@ -302,18 +299,28 @@ if (isset($_POST['save'])) {
                                         </div>
 
                                         <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                            <div class="header-top-menu tabl-d-n">
-                                                <ul class="nav navbar-nav mai-top-nav">
-                                                    <li class="nav-item"><a href="#" class="nav-link">Home</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">About</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Services</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Support</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            <form method="post">
+                                                <div class="header-top-menu tabl-d-n">
+
+                                                    <ul class="nav navbar-nav mai-top-nav">
+                                                        <li><a>ACCOUNT_ID：</a></li>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
+                                                                <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
+                                                                </li>
+                                                            <?php } else { ?>
+                                                                <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
+                                                                </li>
+                                                            <?php }
+                                                        }
+                                                        ?>
+                                                    </ul>
+
+                                                </div>
+                                            </form>
                                         </div>
 
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
@@ -357,7 +364,7 @@ if (isset($_POST['save'])) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>

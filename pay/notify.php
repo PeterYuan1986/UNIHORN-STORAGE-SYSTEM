@@ -60,7 +60,7 @@ if ($data['hash'] != $hash) {
 $trade_order_id = $data['trade_order_id'];
 
 if ($data['status'] == 'OD') {
-    $sql= "UPDATE daifa SET time=CURRENT_TIME, paid=1 WHERE batchname=".$batch;
+    $sql= "UPDATE daifa SET time=CURRENT_TIME, paid=1 WHERE (cmpid='". $cmpid."') AND  batchname=".$batch;
     mysqli_query($conn, $sql);            
     
     /*     * **********商户业务处理***************** */

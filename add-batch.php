@@ -1,24 +1,32 @@
 <?php
-require 'header.php';
-?>
+require_once 'header.php';
+$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+$pagelevel = 2;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+check_session_expiration();
+$user = $_SESSION['user_info']['userid'];
+$fn = $_SESSION['user_info']['firstname'];
+$ln = $_SESSION['user_info']['lastname'];
+$useroffice = $_SESSION['user_info']['office'];
+$userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
+$cmpid = $_SESSION['user_info']['cmpid'];
+$childid = $_SESSION['user_info']['childid'];
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
-<?php
-if (isset($_SESSION['userid'])) {
-    $user = $_SESSION['userid'];
-    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_array($result);
-    $fn = $row[0];
-    $ln = $row[1];
-    $of = $row[2];
-} else {
-    echo '<script> alert("Please Re-login!")</script>';
-    print '<script> location.replace("index.php"); </script>';
+
+// 换cmpid在页面顶端
+if (sizeof($childid) > 1) {
+    foreach ($childid as $x) {
+        $title = "UCMP" . $x;
+        if (isset($_POST["{$title}"])) {
+            $_SESSION['user_info']['cmpid'] = $x;
+            $cmpid = $_SESSION['user_info']['cmpid'];
+        }
+    }
 }
-?>
 
 
-<?php
 if (isset($_POST['save'])) {
     $daifabatchname = @$_POST['daifabatchname'];
     $daifadhl = @$_POST['daifadhl'];
@@ -31,19 +39,19 @@ if (isset($_POST['save'])) {
         'application/excel',
         'application/vnd.ms-excel'
     );
-    if (@$_POST['empty']!=NULL) {
-        $sql = "SELECT * FROM daifa where batchname='" . $daifabatchname . "'";
-                $result = mysqli_query($conn, $sql);
-                $totalrow = mysqli_num_rows($result);
+    if (@$_POST['empty'] != NULL) {
+        $sql = "SELECT * FROM daifa where (cmpid='" . $cmpid . "') and  batchname='" . $daifabatchname . "'";
+        $result = mysqli_query($conn, $sql);
+        $totalrow = mysqli_num_rows($result);
 
-                if ($totalrow > 0) {
-                    //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
-                    echo "<script> alert('批次名已存在，请重新输入！')</script>";
-                } else {
-                    $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','','" . $daifadhl . "','PENDING')";
-                            $result = mysqli_query($conn, $sql);
-                            echo "<script> alert('批次新建成功！')</script>";
-                }
+        if ($totalrow > 0) {
+            //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
+            echo "<script> alert('批次名已存在，请重新输入！')</script>";
+        } else {
+            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','','" . $daifadhl . "','PENDING', '" . $cmpid . "')";
+            $result = mysqli_query($conn, $sql);
+            echo "<script> alert('批次新建成功！')</script>";
+        }
     } else {
 
         $temp = explode(".", @$_FILES["file"]["name"]);
@@ -60,7 +68,7 @@ if (isset($_POST['save'])) {
                 // echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
                 //判断当期目录下的 upload 目录是否存在该文件
                 //如果没有 upload 目录，你需要创建它，upload 目录权限为 777
-                $sql = "SELECT * FROM daifa where batchname='" . $daifabatchname . "'";
+                $sql = "SELECT * FROM daifa where (cmpid='" . $cmpid . "') and  batchname='" . $daifabatchname . "'";
                 $result = mysqli_query($conn, $sql);
                 $totalrow = mysqli_num_rows($result);
 
@@ -78,19 +86,18 @@ if (isset($_POST['save'])) {
                     try {
                         $a = 0;
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容                           
-                            $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,service, batch) 
-                    VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" .  $content[3]. "','" . $content[4]. "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" .$content[8] . "','" . $daifaservice . "','" . $daifabatchname . "')";
+                            $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,note, service, batch, cmpid) VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $content[9] . "','" . $daifaservice . "','" . $daifabatchname . "','" . $cmpid . "')";
                             $result = mysqli_query($conn, $sql);
                             $a++;
                             if (!$result) {
-                                $sql = "DELETE FROM daifaorders WHERE batch='" . $daifabatchname . "'";
+                                $sql = "DELETE FROM daifaorders WHERE cmpid='" . $cmpid . "' and batch='" . $daifabatchname . "'";
                                 mysqli_query($conn, $sql);
                                 echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查是否此单信息中含有冒号等特殊符号，请修改后重新上传！')</script>";
                                 break;
                             }
                         }
                         if ($result) {
-                            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $a . "','" . $daifadhl . "','PENDING')";
+                            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid)  VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $a . "','" . $daifadhl . "','PENDING', '" . $cmpid . "')";
 
                             mysqli_query($conn, $sql);
                             echo "<script> alert('文件上传成功！')</script>";
@@ -309,18 +316,28 @@ if (isset($_POST['save'])) {
                                         </div>
 
                                         <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                            <div class="header-top-menu tabl-d-n">
-                                                <ul class="nav navbar-nav mai-top-nav">
-                                                    <li class="nav-item"><a href="#" class="nav-link">Home</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">About</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Services</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Support</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            <form method="post">
+                                                <div class="header-top-menu tabl-d-n">
+
+                                                    
+                                                    <ul class="nav navbar-nav mai-top-nav">
+                                                        <li><a>ACCOUNT_ID：</a></li>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
+                                                                <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
+                                                                </li>
+                                                            <?php } else { ?>
+                                                                <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
+                                                                </li>
+                                                            <?php }
+                                                        } ?>
+                                                    </ul>
+
+                                                </div>
+                                            </form>
                                         </div>
 
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
@@ -346,27 +363,25 @@ if (isset($_POST['save'])) {
                                                             </div>
                                                             <ul class="notification-menu">
                                                                 <?php
-                                                                if ($of != 'gst') {
-                                                                    for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                        print "<li>
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                        print $datanote[$i]['date'];
-                                                                        print "</h2>
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                    }
                                                                 }
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>

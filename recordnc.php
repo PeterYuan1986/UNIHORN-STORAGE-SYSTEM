@@ -1,27 +1,31 @@
 <?php
-require 'header.php';
-?>
+require_once 'header.php';
+$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+$pagelevel = 1;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+check_session_expiration();
+$user = $_SESSION['user_info']['userid'];
+$fn = $_SESSION['user_info']['firstname'];
+$ln = $_SESSION['user_info']['lastname'];
+$useroffice = $_SESSION['user_info']['office'];
+$userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
+$cmpid = $_SESSION['user_info']['cmpid'];
+$childid = $_SESSION['user_info']['childid'];
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
-<?php
-if (isset($_SESSION['userid'])) {
-    $user = $_SESSION['userid'];
-    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_array($result);
-    $fn = $row[0];
-    $ln = $row[1];
-    $of = $row[2];
-    if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+// 换cmpid在页面顶端
+if (sizeof($childid) > 1) {
+    foreach ($childid as $x) {
+        $title = "UCMP" . $x;
+        if (isset($_POST["{$title}"])) {
+            $_SESSION['user_info']['cmpid'] = $x;
+            $cmpid = $_SESSION['user_info']['cmpid'];
+        }
     }
-} else {
-    echo '<script> alert("Please Re-login!")</script>';
-    print '<script> location.replace("index.php"); </script>';
 }
-?>
 
 
-<?php
 $columns = array('date', 'subject', 'ordernumber', 'market', 'tracking', 'ship', 'productlist');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
@@ -29,9 +33,9 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'AS
 $search = "";
 
 if (isset($_POST['search'])) {
-    $sql = "SELECT * FROM ncstock where productlist LIKE '%" . @$_POST['recordsearchtext'] . "%' OR tracking LIKE '%" . @$_POST['recordsearchtext'] . "%' OR subject LIKE '%" . @$_POST['recordsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM ncstock where (cmpid='". $cmpid."') and (productlist LIKE '%" . @$_POST['recordsearchtext'] . "%' OR tracking LIKE '%" . @$_POST['recordsearchtext'] . "%' OR subject LIKE '%" . @$_POST['recordsearchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM ncstock ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM ncstock where (cmpid='". $cmpid."') ORDER BY " . $column . ' ' . $sort_order;
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -55,11 +59,11 @@ for ($index = 0; $index < @count($data); $index++) {
             case "replacement": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set nc=nc+" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set nc=nc+" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
                         print $sql . "<br>";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
                     print $sql . "<br>";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
@@ -72,10 +76,10 @@ for ($index = 0; $index < @count($data); $index++) {
             case "order": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set nc=nc+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set nc=nc+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -87,10 +91,10 @@ for ($index = 0; $index < @count($data); $index++) {
            case "supply-good": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -100,7 +104,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     } break;
                 }
                 case "supply-bad": {                    
-                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -110,7 +114,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     } break;
                 }
             case "return-bad": {
-                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -122,10 +126,10 @@ for ($index = 0; $index < @count($data); $index++) {
             case "return-good": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -137,22 +141,22 @@ for ($index = 0; $index < @count($data); $index++) {
             case "import": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set nc=nc-" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
 
-                    $sql = "update shstock set ordernumber=0 where tracking='" . $data[$index]['tracking'] . "'";
+                    $sql = "update shstock set ordernumber=0 where (cmpid='". $cmpid."') AND tracking='" . $data[$index]['tracking'] . "'";
                     mysqli_query($conn, $sql);
-                    $sql = "select productlist from shstock where tracking='" . $data[$index]['tracking'] . "'";
+                    $sql = "select productlist from shstock where (cmpid='". $cmpid."') and tracking='" . $data[$index]['tracking'] . "'";
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_fetch_array($result);
                     $product2 = json_decode($row[0]);
                     for ($i = 0; $i < count($product2); $i++) {
-                        $sql = "update product set transit=transit+" . $product2[$i][1] . " where sku='" . $product2[$i][0] . "'";
+                        $sql = "update product set transit=transit+" . $product2[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $product2[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
 
-                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -163,15 +167,15 @@ for ($index = 0; $index < @count($data); $index++) {
                 }
             case "export": {
 
-                    $sql = "select productlist from ncstock where tracking='" . $data[$index]['tracking'] . "'";
+                    $sql = "select productlist from ncstock where (cmpid='". $cmpid."') and tracking='" . $data[$index]['tracking'] . "'";
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_fetch_array($result);
                     $product2 = json_decode($row[0]);
                     for ($i = 0; $i < count($product2); $i++) {
-                        $sql = "update product set nc=nc+" . $product2[$i][1] . ",transit=transit-" . $product2[$i][1] . " where sku='" . $product2[$i][0] . "'";
+                        $sql = "update product set nc=nc+" . $product2[$i][1] . ",transit=transit-" . $product2[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $product2[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -376,19 +380,28 @@ for ($index = 0; $index < @count($data); $index++) {
                                             </div>
                                         </div>
 
-                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                            <div class="header-top-menu tabl-d-n">
-                                                <ul class="nav navbar-nav mai-top-nav">
-                                                    <li class="nav-item"><a href="#" class="nav-link">Home</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">About</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Services</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Support</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                     <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                            <form method="post">
+                                                <div class="header-top-menu tabl-d-n">
+
+                                                    
+                                                    <ul class="nav navbar-nav mai-top-nav">
+                                                        <li><a>ACCOUNT_ID：</a></li>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
+                                                                <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
+                                                                </li>
+                                                            <?php } else { ?>
+                                                                <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
+                                                                </li>
+                                                            <?php }
+                                                        } ?>
+                                                    </ul>
+                                                </div>
+                                            </form>
                                         </div>
 
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">

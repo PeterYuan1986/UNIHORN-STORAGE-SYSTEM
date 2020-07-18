@@ -1,28 +1,27 @@
 <?php
-session_start();
-?>
-<?php
-require("libs/database_connection.php");
-require ("libs/functions.php");
-date_default_timezone_set('America/New_York');
-setlocale(LC_ALL, 'en_US');
-$str = date("Y-m-d H:i:s", time());
-?>
+require_once 'header.php';
+$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+$pagelevel = 2;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+check_session_expiration();
+$user = $_SESSION['user_info']['userid'];
+$fn = $_SESSION['user_info']['firstname'];
+$ln = $_SESSION['user_info']['lastname'];
+$useroffice = $_SESSION['user_info']['office'];
+$userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
+$cmpid = $_SESSION['user_info']['cmpid'];
+$childid = $_SESSION['user_info']['childid'];
+check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
-<?php
-if (isset($_SESSION['userid'])) {
-    $user = $_SESSION['userid'];
-    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_array($result);
-    $fn = $row[0];
-    $ln = $row[1];$of = $row[2];
-    if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+
+// 换cmpid在页面顶端
+if (sizeof($childid) > 1) {
+    foreach ($childid as $x) {
+        $title = "UCMP" . $x;
+        if (isset($_POST["{$title}"])) {
+            $_SESSION['user_info']['cmpid'] = $x;
+            $cmpid = $_SESSION['user_info']['cmpid'];
+        }
     }
-} else {
-    echo '<script> alert("Please Re-login!")</script>';
-    print '<script> location.replace("index.php"); </script>';
 }
 ?>
 
@@ -31,11 +30,10 @@ if (isset($_SESSION['userid'])) {
 $columns = array('date', 'subject', 'status', 'ordernumber', 'mkt');
 
 //$perpage = 20;
-$search = "";
 
 if (isset($_POST['search'])) {
     $_SESSION['notifysearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM note where status= '1' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
+    $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
     $result = mysqli_query($conn, $sql);
     $totalnotes = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
@@ -45,15 +43,8 @@ if (isset($_POST['search'])) {
         }
     }
 } else {
-    $sql = "SELECT * FROM note where status= '1' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
-    $result = mysqli_query($conn, $sql);
-    $totalnotes = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-    if ($totalnotes != 0) {
-        while ($arr = mysqli_fetch_array($result)) {
-            $datanote[] = $arr;
-        }
-    }
+    $datanote = check_note($cmpid);
+    $totalnotes = sizeof($datanote);
 }
 ?>
 
@@ -67,7 +58,7 @@ for ($i = 0; $i < count($datanote); $i++) {
         $_REQUEST["{$tem}"] = 0;
         $nts = $datanote[$i]['subject'];
         $apend = $nts . ">>>" . $str . "Update:" . $_POST["$nnote"];
-        $sql = "UPDATE note SET subject='{$apend}' WHERE date='" . $datanote[$i]['date'] . "'";
+        $sql = "UPDATE note SET subject='{$apend}' WHERE (cmpid='" . $cmpid . "') AND date='" . $datanote[$i]['date'] . "'";
         mysqli_query($conn, $sql);
         header('location: ' . $_SERVER['HTTP_REFERER']);
         break;
@@ -79,7 +70,7 @@ for ($i = 0; $i < count($datanote); $i++) {
     $tem = "trash" . $i;
     if (isset($_REQUEST["{$tem}"])) {
         $_REQUEST["{$tem}"] = 0;
-        $sql = "UPDATE note SET status='0' WHERE date='" . $datanote[$i]['date'] . "'";
+        $sql = "UPDATE note SET status='0' WHERE (cmpid='" . $cmpid . "') AND date='" . $datanote[$i]['date'] . "'";
         mysqli_query($conn, $sql);
 
         header('location: ' . $_SERVER['HTTP_REFERER']);
@@ -90,7 +81,7 @@ for ($i = 0; $i < count($datanote); $i++) {
 
 <?php
 if (isset($_POST['login'])) {
-    $sql = "INSERT INTO note (date,subject, mkt, ordernumber,status) VALUES ('" . $str . "','" . $_POST['password'] . "','" . $_POST['mkt'] . "','" . $_POST['username'] . "','1')";
+    $sql = "INSERT INTO note (date,subject, mkt, ordernumber,status, cmpid) VALUES ('" . $str . "','" . $_POST['password'] . "','" . $_POST['mkt'] . "','" . $_POST['username'] . "','1'" . $cmpid . "')";
 
     mysqli_query($conn, $sql);
     header('location: ' . $_SERVER['HTTP_REFERER']);
@@ -168,7 +159,7 @@ if (isset($_POST['login'])) {
         <!--[if lt IE 8]>
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
-<div class="left-sidebar-pro">
+        <div class="left-sidebar-pro">
             <nav id="sidebar" class="">              
                 <div class="nalika-profile">
                     <div class="profile-dtl">
@@ -251,7 +242,7 @@ if (isset($_POST['login'])) {
                                 </ul>
                             </li>
                             <li>
-                             <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
@@ -290,18 +281,27 @@ if (isset($_POST['login'])) {
                                         </div>
 
                                         <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                            <div class="header-top-menu tabl-d-n">
-                                                <ul class="nav navbar-nav mai-top-nav">
-                                                    <li class="nav-item"><a href="#" class="nav-link">Home</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">About</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Services</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Support</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            <form method="post">
+                                                <div class="header-top-menu tabl-d-n">
+
+                                                    
+                                                    <ul class="nav navbar-nav mai-top-nav">
+                                                        <li><a>ACCOUNT_ID：</a></li>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
+                                                                <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
+                                                                </li>
+                                                            <?php } else { ?>
+                                                                <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
+                                                                </li>
+                                                            <?php }
+                                                        } ?>
+                                                    </ul>
+                                                </div>
+                                            </form>
                                         </div>
 
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
@@ -369,7 +369,7 @@ if (isset($_POST['login'])) {
                                                             </li>
                                                         </ul>
                                                     </li>
-                                                    
+
                                                 </ul>
                                             </div>
                                         </div>
@@ -449,12 +449,12 @@ if (isset($_POST['login'])) {
                                     <table >
 
                                         <tr>
-                                            <th>Date</th>
-                                            <th>Market Place</th>
-                                            <th>Order Number</th>
-                                            <th>Subject</th>
-                                            <th>New Note</th>
-                                            <th>Setting</th>
+                                        <th>Date</th>
+                                        <th>Market Place</th>
+                                        <th>Order Number</th>
+                                        <th>Subject</th>
+                                        <th>New Note</th>
+                                        <th>Setting</th>
 
 
 
@@ -476,8 +476,8 @@ if (isset($_POST['login'])) {
                                             <td><input name="<?php print $newnote; ?>" type="text" class="form-control"></td>
                                             <td>
 
-                                                <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="Update" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                                                <button data-toggle="tooltip" name ="<?php print $trash; ?>"     type="submit" title="Done" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                            <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="Update" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                            <button data-toggle="tooltip" name ="<?php print $trash; ?>"     type="submit" title="Done" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
 
                                             </td >  
                                             </tr>

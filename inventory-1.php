@@ -1,36 +1,41 @@
 <?php
-require 'header.php';
-?>
+require_once 'header.php';
+$pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
+$pagelevel = 1;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+check_session_expiration();
+$user = $_SESSION['user_info']['userid'];
+$fn = $_SESSION['user_info']['firstname'];
+$ln = $_SESSION['user_info']['lastname'];
+$useroffice = $_SESSION['user_info']['office'];
+$userlevel = $_SESSION['user_info']['level'];
+$cmpid = $_SESSION['user_info']['cmpid'];
+$childid = $_SESSION['user_info']['childid'];
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
-<?php
-if (isset($_SESSION['userid'])) {
-    $user = $_SESSION['userid'];
-    $sql = "select firstname, lastname, office from employees where username='" . $user . "'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_array($result);
-    $fn = $row[0];
-    $ln = $row[1];$of = $row[2];
-    if ($of == "gst") {
-      print '<script> location.replace("data-table.php"); </script>';
+
+// 换cmpid在页面顶端
+if (sizeof($childid) > 1) {
+    foreach ($childid as $x) {
+        $title = "UCMP" . $x;
+        if (isset($_POST["{$title}"])) {
+            $_SESSION['user_info']['cmpid'] = $x;
+            $cmpid = $_SESSION['user_info']['cmpid'];
+        }
     }
-} else {
-    echo '<script> alert("Please Re-login!")</script>';
-    print '<script> location.replace("index.php"); </script>';
 }
-?>
 
-
-<?php
-$columns = array('sku', 'brand', 'category', 'price', 'ram', 'cpu', 'quality', 'shanghai', 'transit', 'nc','sold');
+$columns = array('sku', 'brand', 'category', 'price', 'ram', 'cpu', 'quality', 'shanghai', 'transit', 'nc', 'sold');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'DESC' : 'ASC';
 $search = "";
 
 if (isset($_POST['search'])) {
 
-    $sql = "SELECT * FROM product where sku LIKE '%" . @$_POST['inventorysearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM product where cmpid='" . $cmpid . "' and sku LIKE '%" . @$_POST['inventorysearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM product ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM product where cmpid='" . $cmpid . "' ORDER BY " . $column . ' ' . $sort_order;
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -239,19 +244,28 @@ if ($totalrow != 0) {
                                             </div>
                                         </div>
 
-                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                            <div class="header-top-menu tabl-d-n">
-                                                <ul class="nav navbar-nav mai-top-nav">
-                                                    <li class="nav-item"><a href="#" class="nav-link">Home</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">About</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Services</a>
-                                                    </li>
-                                                    <li class="nav-item"><a href="#" class="nav-link">Support</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                       <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                            <form method="post">
+                                                <div class="header-top-menu tabl-d-n">
+
+                                                    <ul class="nav navbar-nav mai-top-nav">
+                                                        <li><a>ACCOUNT_ID：</a></li>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
+                                                                <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
+                                                                </li>
+                                                            <?php } else { ?>
+                                                                <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
+                                                                </li>
+                                                            <?php }
+                                                        } ?>
+                                                    </ul>
+
+                                                </div>
+                                            </form>
                                         </div>
 
                                         <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
@@ -271,31 +285,33 @@ if ($totalrow != 0) {
                                                                 <a title="Greensboro" href="recordnc.php"><span class="mini-sub-pro">Record NC</span></a></li>
                                                         </ul>
                                                     </li>
-                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if($totalnotes!=0)print 'indicator-nt'?>"></span></a>
+                                                    <li class="nav-item"><a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle"><i class="icon nalika-alarm" aria-hidden="true"></i><span class="<?php if ($totalnotes != 0) print 'indicator-nt' ?>"></span></a>
                                                         <div role="menu" class="notification-author dropdown-menu animated zoomIn">
                                                             <div class="notification-single-top">
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php 
-                                                                for($i=0;$i<count($datanote)&&$i<3;$i++){
-                                                                print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
-                                                                            <h2>";print $datanote[$i]['date'];    print "</h2>
-                                                                            <p>".$datanote[$i]['subject']."</p>
+                                                                            <h2>";
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
+                                                                            <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
-                                                                </li>";}
-                                                                
+                                                                </li>";
+                                                                }
                                                                 ?>
                                                             </ul>
-                                                             <div class="notification-view">
-                                                            <?php  if(count($datanote)>3) print "<a href='notification.php'>View All Notification</a>";?>
-                                                        </div>
+                                                            <div class="notification-view">
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     <li class="nav-item">
@@ -317,7 +333,7 @@ if ($totalrow != 0) {
                                                             </li>
                                                         </ul>
                                                     </li>
-                                                    
+
                                                 </ul>
                                             </div>
                                         </div>
@@ -384,7 +400,7 @@ if ($totalrow != 0) {
 
 
                                                     </div>
-                                                    
+
                                                 </form>
                                             </div>
                                         </div>
@@ -396,77 +412,77 @@ if ($totalrow != 0) {
                                     <table >
 
                                         <tr>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=brand&order=<?php echo $asc_or_desc; ?>">Brand <i class=" fa fa-sort<?php echo $column == 'brand' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=category&order=<?php echo $asc_or_desc; ?>">Category <i class="fa fa-sort<?php echo $column == 'category' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=price&order=<?php echo $asc_or_desc; ?>">Original Price <i class="fa fa-sort<?php echo $column == 'price' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=ram&order=<?php echo $asc_or_desc; ?>">RAM Type <i class="fa fa-sort<?php echo $column == 'ram' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=cpu&order=<?php echo $asc_or_desc; ?>">Cpu Type <i class="fa fa-sort<?php echo $column == 'cpu' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=quality&order=<?php echo $asc_or_desc; ?>">Quality <i class="fa fa-sort<?php echo $column == 'quality' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=sold&order=<?php echo $asc_or_desc; ?>">Sold <i class="fa fa-sort<?php echo $column == 'sold' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=shanghai&order=<?php echo $asc_or_desc; ?>">SH Inventory <i class="fa fa-sort<?php echo $column == 'shanghai' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=transit&order=<?php echo $asc_or_desc; ?>">In Transit <i class="fa fa-sort<?php echo $column == 'transit' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="inventory-1.php?column=nc&order=<?php echo $asc_or_desc; ?>">NC Inventory <i class="fa fa-sort<?php echo $column == 'nc' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=brand&order=<?php echo $asc_or_desc; ?>">Brand <i class=" fa fa-sort<?php echo $column == 'brand' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=category&order=<?php echo $asc_or_desc; ?>">Category <i class="fa fa-sort<?php echo $column == 'category' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=price&order=<?php echo $asc_or_desc; ?>">Original Price <i class="fa fa-sort<?php echo $column == 'price' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=ram&order=<?php echo $asc_or_desc; ?>">RAM Type <i class="fa fa-sort<?php echo $column == 'ram' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=cpu&order=<?php echo $asc_or_desc; ?>">Cpu Type <i class="fa fa-sort<?php echo $column == 'cpu' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=quality&order=<?php echo $asc_or_desc; ?>">Quality <i class="fa fa-sort<?php echo $column == 'quality' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=sold&order=<?php echo $asc_or_desc; ?>">Sold <i class="fa fa-sort<?php echo $column == 'sold' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=shanghai&order=<?php echo $asc_or_desc; ?>">SH Inventory <i class="fa fa-sort<?php echo $column == 'shanghai' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=transit&order=<?php echo $asc_or_desc; ?>">In Transit <i class="fa fa-sort<?php echo $column == 'transit' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="inventory-1.php?column=nc&order=<?php echo $asc_or_desc; ?>">NC Inventory <i class="fa fa-sort<?php echo $column == 'nc' ? '-' . $up_or_down : ''; ?>"></i></a></th>
 
                                         </tr>
 
 
 
                                         <?php
+                                        $ncall = 0;
+                                        $shall = 0;
+                                        $transitall = 0;
+                                        $all = 0;
                                         if ($totalrow != 0) {
                                             //for ($i = 0; $i < $perpage; $i++) {
-                                                //$index = ($page - 1) * $perpage + $i;
-                                                //if ($index >= count($data))
-                                                    //break;
-                                                //else {
-                                            $ncall=0;
-                                            $shall=0;
-                                            $transitall=0;
-                                            $all=0;
+                                            //$index = ($page - 1) * $perpage + $i;
+                                            //if ($index >= count($data))
+                                            //break;
+                                            //else {
+
                                             for ($index = 0; $index < count($data); $index++) {
-                                                    print '<tr>';
+                                                print '<tr>';
 
-                                                    print "<td>{$data[$index]['sku']}</td>";
-                                                    print "<td>{$data[$index]['brand']}</td>";
-                                                    print "<td>{$data[$index]['category']}</td>";
-                                                    print "<td>{$data[$index]['price']}</td>";
-                                                    print "<td>{$data[$index]['ram']}</td>";
-                                                    print "<td>{$data[$index]['cpu']}</td>";
-                                                    print "<td>{$data[$index]['quality']}</td>";
-                                                    print "<td>{$data[$index]['sold']}</td>";
-                                                    print "<td>{$data[$index]['shanghai']}</td>";
-                                                    print "<td>{$data[$index]['transit']}</td>";
-                                                    print "<td>{$data[$index]['nc']}</td>";
+                                                print "<td>{$data[$index]['sku']}</td>";
+                                                print "<td>{$data[$index]['brand']}</td>";
+                                                print "<td>{$data[$index]['category']}</td>";
+                                                print "<td>{$data[$index]['price']}</td>";
+                                                print "<td>{$data[$index]['ram']}</td>";
+                                                print "<td>{$data[$index]['cpu']}</td>";
+                                                print "<td>{$data[$index]['quality']}</td>";
+                                                print "<td>{$data[$index]['sold']}</td>";
+                                                print "<td>{$data[$index]['shanghai']}</td>";
+                                                print "<td>{$data[$index]['transit']}</td>";
+                                                print "<td>{$data[$index]['nc']}</td>";
 
-                                                    print "</tr>";
-                                                    $transitall=$data[$index]['transit']+$transitall;
-                                                    $shall=$data[$index]['shanghai']+$shall;
-                                                    $ncall=$data[$index]['nc']+$ncall;
-                                                    $all = $transitall + $shall + $ncall ;
-                                                }
+                                                print "</tr>";
+                                                $transitall = $data[$index]['transit'] + $transitall;
+                                                $shall = $data[$index]['shanghai'] + $shall;
+                                                $ncall = $data[$index]['nc'] + $ncall;
+                                                $all = $transitall + $shall + $ncall;
                                             }
-                                        
+                                        }
                                         ?>
                                     </table>
-                                   <!-- <div class="custom-pagination "  >
-                                        <ul class="pagination ">
+                                    <!-- <div class="custom-pagination "  >
+                                         <ul class="pagination ">
+ 
+                                    
+                                    <?php
+                                    for ($i = 1; $i <= $totalpage; $i++) {
+                                        if ($i == $page) {
+                                            printf("<li ><a >%d</a></li>", $i);
+                                        } else {
+                                            printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
+                                        }
+                                    }
+                                    ?>
+ 
+ 
+                                         </ul>
+                                     </div>-->
+                                    <p style="color:#ff4">  NC Inventory: <?php print $ncall; ?> &nbsp; &nbsp;&nbsp; SH Inventory: <?php print $shall; ?>  &nbsp; &nbsp;&nbsp; In Transit Total: <?php print $transitall; ?></p>
 
-                                   
-                                            <?php
-                                            for ($i = 1; $i <= $totalpage; $i++) {
-                                                if ($i == $page) {
-                                                    printf("<li ><a >%d</a></li>", $i);
-                                                } else {
-                                                    printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
-                                                }
-                                            }
-                                            ?>
-
-
-                                        </ul>
-                                    </div>-->
-                                   <p style="color:#ff4">  NC Inventory: <?php print $ncall;?> &nbsp; &nbsp;&nbsp; SH Inventory: <?php print $shall;?>  &nbsp; &nbsp;&nbsp; In Transit Total: <?php print $transitall;?></p>
-                                 
                                 </form>
                             </div>
                         </div>

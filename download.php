@@ -6,7 +6,7 @@ $file = ("./upload/" . $f);
 
 $fw = fopen($file, "w");
 
-fwrite($fw, "Order ID (required),	Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz");
+fwrite($fw, "Order ID (required),	Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note");
 fclose($fw);
 
 header('Content-Description: File Transfer');

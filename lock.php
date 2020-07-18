@@ -1,12 +1,11 @@
 <?php
-require 'header.php';
-?>
-<?php
-if (!isset($_COOKIE['asd'])) {
-    setcookie("asd", $_SESSION['userid'], time() + 300);
+require_once 'header.php';
+
+if (!isset($_COOKIE['user_info'])) {
+    setcookie("user_info", $_SESSION['user_info'], time() + 300);
 }
-unset($_SESSION['userid']);
-$sql = "select password from employees where username='" . @$_COOKIE['asd'] . "'";
+unset($_SESSION['user_info']);
+$sql = "select password from employees where (cmpid='". $cmpid."') and username='" . @$_COOKIE['user_info']['userid'] . "'";
 $result = mysqli_query($conn, $sql);
 $row = mysqli_fetch_array($result);
 $var = $row[0];
@@ -15,7 +14,7 @@ if (isset($_POST['submit'])) {
     if ($password != $var) {
         print "<script> alert('The password is not right!');</script>";
     } else {
-        $_SESSION['userid'] = $_COOKIE['asd'];
+        $_SESSION['user_info'] = $_COOKIE['user_info'];
         unset($_COOKIE['asd']);        
         header("location:homepage.php");
         
