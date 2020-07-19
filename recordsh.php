@@ -30,11 +30,15 @@ $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET[
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
 //$perpage = 20;
 $search = "";
-
+if (!isset($_SESSION['recordsh_searchtext'])) {
+    $_SESSION['recordsh_searchtext'] = '';
+}
 if (isset($_POST['search'])) {
-    $sql = "SELECT * FROM shstock where (cmpid='". $cmpid."') and (productlist LIKE '%" . @$_POST['recordsearchtext'] . "%' OR tracking LIKE '%" . @$_POST['recordsearchtext'] . "%' OR subject LIKE '%" . @$_POST['recordsearchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['recordsh_searchtext'] = $_POST['searchtext'];
+    $sql = "SELECT * FROM shstock where (cmpid='" . $cmpid . "') and (productlist LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR tracking LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR subject LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM shstock where (cmpid='". $cmpid."') ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM shstock where (cmpid='" . $cmpid . "') and (productlist LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR tracking LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR subject LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['recordsh_searchtext'] = '';
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -58,11 +62,11 @@ for ($index = 0; $index < @count($data); $index++) {
             case "replacement": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         print $sql . "<br>";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     print $sql . "<br>";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
@@ -75,10 +79,10 @@ for ($index = 0; $index < @count($data); $index++) {
             case "order": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -90,10 +94,10 @@ for ($index = 0; $index < @count($data); $index++) {
             case "supply-good": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -103,7 +107,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     } break;
                 }
             case "supply-bad": {
-                    $sql = "DELETE FROM shstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -113,7 +117,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     } break;
                 }
             case "return-bad": {
-                    $sql = "DELETE FROM shstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -125,10 +129,10 @@ for ($index = 0; $index < @count($data); $index++) {
             case "return-good": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -140,22 +144,22 @@ for ($index = 0; $index < @count($data); $index++) {
             case "import": {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
-                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $productl[$i][0] . "'";
+                        $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
 
-                    $sql = "update ncstock set ordernumber=0 where (cmpid='". $cmpid."') AND tracking='" . $data[$index]['tracking'] . "'";
+                    $sql = "update ncstock set ordernumber=0 where (cmpid='" . $cmpid . "') AND tracking='" . $data[$index]['tracking'] . "'";
                     mysqli_query($conn, $sql);
-                    $sql = "select productlist from ncstock where (cmpid='". $cmpid."') and tracking='" . $data[$index]['tracking'] . "'";
+                    $sql = "select productlist from ncstock where (cmpid='" . $cmpid . "') and tracking='" . $data[$index]['tracking'] . "'";
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_fetch_array($result);
                     $product2 = json_decode($row[0]);
                     for ($i = 0; $i < count($product2); $i++) {
-                        $sql = "update product set transit=transit+" . $product2[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $product2[$i][0] . "'";
+                        $sql = "update product set transit=transit+" . $product2[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $product2[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
 
-                    $sql = "DELETE FROM shstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -166,17 +170,17 @@ for ($index = 0; $index < @count($data); $index++) {
                 }
             case "export": {
 
-                    $sql = "select productlist from shstock where (cmpid='". $cmpid."') and date='" . $data[$index]['date'] . "'";
+                    $sql = "select productlist from shstock where (cmpid='" . $cmpid . "') and date='" . $data[$index]['date'] . "'";
 
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_fetch_array($result);
                     $product2 = json_decode($row[0]);
                     for ($i = 0; $i < count($product2); $i++) {
-                        $sql = "update product set shanghai=shanghai+" . $product2[$i][1] . ",transit=transit-" . $product2[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $product2[$i][0] . "'";
+                        $sql = "update product set shanghai=shanghai+" . $product2[$i][1] . ",transit=transit-" . $product2[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $product2[$i][0] . "'";
 
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='". $cmpid."') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -261,7 +265,7 @@ for ($index = 0; $index < @count($data); $index++) {
         <!--[if lt IE 8]>
                 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
-<div class="left-sidebar-pro">
+        <div class="left-sidebar-pro">
             <nav id="sidebar" class="">              
                 <div class="nalika-profile">
                     <div class="profile-dtl">
@@ -344,7 +348,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                 </ul>
                             </li>
                             <li>
-                              <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
@@ -386,7 +390,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -399,8 +403,10 @@ for ($index = 0; $index < @count($data); $index++) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
-                                                        } ?>
+                                                            <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -449,7 +455,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -528,9 +534,9 @@ for ($index = 0; $index < @count($data); $index++) {
                                                 <form method="post" role="search" class="">
 
 
-                                                    <div style="width:200px;float:left;"><input name="recordsearchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_POST['recordsearchtext'])) {
-                                                            print $_POST['recordsearchtext'];
+                                                    <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
+                                                        if (isset($_SESSION['recordsh_searchtext'])) {
+                                                            print $_SESSION['recordsh_searchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
@@ -548,14 +554,14 @@ for ($index = 0; $index < @count($data); $index++) {
                                     <table style="width:98%;margin:auto;color: #fff">
 
                                         <tr>
-                                            <th><a style="color: #fff" href="recordsh.php?column=date&order=<?php echo $asc_or_desc; ?>">Date <i class=" fa fa-sort<?php echo $column == 'date' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=subject&order=<?php echo $asc_or_desc; ?>">Subject <i class=" fa fa-sort<?php echo $column == 'subject' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=market&order=<?php echo $asc_or_desc; ?>">Market Place <i class="fa fa-sort<?php echo $column == 'market' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=ordernumber&order=<?php echo $asc_or_desc; ?>">Order No. <i class="fa fa-sort<?php echo $column == 'ordernumber' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=ship&order=<?php echo $asc_or_desc; ?>">Ship Carrier <i class="fa fa-sort<?php echo $column == 'ship' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=tracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'tracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="recordsh.php?column=productlist&order=<?php echo $asc_or_desc; ?>">Product List <i class="fa fa-sort<?php echo $column == 'productlist' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" >Note</a></th>
+                                        <th><a style="color: #fff" href="recordsh.php?column=date&order=<?php echo $asc_or_desc; ?>">Date <i class=" fa fa-sort<?php echo $column == 'date' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="recordsh.php?column=subject&order=<?php echo $asc_or_desc; ?>">Subject <i class=" fa fa-sort<?php echo $column == 'subject' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="recordsh.php?column=market&order=<?php echo $asc_or_desc; ?>">Market Place <i class="fa fa-sort<?php echo $column == 'market' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="recordsh.php?column=ordernumber&order=<?php echo $asc_or_desc; ?>">Order No. <i class="fa fa-sort<?php echo $column == 'ordernumber' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="recordsh.php?column=ship&order=<?php echo $asc_or_desc; ?>">Ship Carrier <i class="fa fa-sort<?php echo $column == 'ship' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="recordsh.php?column=tracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'tracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="recordsh.php?column=productlist&order=<?php echo $asc_or_desc; ?>">Product List <i class="fa fa-sort<?php echo $column == 'productlist' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" >Note</a></th>
                                         </tr>
 
 

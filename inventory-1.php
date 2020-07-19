@@ -32,8 +32,8 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'D
 $search = "";
 
 if (isset($_POST['search'])) {
-
-    $sql = "SELECT * FROM product where cmpid='" . $cmpid . "' and sku LIKE '%" . @$_POST['inventorysearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    //此处的search命令和其他页面不同，因为这里没有edit 等功能键。请注意。
+    $sql = "SELECT * FROM product where cmpid='" . $cmpid . "' and sku LIKE '%" . @$_POST['inventory_searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 } else {
     $sql = "SELECT * FROM product where cmpid='" . $cmpid . "' ORDER BY " . $column . ' ' . $sort_order;
 }
@@ -390,9 +390,9 @@ if ($totalrow != 0) {
                                                 <form method="post" role="search" class="">
 
 
-                                                    <div style="width:200px;float:left;"><input name="inventorysearchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_POST['inventorysearchtext'])) {
-                                                            print $_POST['inventorysearchtext'];
+                                                    <div style="width:200px;float:left;"><input name="inventory_searchtext" type="text" placeholder="Search Content....." value="<?php
+                                                        if (isset($_POST['inventory_searchtext'])) {
+                                                            print $_POST['inventory_searchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">

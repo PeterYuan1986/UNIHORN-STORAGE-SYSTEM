@@ -31,40 +31,29 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'D
 //$perpage = 20;
 $search = "";
 
+if (!isset($_SESSION['outncsearchtext'])) {
+    $_SESSION['outncsearchtext'] = '';
+}
 if (isset($_POST['search'])) {
     $_SESSION['outncsearchtext'] = $_POST['searchtext'];
-
-    $sql = "SELECT sku, nc FROM product where (cmpid='". $cmpid."') and nc>0 and sku LIKE '%" . $_SESSION['outncsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $result = mysqli_query($conn, $sql);
-    $totalrow = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-    if ($totalrow != 0) {
-        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-        $add_class = ' class="highlight"';
-
-        while ($arr = mysqli_fetch_array($result)) {
-            $data[] = $arr;
-        }
-    }
+    $sql = "SELECT sku, nc FROM product where (cmpid='" . $cmpid . "') and nc>0 and sku LIKE '%" . $_SESSION['outncsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT sku, nc FROM product where (cmpid='". $cmpid."') and nc>0 and sku LIKE '%" . @$_SESSION['outncsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $result = mysqli_query($conn, $sql);
-    $totalrow = mysqli_num_rows($result);
+    $sql = "SELECT sku, nc FROM product where (cmpid='" . $cmpid . "') and nc>0 and sku LIKE '%" . @$_SESSION['outncsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['outncsearchtext'] = '';
+}
+$result = mysqli_query($conn, $sql);
+$totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
-    if ($totalrow != 0) {
-        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-        $add_class = ' class="highlight"';
+if ($totalrow != 0) {
+    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+    $add_class = ' class="highlight"';
 
-        while ($arr = mysqli_fetch_array($result)) {
-            $data[] = $arr;
-        }
+    while ($arr = mysqli_fetch_array($result)) {
+        $data[] = $arr;
     }
 }
 ?>
-
-
 
 <?php
 if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
@@ -75,9 +64,9 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
         if ($result) {
             $pro = json_decode($productlist);
             for ($i = 0; $i < count($pro); $i++) {
-                $sql = "UPDATE product SET nc=nc-" . $pro[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $pro[$i][0] . "'";
+                $sql = "UPDATE product SET nc=nc-" . $pro[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
-                $sql = "UPDATE product SET sold=sold+" . $pro[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $pro[$i][0] . "'";
+                $sql = "UPDATE product SET sold=sold+" . $pro[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
             }
 
@@ -88,12 +77,12 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
         unset($_SESSION['tosend']);
     } else {
         $productlist = json_encode($_SESSION['tosend']);
-        $sql = "INSERT INTO `ncstock`(date, productlist, subject, ordernumber, market, tracking, ship, cmpid) VALUES ('" . $str . "','" . $productlist . "','replacement' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['trackno'] . "','" . $_POST['ship'] ."','". $cmpid . "')";
+        $sql = "INSERT INTO `ncstock`(date, productlist, subject, ordernumber, market, tracking, ship, cmpid) VALUES ('" . $str . "','" . $productlist . "','replacement' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['trackno'] . "','" . $_POST['ship'] . "','" . $cmpid . "')";
         $result = mysqli_query($conn, $sql);
         if ($result) {
             $pro = json_decode($productlist);
             for ($i = 0; $i < count($pro); $i++) {
-                $sql = "UPDATE product SET nc=nc-" . $pro[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $pro[$i][0] . "'";
+                $sql = "UPDATE product SET nc=nc-" . $pro[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $pro[$i][0] . "'";
                 mysqli_query($conn, $sql);
             }
 
@@ -301,11 +290,11 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                             </div>
                                         </div>
 
-                                       <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -319,7 +308,8 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
                                                             <?php }
-                                                        } ?>
+                                                        }
+                                                        ?>
                                                     </ul>
                                                 </div>
                                             </form>
@@ -464,10 +454,10 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                 <table style="width: 90%;margin:auto;color: #fff">
 
                                                     <tr>
-                                                        <th><a style="color: #fff" href="outgoingnc.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                        <th><a style="color: #fff" href="outgoingnc.php?column=ncorder=<?php echo $asc_or_desc; ?>">Inventory <i class=" fa fa-sort<?php echo $column == 'nc' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                        <th>Amount To Send</th>
-                                                        <th>Check</th>
+                                                    <th><a style="color: #fff" href="outgoingnc.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                    <th><a style="color: #fff" href="outgoingnc.php?column=ncorder=<?php echo $asc_or_desc; ?>">Inventory <i class=" fa fa-sort<?php echo $column == 'nc' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                    <th>Amount To Send</th>
+                                                    <th>Check</th>
 
                                                     </tr>
 
@@ -504,16 +494,16 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                         <form method="post">
                                             <table style="width: 100%;margin:auto;color:#fff">
                                                 <tr>
-                                                    <th>SKU</th>
-                                                    <th>Inventory</th>
-                                                    <th>To Send</th>
+                                                <th>SKU</th>
+                                                <th>Inventory</th>
+                                                <th>To Send</th>
                                                 </tr>
                                                 <?php
 //这段控制pickup表格
                                                 $total = 0;
                                                 if (isset($_POST['submit'])) {
                                                     $tosend = array();
-                                                    for ($ind = 0; $ind < count($data); $ind++) {
+                                                    for ($ind = 0; $ind < @count(@$data); $ind++) {
                                                         $deta = "inven" . $ind;
                                                         $check = "check" . $ind;
                                                         if (@$_POST["{$check}"] != NULL) {

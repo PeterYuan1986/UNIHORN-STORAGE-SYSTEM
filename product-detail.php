@@ -27,40 +27,30 @@ if (sizeof($childid) > 1) {
 
 $perpage = 20;
 
+if (!isset($_SESSION['detailpagesearchtext'])) {
+    $_SESSION['detailpagesearchtext'] = '';
+}
 if (isset($_POST['search'])) {
     $_SESSION['detailpagesearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT sku FROM product where (cmpid='". $cmpid."') and sku LIKE '%" . $_SESSION['detailpagesearchtext'] . "%'";
-    $result = mysqli_query($conn, $sql);
-    $totalrow = mysqli_num_rows($result);
-    $totalpage = ceil($totalrow / $perpage);
-    if ($totalrow != 0) {
-        while ($arr = mysqli_fetch_array($result)) {
-            $data[] = $arr;
-        }
-        if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
-            $page = 1;
-        } else
-            $page = $_GET['page'];
-    }else{
-        $page=1;
-    }
+    $sql = "SELECT sku FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . $_SESSION['detailpagesearchtext'] . "%'";
 } else {
-    $sql = "SELECT sku FROM product where (cmpid='". $cmpid."') and sku LIKE '%" . @$_SESSION['detailpagesearchtext'] . "%'";
-    $result = mysqli_query($conn, $sql);
-    $totalrow = mysqli_num_rows($result);
-    $totalpage = ceil($totalrow / $perpage);
-    $data=NULL;
-    if ($totalrow != 0) {
-        while ($arr = mysqli_fetch_array($result)) {
-            $data[] = $arr;
-        }
-        if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
-            $page = 1;
-        } else
-            $page = $_GET['page'];
-    }else{
-        $page=1;
+    $sql = "SELECT sku FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . @$_SESSION['detailpagesearchtext'] . "%'";
+    $_SESSION['detailpagesearchtext'] = '';
+}
+$result = mysqli_query($conn, $sql);
+$totalrow = mysqli_num_rows($result);
+$totalpage = ceil($totalrow / $perpage);
+
+if ($totalrow != 0) {
+    while ($arr = mysqli_fetch_array($result)) {
+        $data[] = $arr;
     }
+    if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
+        $page = 1;
+    } else
+        $page = $_GET['page'];
+}else {
+    $page = 1;
 }
 ?>
 
@@ -74,7 +64,7 @@ for ($i = 0; $i < $perpage; $i++) {
         break;
     } else if (isset($_POST["{$tem}"])) {
         $_SESSION['detailsku'] = $data[$ind]['sku'];
-        $sql = "select * from product where (cmpid='". $cmpid."') and sku='" . $_SESSION['detailsku'] . "'";
+        $sql = "select * from product where (cmpid='" . $cmpid . "') and sku='" . $_SESSION['detailsku'] . "'";
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_array($result);
         $_SESSION['detailbrand'] = $row[1];
@@ -291,7 +281,7 @@ for ($i = 0; $i < $perpage; $i++) {
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -305,7 +295,8 @@ for ($i = 0; $i < $perpage; $i++) {
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
                                                             <?php }
-                                                        } ?>
+                                                        }
+                                                        ?>
                                                     </ul>
                                                 </div>
                                             </form>
@@ -444,11 +435,11 @@ for ($i = 0; $i < $perpage; $i++) {
                                             <table style="width: 100%;margin:auto;color: #fff">
 
                                                 <tr>
-                                                    <th>Product SKU </th>
-                                                    <!--<th><a style="color: #fff" href="product-detail.php?column=brand&order=<?php echo $asc_or_desc; ?>">CN STOCK <i class=" fa fa-sort<?php echo $column == 'brand' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                    <th><a style="color: #fff" href="product-detail.php?column=category&order=<?php echo $asc_or_desc; ?>">IN TRANSIT <i class="fa fa-sort<?php echo $column == 'category' ? '-' . $up_or_down : ''; ?>"></i></a></th> 
-                                                    <th><a style="color: #fff" href="product-detail.php?column=price&order=<?php echo $asc_or_desc; ?>">US STOCK <i class="fa fa-sort<?php echo $column == 'price' ? '-' . $up_or_down : ''; ?>"></i></a></th>-->
-                                                    <th>CHECK</th>
+                                                <th>Product SKU </th>
+                                                <!--<th><a style="color: #fff" href="product-detail.php?column=brand&order=<?php echo $asc_or_desc; ?>">CN STOCK <i class=" fa fa-sort<?php echo $column == 'brand' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                <th><a style="color: #fff" href="product-detail.php?column=category&order=<?php echo $asc_or_desc; ?>">IN TRANSIT <i class="fa fa-sort<?php echo $column == 'category' ? '-' . $up_or_down : ''; ?>"></i></a></th> 
+                                                <th><a style="color: #fff" href="product-detail.php?column=price&order=<?php echo $asc_or_desc; ?>">US STOCK <i class="fa fa-sort<?php echo $column == 'price' ? '-' . $up_or_down : ''; ?>"></i></a></th>-->
+                                                <th>CHECK</th>
 
 
                                                 </tr>
@@ -473,7 +464,7 @@ for ($i = 0; $i < $perpage; $i++) {
                                                         ?>
 
                                                         <td>
-                                                            <button data-toggle="tooltip" name ="<?php print $detail; ?>"    type="submit" title="detail"  class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                                        <button data-toggle="tooltip" name ="<?php print $detail; ?>"    type="submit" title="detail"  class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
 
                                                         </td >  
                                                         <?php
@@ -552,8 +543,8 @@ for ($i = 0; $i < $perpage; $i++) {
                                             </div>
                                             <div class="pro-viwer">
                                                 <a href="#" onclick="openNewWin('<?php print @$_SESSION['detailweb'] ?>');">
-                                                <i class="fa fa-internet-explorer">Click</i></a>
-                                                
+                                                    <i class="fa fa-internet-explorer">Click</i></a>
+
                                             </div>
                                         </div>
                                         <div class="clear"></div>

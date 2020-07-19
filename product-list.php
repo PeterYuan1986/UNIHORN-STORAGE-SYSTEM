@@ -30,12 +30,15 @@ $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET[
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'DESC' : 'ASC';
 //$perpage = 20;
 
-
+if (!isset($_SESSION['product-list_searchtext'])) {
+    $_SESSION['product-list_searchtext'] = '';
+}
 if (isset($_POST['search'])) {
-    $_SESSION['listsearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM product where (cmpid='". $cmpid."') and sku LIKE '%" . $_SESSION['listsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['product-list_searchtext'] = $_POST['searchtext'];
+    $sql = "SELECT * FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . $_SESSION['product-list_searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM product where (cmpid='". $cmpid."') ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . $_SESSION['product-list_searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['product-list_searchtext'] = '';
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -65,7 +68,7 @@ for ($i = 0; $i < @count(@$data); $i++) {
     $tem = "trash" . $i;
     if (isset($_REQUEST["{$tem}"])) {
         $_REQUEST["{$tem}"] = 0;
-        $sql = "DELETE FROM `product` WHERE (cmpid='". $cmpid."') AND sku='" . $data[$i]['sku'] . "'";
+        $sql = "DELETE FROM `product` WHERE (cmpid='" . $cmpid . "') AND sku='" . $data[$i]['sku'] . "'";
         mysqli_query($conn, $sql);
         header('location: ' . $_SERVER['HTTP_REFERER']);
         break;
@@ -288,7 +291,7 @@ for ($i = 0; $i < @count(@$data); $i++) {
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -301,8 +304,10 @@ for ($i = 0; $i < @count(@$data); $i++) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
-                                                        } ?>
+                                                            <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -434,8 +439,8 @@ for ($i = 0; $i < @count(@$data); $i++) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_SESSION['listsearchtext'])) {
-                                                            print $_SESSION['listsearchtext'];
+                                                        if (isset($_SESSION['product-list_searchtext'])) {
+                                                            print $_SESSION['product-list_searchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
@@ -453,14 +458,14 @@ for ($i = 0; $i < @count(@$data); $i++) {
                                     <table >
 
                                         <tr>
-                                            <th><a style="color: #fff" href="product-list.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="product-list.php?column=brand&order=<?php echo $asc_or_desc; ?>">Brand <i class=" fa fa-sort<?php echo $column == 'brand' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="product-list.php?column=category&order=<?php echo $asc_or_desc; ?>">Category <i class="fa fa-sort<?php echo $column == 'category' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="product-list.php?column=price&order=<?php echo $asc_or_desc; ?>">Original Price <i class="fa fa-sort<?php echo $column == 'price' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="product-list.php?column=ram&order=<?php echo $asc_or_desc; ?>">RAM Type <i class="fa fa-sort<?php echo $column == 'ram' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="product-list.php?column=cpu&order=<?php echo $asc_or_desc; ?>">Cpu Type <i class="fa fa-sort<?php echo $column == 'cpu' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th><a style="color: #fff" href="product-list.php?column=quality&order=<?php echo $asc_or_desc; ?>">Quality <i class="fa fa-sort<?php echo $column == 'quality' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                            <th>Setting</th>
+                                        <th><a style="color: #fff" href="product-list.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="product-list.php?column=brand&order=<?php echo $asc_or_desc; ?>">Brand <i class=" fa fa-sort<?php echo $column == 'brand' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="product-list.php?column=category&order=<?php echo $asc_or_desc; ?>">Category <i class="fa fa-sort<?php echo $column == 'category' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="product-list.php?column=price&order=<?php echo $asc_or_desc; ?>">Original Price <i class="fa fa-sort<?php echo $column == 'price' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="product-list.php?column=ram&order=<?php echo $asc_or_desc; ?>">RAM Type <i class="fa fa-sort<?php echo $column == 'ram' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="product-list.php?column=cpu&order=<?php echo $asc_or_desc; ?>">Cpu Type <i class="fa fa-sort<?php echo $column == 'cpu' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="product-list.php?column=quality&order=<?php echo $asc_or_desc; ?>">Quality <i class="fa fa-sort<?php echo $column == 'quality' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th>Setting</th>
 
 
 
@@ -489,8 +494,8 @@ for ($i = 0; $i < @count(@$data); $i++) {
                                             ?>
 
                                             <td>
-                                                <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="Edit" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                                                <button data-toggle="tooltip" name ="<?php print $trash; ?>"     type="submit" title="Edit" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                            <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="Edit" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                            <button data-toggle="tooltip" name ="<?php print $trash; ?>"     type="submit" title="Edit" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
 
                                             </td >  
                                             </tr>
@@ -589,15 +594,15 @@ for ($i = 0; $i < @count(@$data); $i++) {
 
 
         <script type="text/javascript">
-                                                function openNewWin(url)
-                                                {
-                                                    window.open(url);
-                                                }
+                                            function openNewWin(url)
+                                            {
+                                                window.open(url);
+                                            }
 
-                                                function confirmation(url) {
+                                            function confirmation(url) {
 
-                                                    return confirm('Are you sure?');
-                                                }
+                                                return confirm('Are you sure?');
+                                            }
 
 
         </script>

@@ -32,8 +32,8 @@ $perpage = 400;
 
 
 if (isset($_POST['search'])) {
-    $_SESSION['orderserchtext'] = $_POST['searchtext'];
-     $sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderserchtext'] . "%' or orderid LIKE '%" . $_SESSION['orderserchtext'] . "%' or service LIKE '%" . $_SESSION['orderserchtext'] . "%' or tracking LIKE '%" . $_SESSION['orderserchtext'] . "%' or name LIKE '%" . $_SESSION['orderserchtext'] . "%' or company LIKE '%" . $_SESSION['orderserchtext'] . "%' or address LIKE '%" . $_SESSION['orderserchtext'] . "%' or city LIKE '%" . $_SESSION['orderserchtext'] . "%' or state LIKE '%" . $_SESSION['orderserchtext'] . "%' or zipcode LIKE '%" . $_SESSION['orderserchtext'] . "%' or batch LIKE '%" . $_SESSION['orderserchtext'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['orderinfo_serchtext'] = $_POST['searchtext'];
+     $sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or service LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or name LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or company LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or address LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or city LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or state LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
 } else {
     $sql = "SELECT * FROM daifaorders where (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
 }
@@ -402,8 +402,8 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['orderserchtext'])) {
-                                                                    print $_SESSION['orderserchtext'];
+                                                                if (isset($_SESSION['orderinfo_serchtext'])) {
+                                                                    print $_SESSION['orderinfo_serchtext'];
                                                                 }
                                                                 ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">

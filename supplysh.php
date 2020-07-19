@@ -29,62 +29,52 @@ $columns = array('sku', 'shanghai');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'DESC' : 'ASC';
 //$perpage = 20;
-$search = "";
-
+if (!isset($_SESSION['supplyshpagesearchtext'])) {
+    $_SESSION['supplyshpagesearchtext'] = '';
+}
 if (isset($_POST['search'])) {
     $_SESSION['supplyshpagesearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT sku, shanghai FROM product where (cmpid='". $cmpid."') AND sku LIKE '%" . $_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $result = mysqli_query($conn, $sql);
-    $totalrow = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-    if ($totalrow != 0) {
-        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-        $add_class = ' class="highlight"';
+    $sql = "SELECT sku, shanghai FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . $_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+} else {
+    $sql = "SELECT sku, shanghai FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . @$_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['supplyshpagesearchtext'] = '';
+}
 
-        while ($arr = mysqli_fetch_array($result)) {
-            $data[] = $arr;
-        }
+$result = mysqli_query($conn, $sql);
+$totalrow = mysqli_num_rows($result);
+//$totalpage = ceil($totalrow / $perpage);
+if ($totalrow != 0) {
+    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+    $add_class = ' class="highlight"';
+
+    while ($arr = mysqli_fetch_array($result)) {
+        $data[] = $arr;
     }
 } else {
-    $sql = "SELECT sku, shanghai FROM product where (cmpid='". $cmpid."') AND sku LIKE '%" . @$_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+    $data = null;
+}
+?>
 
-    $result = mysqli_query($conn, $sql);
-    $totalrow = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-    if ($totalrow != 0) {
-        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-        $add_class = ' class="highlight"';
-
-        while ($arr = mysqli_fetch_array($result)) {
-            $data[] = $arr;
-        }
-    }else{
-        $data=null;
+<?php
+for ($i = 0; $i < @count($data); $i++) {
+    $tem = "trash" . $i;
+    if (isset($_REQUEST["{$tem}"])) {
+        $_REQUEST["{$tem}"] = 0;
+        $sql = "DELETE FROM `product` WHERE (cmpid='" . $cmpid . "') AND sku='" . $data[$i]['sku'] . "'";
+        mysqli_query($conn, $sql);
+        header('location: ' . $_SERVER['HTTP_REFERER']);
+        break;
     }
-    ?>
+}
 
-    <?php
-    for ($i = 0; $i < @count($data); $i++) {
-        $tem = "trash" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $sql = "DELETE FROM `product` WHERE (cmpid='". $cmpid."') AND sku='" . $data[$i]['sku'] . "'";
-            mysqli_query($conn, $sql);
-            header('location: ' . $_SERVER['HTTP_REFERER']);
-            break;
-        }
-    }
-
-    for ($i = 0; $i < @count($data); $i++) {
-        $tem = "edit" . $i;
-        if (isset($_REQUEST["{$tem}"])) {
-            $_REQUEST["{$tem}"] = 0;
-            $_SESSION['editsku'] = $data[$i]['sku'];
-            header('location:product-edit.php');
-            break;
-        }
+for ($i = 0; $i < @count($data); $i++) {
+    $tem = "edit" . $i;
+    if (isset($_REQUEST["{$tem}"])) {
+        $_REQUEST["{$tem}"] = 0;
+        $_SESSION['editsku'] = $data[$i]['sku'];
+        header('location:product-edit.php');
+        break;
     }
 }
 ?>
@@ -93,43 +83,13 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
     if ($_POST['subject'] == "return") {
         if ($_POST['quali'] == "good") {
             $productlist = json_encode($_SESSION['tosend']);
-            $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log,cmpid) VALUES ('" . $str . "','" . $productlist . "','return-good' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] ."','". $cmpid . "')";
-            
+            $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log,cmpid) VALUES ('" . $str . "','" . $productlist . "','return-good' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "','" . $cmpid . "')";
+
             $result = mysqli_query($conn, $sql);
             if ($result) {
                 $pro = json_decode($productlist);
                 for ($i = 0; $i < count($pro); $i++) {
-                    $sql = "UPDATE product SET shanghai=shanghai+" . $pro[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $pro[$i][0] . "'";
-                    mysqli_query($conn, $sql);
-                }
-
-                print "<script>alert('Successful!')</script>";
-            } else {
-                print "<script>alert('Failue, Please redo!')</script>";
-            }
-            unset($_SESSION['tosend']);
-        } else {           
-            $productlist = json_encode($_SESSION['tosend']);
-            $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log,cmpid) VALUES ('" . $str . "','" . $productlist . "','return-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] ."','". $cmpid . "')";
-            $result = mysqli_query($conn, $sql);
-            if ($result) {
-                
-
-                print "<script>alert('Successful!')</script>";
-            } else {
-                print "<script>alert('Failue, Please redo!')</script>";
-            }
-        }
-    } else {
-        if ($_POST['quali'] == "good") {
-           
-            $productlist = json_encode($_SESSION['tosend']);
-            $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log,cmpid) VALUES ('" . $str . "','" . $productlist . "','supply-good' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] ."','". $cmpid . "')";
-            $result = mysqli_query($conn, $sql);
-            if ($result) {
-                $pro = json_decode($productlist);
-                for ($i = 0; $i < count($pro); $i++) {
-                    $sql = "UPDATE product SET shanghai=shanghai+" . $pro[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $pro[$i][0] . "'";
+                    $sql = "UPDATE product SET shanghai=shanghai+" . $pro[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $pro[$i][0] . "'";
                     mysqli_query($conn, $sql);
                 }
 
@@ -139,9 +99,39 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
             }
             unset($_SESSION['tosend']);
         } else {
-               
             $productlist = json_encode($_SESSION['tosend']);
-            $sql = "INSERT INTO `shstock`(date, productlist, subject, ordernumber, market, log,cmpid) VALUES ('" . $str . "','" . $productlist . "','supply-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] ."','". $cmpid . "')";
+            $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log,cmpid) VALUES ('" . $str . "','" . $productlist . "','return-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "','" . $cmpid . "')";
+            $result = mysqli_query($conn, $sql);
+            if ($result) {
+
+
+                print "<script>alert('Successful!')</script>";
+            } else {
+                print "<script>alert('Failue, Please redo!')</script>";
+            }
+        }
+    } else {
+        if ($_POST['quali'] == "good") {
+
+            $productlist = json_encode($_SESSION['tosend']);
+            $sql = "INSERT INTO shstock (date, productlist, subject, ordernumber, market, log,cmpid) VALUES ('" . $str . "','" . $productlist . "','supply-good' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "','" . $cmpid . "')";
+            $result = mysqli_query($conn, $sql);
+            if ($result) {
+                $pro = json_decode($productlist);
+                for ($i = 0; $i < count($pro); $i++) {
+                    $sql = "UPDATE product SET shanghai=shanghai+" . $pro[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $pro[$i][0] . "'";
+                    mysqli_query($conn, $sql);
+                }
+
+                print "<script>alert('Successful!')</script>";
+            } else {
+                print "<script>alert('Failue, Please redo!')</script>";
+            }
+            unset($_SESSION['tosend']);
+        } else {
+
+            $productlist = json_encode($_SESSION['tosend']);
+            $sql = "INSERT INTO `shstock`(date, productlist, subject, ordernumber, market, log,cmpid) VALUES ('" . $str . "','" . $productlist . "','supply-bad' ,'" . $_POST['orderno'] . "','" . $_POST['mkt'] . "','" . $_POST['note'] . "','" . $cmpid . "')";
             $result = mysqli_query($conn, $sql);
             if ($result) {
 
@@ -309,7 +299,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                 </ul>
                             </li>
                             <li>
-                                 <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
                                     <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
@@ -349,25 +339,27 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                             </div>
                                         </div>
 
-                                       <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
-                                                        <?php
-                                                        foreach ($childid as $x) {
-                                                            $title = "UCMP" . $x;
-                                                            if ($cmpid == $x) {
-                                                                ?>
+<?php
+foreach ($childid as $x) {
+    $title = "UCMP" . $x;
+    if ($cmpid == $x) {
+        ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
-                                                        } ?>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -397,23 +389,23 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php
-                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                    print "<li>
+<?php
+for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                    print $datanote[$i]['date'];
-                                                                    print "</h2>
+    print $datanote[$i]['date'];
+    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                }
-                                                                ?>
+}
+?>
                                                             </ul>
                                                             <div class="notification-view">
                                                                 <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
@@ -517,21 +509,21 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                 <table style="width: 90%;margin:auto;color: #fff">
 
                                                     <tr>
-                                                        <th><a style="color: #fff" href="supplysh.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                        <th><a style="color: #fff" href="supplysh.php?column=shanghai&order=<?php echo $asc_or_desc; ?>">Inventory <i class=" fa fa-sort<?php echo $column == 'shanghai' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                        <th>Amount</th>
-                                                        <th>Check</th>
+                                                    <th><a style="color: #fff" href="supplysh.php?column=sku&order=<?php echo $asc_or_desc; ?>">Product SKU <i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                    <th><a style="color: #fff" href="supplysh.php?column=shanghai&order=<?php echo $asc_or_desc; ?>">Inventory <i class=" fa fa-sort<?php echo $column == 'shanghai' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                    <th>Amount</th>
+                                                    <th>Check</th>
 
                                                     </tr>
 
-                                                    <?php
-                                                    for ($index = 0; $index < @count($data); $index++) {
-                                                        print '<tr>';
-                                                        print "<td>{$data[$index]['sku']}</td>";
-                                                        print "<td>{$data[$index]['shanghai']}</td>";
-                                                        $deta = "inven" . $index;
-                                                        $check = "check" . $index;
-                                                        ?>
+<?php
+for ($index = 0; $index < @count($data); $index++) {
+    print '<tr>';
+    print "<td>{$data[$index]['sku']}</td>";
+    print "<td>{$data[$index]['shanghai']}</td>";
+    $deta = "inven" . $index;
+    $check = "check" . $index;
+    ?>
 
                                                         <td>
                                                             <input  style="color:#000"  name ="<?php print $deta; ?>"    type="text">
@@ -540,7 +532,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                             <input  style="color:#000" name ="<?php print $check; ?>"   value="1" type="checkbox">
                                                         </td >
                                                         </tr>
-                                                    <?php } ?>
+<?php } ?>
                                                 </table>
                                                 <div class="custom-pagination "  >
                                                     <input name="submit" type="submit" value="Click to confirm">
@@ -557,30 +549,30 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                         <form method="post">
                                             <table style="width: 100%;margin:auto;color:#fff">
                                                 <tr>
-                                                    <th>SKU</th>
-                                                    <th>Inventory</th>
-                                                    <th>Amount</th>
+                                                <th>SKU</th>
+                                                <th>Inventory</th>
+                                                <th>Amount</th>
                                                 </tr>
-                                                <?php
+<?php
 //这段控制pickup表格
-                                                $total = 0;
-                                                if (isset($_POST['submit'])) {
-                                                    $tosend = array();
-                                                    for ($ind = 0; $ind < count($data); $ind++) {
-                                                        $deta = "inven" . $ind;
-                                                        $check = "check" . $ind;
-                                                        if (@$_POST["{$check}"] != NULL) {
-                                                            print '<tr>';
-                                                            print "<td>{$data[$ind]['sku']}</td>";
-                                                            print "<td>{$data[$ind]['shanghai']}</td>";
-                                                            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
-                                                            @$total += trim(@$_REQUEST["{$deta}"]);
-                                                            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
-                                                        }
-                                                    }
-                                                    $_SESSION['tosend'] = $tosend;
-                                                }
-                                                ?>
+$total = 0;
+if (isset($_POST['submit'])) {
+    $tosend = array();
+    for ($ind = 0; $ind < count($data); $ind++) {
+        $deta = "inven" . $ind;
+        $check = "check" . $ind;
+        if (@$_POST["{$check}"] != NULL) {
+            print '<tr>';
+            print "<td>{$data[$ind]['sku']}</td>";
+            print "<td>{$data[$ind]['shanghai']}</td>";
+            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
+            @$total += trim(@$_REQUEST["{$deta}"]);
+            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
+        }
+    }
+    $_SESSION['tosend'] = $tosend;
+}
+?>
                                             </table>     
 
                                             <div class="custom-pagination "  >

@@ -37,12 +37,15 @@ $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET[
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
 //$perpage = 20;
 
-
+if(!isset($_SESSION['batchinfo_searchtext'])){
+    $_SESSION['batchinfo_searchtext']='';
+}
 if (isset($_POST['search'])) {
-    $_SESSION['batchinfosearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' and batch='" . $batch . "' and (orderid LIKE '%" . $_SESSION['batchinfosearchtext'] . "%' or note LIKE '%" . $_SESSION['batchinfosearchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['batchinfo_searchtext'] = $_POST['searchtext'];
+    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' and batch='" . $batch . "' and (orderid LIKE '%" . $_SESSION['batchinfo_searchtext'] . "%' or note LIKE '%" . $_SESSION['batchinfo_searchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
 } else {
-    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' and batch='" . $batch . "' ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' and batch='" . $batch . "' and (orderid LIKE '%" . $_SESSION['batchinfo_searchtext'] . "%' or note LIKE '%" . $_SESSION['batchinfo_searchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['batchinfo_searchtext'] = '';
 }
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -255,7 +258,7 @@ if ($totalrow != 0) {
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -268,8 +271,10 @@ if ($totalrow != 0) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
-                                                        } ?>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -403,8 +408,8 @@ if ($totalrow != 0) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_SESSION['batchinfosearchtext'])) {
-                                                            print $_SESSION['batchinfosearchtext'];
+                                                        if (isset($_SESSION['batchinfo_searchtext'])) {
+                                                            print $_SESSION['batchinfo_searchtext'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">

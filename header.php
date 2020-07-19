@@ -60,7 +60,7 @@ function check_session_expiration() {
 }
 
 function check_access($useroffice, $userlevel, $pageoffice, $pagelevel) {
-    if (($useroffice == $pageoffice || $pageoffice == 'all') && $userlevel <= $pagelevel) {
+    if ((($useroffice == $pageoffice || $pageoffice == 'all') && $userlevel <= $pagelevel)||$useroffice=='admin') {
         
     } else {
         echo '<script> alert("You have no access for this page!")</script>';

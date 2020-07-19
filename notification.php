@@ -30,28 +30,27 @@ if (sizeof($childid) > 1) {
 $columns = array('date', 'subject', 'status', 'ordernumber', 'mkt');
 
 //$perpage = 20;
-
+if (!isset($_SESSION['notifysearchtext'])) {
+    $_SESSION['notifysearchtext'] = '';
+}
 if (isset($_POST['search'])) {
     $_SESSION['notifysearchtext'] = $_POST['searchtext'];
     $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
-    $result = mysqli_query($conn, $sql);
-    $totalnotes = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-    if ($totalnotes != 0) {
-        while ($arr = mysqli_fetch_array($result)) {
-            $datanote[] = $arr;
-        }
-    }
 } else {
-    $datanote = check_note($cmpid);
-    $totalnotes = sizeof($datanote);
+    $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
+    $_SESSION['notifysearchtext'] = '';
 }
-?>
+$result = mysqli_query($conn, $sql);
+$totalnotes = mysqli_num_rows($result);
+//$totalpage = ceil($totalrow / $perpage);
+if ($totalnotes != 0) {
+    while ($arr = mysqli_fetch_array($result)) {
+        $datanote[] = $arr;
+    }
+}
 
-<?php
 //编辑后获取sku存入session在edit界面调取
-
-for ($i = 0; $i < count($datanote); $i++) {
+for ($i = 0; $i < @count(@$datanote); $i++) {
     $tem = "edit" . $i;
     $nnote = "note" . $i;
     if (isset($_REQUEST["{$tem}"])) {
@@ -66,7 +65,7 @@ for ($i = 0; $i < count($datanote); $i++) {
 }
 
 
-for ($i = 0; $i < count($datanote); $i++) {
+for ($i = 0; $i < @count(@$datanote); $i++) {
     $tem = "trash" . $i;
     if (isset($_REQUEST["{$tem}"])) {
         $_REQUEST["{$tem}"] = 0;
@@ -284,7 +283,7 @@ if (isset($_POST['login'])) {
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -297,8 +296,10 @@ if (isset($_POST['login'])) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
-                                                        } ?>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
                                                 </div>
                                             </form>
@@ -463,7 +464,7 @@ if (isset($_POST['login'])) {
 
 
                                         <?php
-                                        for ($index = 0; $index < count($datanote); $index++) {
+                                        for ($index = 0; $index < @count(@$datanote); $index++) {
                                             print '<tr>';
                                             print "<td>{$datanote[$index]['date']}</td>";
                                             print "<td>{$datanote[$index]['mkt']}</td>";
@@ -604,15 +605,15 @@ if (isset($_POST['login'])) {
 
 
         <script type="text/javascript">
-                                                function openNewWin(url)
-                                                {
-                                                    window.open(url);
-                                                }
+                                            function openNewWin(url)
+                                            {
+                                                window.open(url);
+                                            }
 
-                                                function confirmation(url) {
+                                            function confirmation(url) {
 
-                                                    return confirm('Are you sure?');
-                                                }
+                                                return confirm('Are you sure?');
+                                            }
 
 
         </script>

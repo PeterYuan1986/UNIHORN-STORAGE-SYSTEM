@@ -31,37 +31,29 @@ $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'D
 //$perpage = 20;
 $search = "";
 
+if (!isset($_SESSION['supplypagesearchtext'])) {
+    $_SESSION['supplypagesearchtext'] = '';
+}
 if (isset($_POST['search'])) {
     $_SESSION['supplypagesearchtext'] = $_POST['searchtext'];
     $sql = "SELECT sku, nc FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . $_SESSION['supplypagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $result = mysqli_query($conn, $sql);
-    $totalrow = mysqli_num_rows($result);
-//$totalpage = ceil($totalrow / $perpage);
-    if ($totalrow != 0) {
-        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-        $add_class = ' class="highlight"';
-
-        while ($arr = mysqli_fetch_array($result)) {
-            $data[] = $arr;
-        }
-    }
 } else {
     $sql = "SELECT sku, nc FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . @$_SESSION['supplypagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $result = mysqli_query($conn, $sql);
-    $totalrow = mysqli_num_rows($result);
+    $_SESSION['supplypagesearchtext'] = '';
+}
+$result = mysqli_query($conn, $sql);
+$totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
-    if ($totalrow != 0) {
-        $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
-        $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
-        $add_class = ' class="highlight"';
+if ($totalrow != 0) {
+    $up_or_down = str_replace(array('ASC', 'DESC'), array('up', 'down'), $sort_order);
+    $asc_or_desc = $sort_order == 'ASC' ? 'desc' : 'asc';
+    $add_class = ' class="highlight"';
 
-        while ($arr = mysqli_fetch_array($result)) {
-            $data[] = $arr;
-        }
-    } else {
-        $data = null;
+    while ($arr = mysqli_fetch_array($result)) {
+        $data[] = $arr;
     }
+} else {
+    $data = null;
 }
 ?>
 
@@ -349,25 +341,27 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                 </button>
                                             </div>
                                         </div>
-<div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
-                                                        <?php
-                                                        foreach ($childid as $x) {
-                                                            $title = "UCMP" . $x;
-                                                            if ($cmpid == $x) {
-                                                                ?>
+<?php
+foreach ($childid as $x) {
+    $title = "UCMP" . $x;
+    if ($cmpid == $x) {
+        ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
-                                                            <?php } else { ?>
+    <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
-                                                        } ?>
+    <?php
+    }
+}
+?>
                                                     </ul>
                                                 </div>
                                             </form>
@@ -415,7 +409,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -501,10 +495,10 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
 
 
                                                                 <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                    if (isset($_SESSION['supplypagesearchtext'])) {
-                                                                        print $_SESSION['supplypagesearchtext'];
-                                                                    }
-                                                                    ?>" ></div>
+                                                                if (isset($_SESSION['supplypagesearchtext'])) {
+                                                                    print $_SESSION['supplypagesearchtext'];
+                                                                }
+                                                                ?>" ></div>
                                                                 <div style="color:#fff;width:000px;float:left;">
                                                                     <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -539,7 +533,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                             <input  style="color:#000" name ="<?php print $check; ?>"   value="1" type="checkbox">
                                                         </td >
                                                         </tr>
-<?php } ?>
+                                                    <?php } ?>
                                                 </table>
                                                 <div class="custom-pagination "  >
                                                     <input name="submit" type="submit" value="Click to confirm">
