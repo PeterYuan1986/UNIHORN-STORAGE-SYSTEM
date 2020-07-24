@@ -1,4 +1,5 @@
 <?php
+
 require_once 'header.php';
 $pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
 $pagelevel = 2;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
@@ -10,13 +11,11 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
-    
-    // 换cmpid在页面顶端
-    if (sizeof($childid) > 1) {
+
+// 换cmpid在页面顶端
+if (sizeof($childid) > 1) {
     foreach ($childid as $x) {
         $title = "UCMP" . $x;
         if (isset($_POST["{$title}"])) {
@@ -26,9 +25,12 @@ check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
     }
 }
 
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+
 if (isset($_GET['id']) && ($_GET['id'] != '')) {
     $batch = $_GET['id'];
-    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and (cmpid='". $cmpid."') ORDER by orderid ASC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
+    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and (cmpid='" . $cmpid . "') ORDER by orderid ASC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
     $result = mysqli_query($conn, $sql);
 //$totalpage = ceil($totalrow / $perpage);
 
@@ -39,10 +41,10 @@ if (isset($_GET['id']) && ($_GET['id'] != '')) {
     $file = ("./upload/Export_" . $batch . ".csv");
     $fw = fopen($file, "w");
 
-    fwrite($fw, "Order ID (required), Service, Tracking No, Cost,	Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz,\n");
+    fwrite($fw, "Order ID (required), Service, Tracking No, Cost,	Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
 
     for ($index = 0; $index < @count($data); $index++) {
-        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\t" . $data[$index]['tracking'] . "\t," . $data[$index]['cost'] . "," . $data[$index]['name'] . "," . $data[$index]['company'] . ",\"" . $data[$index]['address'] . "\"," . $data[$index]['city'] . "," . $data[$index]['state'] . ",\"" . $data[$index]['zipcode'] . "\",\t" . $data[$index]['phone'] . "\t," . $data[$index]['weight'] . "\n";
+        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\t" . $data[$index]['tracking'] . "\t," . $data[$index]['cost'] . "," . $data[$index]['name'] . "," . $data[$index]['company'] . ",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\"" . $data[$index]['zipcode'] . "\",\t" . $data[$index]['phone'] . "\t," . $data[$index]['weight'] . "," . $data[$index]['note'] . "\n";
 
         fwrite($fw, $text);
     }
@@ -60,7 +62,7 @@ if (isset($_GET['id']) && ($_GET['id'] != '')) {
     readfile($file);
     unlink($file);
 } else {
-    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' ORDER by orderid ASC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
+    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' ORDER by orderid DESC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
     $result = mysqli_query($conn, $sql);
 //$totalpage = ceil($totalrow / $perpage);
 

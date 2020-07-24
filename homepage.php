@@ -10,8 +10,6 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
     
@@ -25,6 +23,10 @@ check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
         }
     }
 }
+
+
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
 
 $sql = "SELECT * FROM `ncstock` WHERE (date BETWEEN SUBDATE(CURRENT_DATE(),INTERVAL 7 day) AND ADDDATE(CURRENT_DATE(),INTERVAL 1 day) AND subject='order' AND market='Amazon') and cmpid='" . $cmpid . "'";
 

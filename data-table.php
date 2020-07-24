@@ -10,10 +10,7 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
-
 
 // 换cmpid在页面顶端
 if (sizeof($childid) > 1) {
@@ -25,6 +22,8 @@ if (sizeof($childid) > 1) {
         }
     }
 }
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
 
 if (isset($_POST['payoff'])) {
 
@@ -42,8 +41,8 @@ $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET[
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
 //$perpage = 20;
 
-if(!isset($_SESSION['data-table_searchtest'])){
-    $_SESSION['data-table_searchtest']='';
+if (!isset($_SESSION['data-table_searchtest'])) {
+    $_SESSION['data-table_searchtest'] = '';
 }
 if (isset($_POST['search'])) {
     $_SESSION['data-table_searchtest'] = $_POST['searchtext'];
@@ -100,11 +99,23 @@ if (isEmpty(@$pendingdata)) {
         if (isset($_POST["{$tem}"])) {
             $_POST["{$tem}"] = 0;
             $sql = "DELETE FROM daifa WHERE cmpid='" . $cmpid . "' and batchname='" . $pendingdata[$i]['batchname'] . "'";
-            print $sql;
             mysqli_query($conn, $sql);
             $sql = "DELETE FROM daifaorders WHERE  cmpid='" . $cmpid . "' and batch='" . $pendingdata[$i]['batchname'] . "'";
             mysqli_query($conn, $sql);
             unlink("./upload/" . $pendingdata[$i]['batchname'] . ".csv");
+            header('location: ' . $_SERVER['HTTP_REFERER']);
+            break;
+        }
+    }
+
+    for ($i = 0; $i < @count(@$pendingdata); $i++) {
+        $tem = "pendingrefresh" . $i;
+        if (isset($_POST["{$tem}"])) {
+            $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $pendingdata[$i]['batchname'] . "'";
+            $result = mysqli_query($conn, $sql);
+            $updatenewbatch = mysqli_fetch_array($result);
+            $sql = "UPDATE daifa SET orders='" . $updatenewbatch[0] . "', servicefee='" . $updatenewbatch[1] . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $pendingdata[$i]['batchname'] . "'";
+            $result = mysqli_query($conn, $sql);
             header('location: ' . $_SERVER['HTTP_REFERER']);
             break;
         }
@@ -124,7 +135,6 @@ if (isEmpty(@$shippeddata)) {
     for ($a = 0; $a < @count(@$shippeddata); $a++) {
         $temm = "ship" . $a;
         if (isset($_POST["{$temm}"])) {
-            print $a . "+++++++++++++++++++++++++++++++";
             print "<script>window.open('./update-batch.php?id=" . $shippeddata[$a]['batchname'] . "')</script>";
             break;
         }
@@ -495,10 +505,10 @@ if (isEmpty(@$shippeddata)) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['data-table_searchtest'])) {
-                                                                    print $_SESSION['data-table_searchtest'];
-                                                                }
-                                                                ?>" ></div>
+                                                        if (isset($_SESSION['data-table_searchtest'])) {
+                                                            print $_SESSION['data-table_searchtest'];
+                                                        }
+                                                        ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -547,6 +557,9 @@ if (isEmpty(@$shippeddata)) {
 //           break;
 //      else {
                                                             for ($index = 0; $index < @count($pendingdata); $index++) {
+                                                                $edit = "pendingedit" . $index;
+                                                                $trash = "pendingtrash" . $index;
+                                                                $refresh = "pendingrefresh" . $index;
                                                                 print '<tr>';
                                                                 print "<td><a href='batchinfo.php?id={$pendingdata[$index]['batchname']}' style='color: #ff0'>{$pendingdata[$index]['batchname']}</a></td>";
                                                                 print "<td>{$pendingdata[$index]['time']}</td>";
@@ -554,15 +567,13 @@ if (isEmpty(@$shippeddata)) {
                                                                 print "<td>{$pendingdata[$index]['orders']}</td>";
                                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$pendingdata[$index]['dhltracking']}')\" >{$pendingdata[$index]['dhltracking']}</td>";
                                                                 print "<td>{$pendingdata[$index]['shippingcost']}</td>";
-                                                                if ($pendingdata[$index]['type'] == "Letter") {
-                                                                    $rate = 0.2;
-                                                                } else {
-                                                                    $rate = 0.4;
-                                                                }
-                                                                print "<td>" . $rate * $pendingdata[$index]['orders'] . "</td>";
+                                                                print "<td>{$pendingdata[$index]['servicefee']}";
+                                                                ?>
+                                                                <button data-toggle="tooltip" name ="<?php print $refresh; ?>"    type="submit" title="刷新" class="pd-setting-ed"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+
+                                                                </td >
+                                                                <?php
                                                                 print "<td>{$pendingdata[$index]['status']}</td>";
-                                                                $edit = "pendingedit" . $index;
-                                                                $trash = "pendingtrash" . $index;
                                                                 ?>
 
                                                                 <td>
@@ -613,13 +624,9 @@ if (isEmpty(@$shippeddata)) {
                                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$shippeddata[$shippedindex]['dhltracking']}')\" >{$shippeddata[$shippedindex]['dhltracking']}</td>";
                                                                 print "<td>{$shippeddata[$shippedindex]['shippingcost']}</td>";
                                                                 $shipping_unpaid_shipped = $shipping_unpaid_shipped + $shippeddata[$shippedindex]['shippingcost'];
-                                                                if ($shippeddata[$shippedindex]['type'] == "Letter") {
-                                                                    $rate = 0.2;
-                                                                } else {
-                                                                    $rate = 0.4;
-                                                                }
-                                                                print "<td>" . $rate * $shippeddata[$shippedindex]['orders'] . "</td>";
-                                                                $service_unpaid_shipped = $service_unpaid_shipped + $rate * $shippeddata[$shippedindex]['orders'];
+
+                                                                print "<td>{$shippeddata[$shippedindex]['servicefee']}</td>";
+                                                                $service_unpaid_shipped = $service_unpaid_shipped + $shippeddata[$shippedindex]['servicefee'];
                                                                 print "<td>{$shippeddata[$shippedindex]['status']}</td>";
                                                                 if (!$shippeddata[$shippedindex]['paid']) {
                                                                     $pay = "shippay" . $shippedindex;
@@ -688,12 +695,7 @@ if (isEmpty(@$shippeddata)) {
                                                                 print "<td>{$paiddata[$index]['orders']}</td>";
                                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$paiddata[$index]['dhltracking']}')\" >{$paiddata[$index]['dhltracking']}</td>";
                                                                 print "<td>{$paiddata[$index]['shippingcost']}</td>";
-                                                                if ($paiddata[$index]['type'] == "Letter") {
-                                                                    $rate = 0.2;
-                                                                } else {
-                                                                    $rate = 0.4;
-                                                                }
-                                                                print "<td>" . $rate * $paiddata[$index]['orders'] . "</td>";
+                                                                print "<td> {$paiddata[$index]['servicefee'] }</td>";
                                                                 print "<td>{$paiddata[$index]['status']}</td>";
                                                                 if (!$paiddata[$index]['paid']) {
                                                                     $pay = "pay" . $index;

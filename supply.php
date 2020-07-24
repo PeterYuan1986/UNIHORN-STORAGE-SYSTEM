@@ -10,8 +10,6 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 // 换cmpid在页面顶端
@@ -24,6 +22,9 @@ if (sizeof($childid) > 1) {
         }
     }
 }
+
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
 
 $columns = array('sku', 'nc');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
@@ -348,20 +349,20 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
 
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
-<?php
-foreach ($childid as $x) {
-    $title = "UCMP" . $x;
-    if ($cmpid == $x) {
-        ?>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
-    <?php } else { ?>
+                                                            <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-    <?php
-    }
-}
-?>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
                                                 </div>
                                             </form>
@@ -495,10 +496,10 @@ foreach ($childid as $x) {
 
 
                                                                 <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['supplypagesearchtext'])) {
-                                                                    print $_SESSION['supplypagesearchtext'];
-                                                                }
-                                                                ?>" ></div>
+                                                                    if (isset($_SESSION['supplypagesearchtext'])) {
+                                                                        print $_SESSION['supplypagesearchtext'];
+                                                                    }
+                                                                    ?>" ></div>
                                                                 <div style="color:#fff;width:000px;float:left;">
                                                                     <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 

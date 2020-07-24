@@ -13,6 +13,8 @@ $childid = $_SESSION['user_info']['childid'];
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 
+
+
 // 换cmpid在页面顶端
 if (sizeof($childid) > 1) {
     foreach ($childid as $x) {
@@ -35,9 +37,9 @@ if (!isset($_SESSION['notifysearchtext'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['notifysearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
+    $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%') ORDER BY date DESC";
 } else {
-    $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')";
+    $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')ORDER BY date DESC";
     $_SESSION['notifysearchtext'] = '';
 }
 $result = mysqli_query($conn, $sql);
@@ -56,8 +58,8 @@ for ($i = 0; $i < @count(@$datanote); $i++) {
     if (isset($_REQUEST["{$tem}"])) {
         $_REQUEST["{$tem}"] = 0;
         $nts = $datanote[$i]['subject'];
-        $apend = $nts . ">>>" . $str . "Update:" . $_POST["$nnote"];
-        $sql = "UPDATE note SET subject='{$apend}' WHERE (cmpid='" . $cmpid . "') AND date='" . $datanote[$i]['date'] . "'";
+        $apend = $nts . $str . ">>>" . $fn . " " . $ln . ": " . $_POST["$nnote"] . "<br>";
+        $sql = "UPDATE note SET subject='{$apend}', date=CURRENT_TIME WHERE (cmpid='" . $cmpid . "') AND date='" . $datanote[$i]['date'] . "'";
         mysqli_query($conn, $sql);
         header('location: ' . $_SERVER['HTTP_REFERER']);
         break;
@@ -79,9 +81,9 @@ for ($i = 0; $i < @count(@$datanote); $i++) {
 ?>
 
 <?php
-if (isset($_POST['login'])) {
-    $sql = "INSERT INTO note (date,subject, mkt, ordernumber,status, cmpid) VALUES ('" . $str . "','" . $_POST['password'] . "','" . $_POST['mkt'] . "','" . $_POST['username'] . "','1'" . $cmpid . "')";
-
+if (isset($_POST['submit'])) {
+    $tem = $str . ">>>" . $fn . " " . $ln . ": " . $_POST['password'] . "<br>";
+    $sql = "INSERT INTO note (date,subject, mkt, ordernumber,status, cmpid) VALUES ('" . $str . "','" . $tem . "','" . $_POST['mkt'] . "','" . $_POST['username'] . "','1','" . $cmpid . "')";
     mysqli_query($conn, $sql);
     header('location: ' . $_SERVER['HTTP_REFERER']);
 }
@@ -414,20 +416,20 @@ if (isset($_POST['login'])) {
             </div>
 
             <div class="product-status mg-b-30">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div class="product-status-wrap">
-                                <h4>To Do List </h4>
-                                <div class="add-product" >                                    
+                <form action="" method="post" name="form">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <div class="product-status-wrap">
+                                    <h4>To Do List </h4>
+                                    <div class="add-product" >                                    
 
-                                    <a  href="#new">Add New Notification</a>
-                                </div>
-                                <div>
-                                    <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
-                                        <div class="header-top-menu tabl-d-n">
-                                            <div class="breadcome-heading">
-                                                <form method="post" role="search" class="">
+                                        <a  href="#new">Add New Notification</a>
+                                    </div>
+                                    <div>
+                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                            <div class="header-top-menu tabl-d-n">
+                                                <div class="breadcome-heading">
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
@@ -439,68 +441,68 @@ if (isset($_POST['login'])) {
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
                                                     </div>
-                                                </form>
+
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <form action="" method="post" name="form">
 
+                                    <form method="post" role="search" class="">
 
-                                    <table >
+                                        <table >
 
-                                        <tr>
-                                        <th>Date</th>
-                                        <th>Market Place</th>
-                                        <th>Order Number</th>
-                                        <th>Subject</th>
-                                        <th>New Note</th>
-                                        <th>Setting</th>
-
-
-
-                                        </tr>
+                                            <tr>
+                                            <th>Date</th>
+                                            <th>Market Place</th>
+                                            <th>Order Number</th>
+                                            <th>Subject</th>
+                                            <th>New Note</th>
+                                            <th>Setting</th>
 
 
 
-                                        <?php
-                                        for ($index = 0; $index < @count(@$datanote); $index++) {
-                                            print '<tr>';
-                                            print "<td>{$datanote[$index]['date']}</td>";
-                                            print "<td>{$datanote[$index]['mkt']}</td>";
-                                            print "<td>{$datanote[$index]['ordernumber']}</td>";
-                                            print "<td>{$datanote[$index]['subject']}</td>";
-                                            $newnote = "note" . $index;
-                                            $edit = "edit" . $index;
-                                            $trash = "trash" . $index;
-                                            ?>
-                                            <td><input name="<?php print $newnote; ?>" type="text" class="form-control"></td>
-                                            <td>
-
-                                            <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="Update" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                                            <button data-toggle="tooltip" name ="<?php print $trash; ?>"     type="submit" title="Done" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-
-                                            </td >  
                                             </tr>
+
+
+
                                             <?php
-                                        }
-                                        ?>                                           
-                                    </table>
-                                </form>
+                                            for ($index = 0; $index < @count(@$datanote); $index++) {
+                                                print '<tr>';
+                                                print "<td>{$datanote[$index]['date']}</td>";
+                                                print "<td>{$datanote[$index]['mkt']}</td>";
+                                                print "<td>{$datanote[$index]['ordernumber']}</td>";
+                                                print "<td>{$datanote[$index]['subject']}</td>";
+                                                $newnote = "note" . $index;
+                                                $edit = "edit" . $index;
+                                                $trash = "trash" . $index;
+                                                ?>
+                                                <td><input name="<?php print $newnote; ?>" type="text" class="form-control"></td>
+                                                <td>
+
+                                                <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="Update" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                                <button data-toggle="tooltip" name ="<?php print $trash; ?>"     type="submit" title="Done" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+
+                                                </td >  
+                                                </tr>
+                                                <?php
+                                            }
+                                            ?>                                           
+                                        </table>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>               
+                    </div>               
 
 
 
-                <div class="row">
-                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12"></div>
-                    <div class="col-md-4 col-md-4 col-sm-4 col-xs-12">
+                    <div class="row">
 
-                        <div class="hpanel">
-                            <div class="panel-body">
-                                <form name="form" method="post"  action="#" id="loginForm">
+                        <div class="col-md-12">
+
+                            <div class="panel-body">          
+                                <form method="post">
                                     <div>
                                         <h4>Add New Notification</h4>
                                         <label class="control-label" for="username">Order Number</label>
@@ -513,39 +515,39 @@ if (isset($_POST['login'])) {
                                     <input type="text" title="" placeholder="Notes" required="" value="" name="password" id="new" class="form-control">
 
 
-                                    <div >
-                                        <input type="submit" name="login" value="Submit" class="btn btn-success btn-block loginbtn">  
+                                    <div>
+                                        <input type="submit" name="submit" value="Submit" class="btn btn-success btn-block loginbtn">  
 
                                     </div>
 
                                 </form>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12"></div>
-                </div>
 
-                <!--div class="col-md-4 col-md-4 col-sm-4 col-xs-12">
-                    <div class="product-status-wrap">
-                        <h4>Add New Notification</h4>
-
-                        <div class="form-group">
-                            <label class="control-label" style="color:#fff">Order No.</label>
-                            
                         </div>
+                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12"></div>
                     </div>
-                </div-->
-                <div class="footer-copyright-area">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-mg-3">
-                                <div class="footer-copy-right">
-                                    <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
+
+                    <!--div class="col-md-4 col-md-4 col-sm-4 col-xs-12">
+                        <div class="product-status-wrap">
+                            <h4>Add New Notification</h4>
+    
+                            <div class="form-group">
+                                <label class="control-label" style="color:#fff">Order No.</label>
+                                
+                            </div>
+                        </div>
+                    </div-->
+                    <div class="footer-copyright-area">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-mg-3">
+                                    <div class="footer-copy-right">
+                                        <p>Copyright © 2019 <a href="https://www.unihorn.tech">Unihorn</a> All rights reserved.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
             </div>
         </div>
@@ -605,15 +607,15 @@ if (isset($_POST['login'])) {
 
 
         <script type="text/javascript">
-                                            function openNewWin(url)
-                                            {
-                                                window.open(url);
-                                            }
+                                                    function openNewWin(url)
+                                                    {
+                                                        window.open(url);
+                                                    }
 
-                                            function confirmation(url) {
+                                                    function confirmation(url) {
 
-                                                return confirm('Are you sure?');
-                                            }
+                                                        return confirm('Are you sure?');
+                                                    }
 
 
         </script>

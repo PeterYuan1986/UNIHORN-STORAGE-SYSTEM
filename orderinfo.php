@@ -10,8 +10,6 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 // 换cmpid在页面顶端
@@ -25,6 +23,9 @@ if (sizeof($childid) > 1) {
     }
 }
 
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+
 $columns = array('orderid');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
@@ -33,7 +34,7 @@ $perpage = 400;
 
 if (isset($_POST['search'])) {
     $_SESSION['orderinfo_serchtext'] = $_POST['searchtext'];
-     $sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or service LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or name LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or company LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or address LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or city LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or state LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
+    $sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or service LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or name LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or company LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or address LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or city LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or state LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
 } else {
     $sql = "SELECT * FROM daifaorders where (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
 }
@@ -249,11 +250,11 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                             </div>
                                         </div>
 
-                                       <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -267,7 +268,8 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
                                                             <?php }
-                                                        } ?>
+                                                        }
+                                                        ?>
                                                     </ul>
                                                 </div>
                                             </form>
@@ -316,7 +318,7 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -402,10 +404,10 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['orderinfo_serchtext'])) {
-                                                                    print $_SESSION['orderinfo_serchtext'];
-                                                                }
-                                                                ?>" ></div>
+                                                        if (isset($_SESSION['orderinfo_serchtext'])) {
+                                                            print $_SESSION['orderinfo_serchtext'];
+                                                        }
+                                                        ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -434,7 +436,7 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                         <th><a style="color: #fff" >邮编</a></th>
                                         <th><a style="color: #fff" >手机</a></th>
                                         <th><a style="color: #fff" >重量</a></th>
-<th><a style="color: #fff" >备注</a></th>
+                                        <th><a style="color: #fff" >备注</a></th>
 
                                         </tr>
 
@@ -466,7 +468,7 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                     print "<td>{$data[$index]['zipcode']}</td>";
                                                     print "<td>{$data[$index]['phone']}</td>";
                                                     print "<td>{$data[$index]['weight']}</td>";
-                                                     print "<td>{$data[$index]['note']}</td>";
+                                                    print "<td>{$data[$index]['note']}</td>";
                                                     print '</tr>';
                                                     //}
                                                 }

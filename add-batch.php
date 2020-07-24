@@ -10,8 +10,6 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 
@@ -25,13 +23,14 @@ if (sizeof($childid) > 1) {
         }
     }
 }
-
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
 
 if (isset($_POST['save'])) {
     $daifabatchname = @$_POST['daifabatchname'];
     $daifadhl = @$_POST['daifadhl'];
     $daifaservice = @$_POST['daifaservice'];
-
+    $daifaclass = @$_POST['daifaclass'];
 
     $allowedExts = array(
         'text/csv',
@@ -48,12 +47,12 @@ if (isset($_POST['save'])) {
             //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
             echo "<script> alert('批次名已存在，请重新输入！')</script>";
         } else {
-            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','','" . $daifadhl . "','PENDING', '" . $cmpid . "')";
+            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid, class) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $daifaclass . "')";
+            print $sql;
             $result = mysqli_query($conn, $sql);
             echo "<script> alert('批次新建成功！')</script>";
         }
     } else {
-
         $temp = explode(".", @$_FILES["file"]["name"]);
         //echo @$_FILES["file"]["size"];
         $extension = end($temp);     // 获取文件后缀名
@@ -77,33 +76,59 @@ if (isset($_POST['save'])) {
                     echo "<script> alert('批次名已存在，请重新输入！')</script>";
                 } else {
                     // 如果 upload 目录不存在该文件则将文件上传到 upload 目录下
-                    move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/" . $daifabatchname . ".csv");
+                    move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
                     //echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
 
 
-                    @$filepath = @fopen("./upload/" . $daifabatchname . ".csv", 'r');
+                    @$filepath = @fopen("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv", 'r');
                     @$content = fgetcsv($filepath);
                     try {
                         $a = 0;
-                        while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容                           
-                            $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,note, service, batch, cmpid) VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $content[9] . "','" . $daifaservice . "','" . $daifabatchname . "','" . $cmpid . "')";
+                        $totalfee = 0;
+                        $flag = 1;
+                        while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容 
+                            $amount = 0;
+                            $columunum = 10;
+                            while (@$content[$columunum] > 0) {
+                                $note = $note . $content[$columunum - 1] . "*" . $content[$columunum] . '; ';
+                                $amount = $content[$columunum] + $amount;
+                                $columunum = $columunum + 2;
+                            }
+                            if ($daifaclass == 0) {
+                                if ($daifaservice == "Letter") {
+                                    $fee = $letterfee;
+                                } else
+                                    $fee = $packagefee;
+                            }else {
+                                $fee = $amount * $amountfee;
+                            }
+                            $totalfee = $totalfee + $fee;
+                            $sql = "SELECT * FROM daifaorders WHERE cmpid='" . $cmpid . "' and orderid='" . $content[0] . "'";
                             $result = mysqli_query($conn, $sql);
-                            $a++;
-                            if (!$result) {
+                            $totalrow = mysqli_num_rows($result);
+                            if ($totalrow > 0) {
+                                $flag = 0;
                                 $sql = "DELETE FROM daifaorders WHERE cmpid='" . $cmpid . "' and batch='" . $daifabatchname . "'";
                                 mysqli_query($conn, $sql);
+                                unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
                                 echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查是否此单信息中含有冒号等特殊符号，请修改后重新上传！')</script>";
                                 break;
+                            } else {
+                                $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,note, service, batch, cmpid,fee) VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $note . "','" . $daifaservice . "','" . $daifabatchname . "','" . $cmpid . "','" . $fee . "')";
+                                $result = mysqli_query($conn, $sql);
+                                $a++;
+                                if (!$result) {
+                                    echo "<script> alert('插入单号报错，请联系管理员')</script>";
+                                }
                             }
                         }
-                        if ($result) {
-                            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid)  VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $a . "','" . $daifadhl . "','PENDING', '" . $cmpid . "')";
-
+                        if ($flag) {
+                            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid,servicefee, class)  VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $a . "','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $totalfee . "','" . $daifaclass . "')";
                             mysqli_query($conn, $sql);
                             echo "<script> alert('文件上传成功！')</script>";
                         }
                     } catch (Exception $ex) {
-                        
+                        print $ex;
                     }
 
 
@@ -319,7 +344,7 @@ if (isset($_POST['save'])) {
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -332,8 +357,10 @@ if (isset($_POST['save'])) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
-                                                        } ?>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -484,47 +511,40 @@ if (isset($_POST['save'])) {
                                                                     print "value='" . $_SESSION['daifadhl'] . "'";
                                                                 } unset($_SESSION['daifadhl']);
                                                                 ?>>
-                                                            </div>                                                                                                                    
+                                                            </div>               
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="icon nalika-menu" aria-hidden="true"></i></span>
+                                                                <span class="input-group-addon">Shipping Service</span>
+                                                                <select name="daifaservice" class="form-control pro-edt-select form-control-primary" required>
+
+                                                                    <option value="Letter"  >Letter</option>
+                                                                    <option value="First Class Package" selected>First Class Package</option>
+
+                                                                    <option value="Priority Package" >Priority Package</option>
+
+                                                                    <option value="UPS Package" >UPS Package</option>
+
+
+                                                                </select></div>
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <input type="radio" name="daifaclass"  value ="0" <?php if ($cmpid == '2' || $cmpid != '3') print "checked"; ?>><a style="color:yellow">By Order Amount</a>
+                                                                <a> &nbsp;  &nbsp;  &nbsp;  &nbsp;   </a>
+                                                                <input type="radio" name="daifaclass" value ="1" <?php if ($cmpid == '3') print "checked"; ?>><a style="color:yellow">By Product Amount</a>  
+                                                            </div>
 
                                                         </div>
 
                                                     </div>
                                                     <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                                         <div class="review-content-section">
-
-                                                            <div class="input-group mg-b-pro-edt">
-                                                                <span class="input-group-addon"><i class="icon nalika-menu" aria-hidden="true"></i></span>
-                                                                <span class="input-group-addon">Shipping Service</span>
-                                                                <select name="daifaservice" class="form-control pro-edt-select form-control-primary" required>
-
-                                                                    <option value="Letter"  <?php
-                                                                    if (@$_SESSION['daifaservice'] == 'Letter') {
-                                                                        echo "selected";
-                                                                    };
-                                                                    ?>>Letter</option>
-                                                                    <option value="First Class Package" <?php
-                                                                    if (@$_SESSION['daifaservice'] == 'First Class Package') {
-                                                                        echo "selected";
-                                                                    };
-                                                                    ?>>First Class Package</option>
-
-                                                                    <option value="Priority Package" <?php
-                                                                    if (@$_SESSION['daifaservice'] == 'Priority Package') {
-                                                                        echo "selected";
-                                                                    };
-                                                                    ?>>Priority Package</option>
-
-                                                                    <option value="UPS Package" <?php
-                                                                    if (@$_SESSION['daifaservice'] == 'UPS Package') {
-                                                                        echo "selected";
-                                                                    };
-                                                                    ?>>UPS Package</option>
-
-
-                                                                </select></div>
-
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <button><a onclick="window.open('download.php')">点击下载模板，请勿更改表格顺序</a></button>
+                                                            </div>
+
+
+
+                                                            <div>
+                                                                <br>
                                                             </div>
                                                             <div>
 
@@ -532,6 +552,9 @@ if (isset($_POST['save'])) {
                                                                     <a style="color:yellow">上传CSV文件</a>
                                                                     <input name="file" style="color:yellow" type="file" size="16" maxlength="80" accept="application/csv" >
 
+                                                                </div>
+                                                                <div>
+                                                                    <br>
                                                                 </div>
                                                                 <div>                                                                   
                                                                     <input name="empty" type="checkbox" value='0'> <a style="color:yellow">点击创建空白批次</a>

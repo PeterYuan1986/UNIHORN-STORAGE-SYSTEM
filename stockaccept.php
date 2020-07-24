@@ -10,8 +10,6 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 // 换cmpid在页面顶端
@@ -24,6 +22,9 @@ if (sizeof($childid) > 1) {
         }
     }
 }
+
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
 
 $sql = "SELECT date,tracking,productlist,log FROM shstock where (cmpid='". $cmpid."') and ordernumber=1 And subject='export'";
 $result = mysqli_query($conn, $sql);

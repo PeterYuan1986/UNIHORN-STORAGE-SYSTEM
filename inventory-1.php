@@ -10,8 +10,6 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 
@@ -25,6 +23,9 @@ if (sizeof($childid) > 1) {
         }
     }
 }
+
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
 
 $columns = array('sku', 'brand', 'category', 'price', 'ram', 'cpu', 'quality', 'shanghai', 'transit', 'nc', 'sold');
 $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
@@ -244,7 +245,7 @@ if ($totalrow != 0) {
                                             </div>
                                         </div>
 
-                                       <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
@@ -261,7 +262,8 @@ if ($totalrow != 0) {
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
                                                             <?php }
-                                                        } ?>
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -310,7 +312,7 @@ if ($totalrow != 0) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>

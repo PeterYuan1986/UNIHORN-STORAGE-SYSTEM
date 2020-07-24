@@ -10,9 +10,14 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
+
+if (isset($_GET['id'])) {
+    $batch = $_GET['id'];
+} else {
+    header('location: data-table.php');
+}
+
 // 换cmpid在页面顶端
 if (sizeof($childid) > 1) {
     foreach ($childid as $x) {
@@ -23,6 +28,9 @@ if (sizeof($childid) > 1) {
         }
     }
 }
+
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
 
 if (isset($_POST['save'])) {
     if (!isset($_FILES["file"])) {
@@ -80,10 +88,9 @@ if (isset($_POST['save'])) {
                                 $totalfee = $totalfee + $data[$index][1];
                             }
                             $sql = "UPDATE daifa SET time=CURRENT_TIME, status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $batch . "'";
-                            print $sql;
-                            mysqli_query($conn, $sql);
+                   
                             echo "<script> alert('文件上传成功！')</script>";
-                            // header("Location:data-table.php");
+                            print '<script> location.replace("data-table.php"); </script>';
                         }
                     } catch (Exception $ex) {
                         
@@ -314,7 +321,8 @@ if (isset($_POST['save'])) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
+                                                            <?php
+                                                            }
                                                         }
                                                         ?>
                                                     </ul>

@@ -10,8 +10,6 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 // 换cmpid在页面顶端
 if (sizeof($childid) > 1) {
@@ -24,9 +22,12 @@ if (sizeof($childid) > 1) {
     }
 }
 
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
+
 if (isset($_REQUEST['search'])) {
     $sku = $_POST['searcheditorder'];
-    $sql = "SELECT `batch`, `service`,  `name`, `address`, `city`, `state`, `zipcode`, `phone`, `weight`, note  FROM `daifaorders` WHERE (cmpid='". $cmpid."') and orderid ='" . $sku . "'";
+    $sql = "SELECT `batch`, `service`,  `name`, `address`, `city`, `state`, `zipcode`, `phone`, `weight`, note  FROM `daifaorders` WHERE (cmpid='" . $cmpid . "') and orderid ='" . $sku . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
     $batch = $row['batch'];
@@ -53,7 +54,7 @@ if (isset($_REQUEST['search'])) {
     $note = 0;
 }
 
-$sql = "SELECT `batchname` FROM `daifa` where (cmpid='". $cmpid."') and paid='0' ORDER BY time DESC";
+$sql = "SELECT `batchname` FROM `daifa` where (cmpid='" . $cmpid . "') and paid='0' ORDER BY time DESC";
 $result = mysqli_query($conn, $sql);
 while ($arr = mysqli_fetch_array($result)) {
     $data[] = $arr;
@@ -76,22 +77,55 @@ if (isset($_POST["save"])) {
     $iweight = @$_POST["iweight"];
     $inote = @$_POST["inote"];
     if (checkinput($isku)) {
-        $sql = "select * from daifaorders where (cmpid='". $cmpid."') and orderid='" . $isku . "'";
+        $sql = "select * from daifaorders where (cmpid='" . $cmpid . "') and orderid='" . $isku . "'";
         $result = mysqli_query($conn, $sql);
         if (!$result || mysqli_num_rows($result) == 0) {
-            $sql = "select paid from daifa where (cmpid='". $cmpid."') and batchname='" . $ibatch . "'";
+            $sql = "select paid,class,type from daifa where (cmpid='" . $cmpid . "') and batchname='" . $ibatch . "'";
             $result = mysqli_query($conn, $sql);
             $tem = mysqli_fetch_array($result);
             if ($tem[0]) {
                 print '<script>alert("此批次已结算，无法添加到此批次")</script>';
             } else {
-                $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $note . "')";
-                $result = mysqli_query($conn, $sql);
+                if ($tem[1] == 0) {
+                    if ($tem[2] == "Letter") {
+                        $fee = $letterfee;
+                    } else {
+                        $fee = $packagefee;
+                    }
+                    $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
+                    $result = mysqli_query($conn, $sql);
+                    $sql = "SELECT SUM(fee) FROM daifaorders where batch='" . $ibatch . "' and cmpid='" . $cmpid . "'";
+                    $result = mysqli_query($conn, $sql);
+                    $row = mysqli_fetch_array($result);
+                    $sql = "UPDATE daifa SET time=CURRENT_TIME, orders= orders+1, servicefee=servicefee+" . $row[0] . " WHERE (cmpid='" . $cmpid . "') AND batchname='" . $ibatch . "'";
+                    $result = mysqli_query($conn, $sql);
+                    print '<script>alert("Add Successful!")</script>';
+                    // print '<script> location.replace("orderupdate.php"); </script>';         
+                } else {
+                    $pattern = '/(\*\d+(;|；))/';  //匹配inote里的整数
 
-                $sql = "UPDATE daifa SET time=CURRENT_TIME, orders= orders+1 WHERE (cmpid='". $cmpid."') AND batchname='" . $ibatch . "'";
-                $result = mysqli_query($conn, $sql);
-                print '<script>alert("Add Successful!")</script>';
-                // print '<script> location.replace("orderupdate.php"); </script>';
+                    if (preg_match_all($pattern, $inote, $match)) {
+                        //echo '<pre>';
+                        $fee = 0;
+                        foreach ($match[0] as $x) {
+                            $x = str_replace("*", "", $x);
+                            $x = str_replace(";", "", $x);
+                            $x = str_replace("；", "", $x);
+                            $fee = $fee + $x;
+                        }
+
+                        $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
+                        $result = mysqli_query($conn, $sql);
+                        $sql = "SELECT SUM(fee) FROM daifaorders where batch='" . $ibatch . "' and cmpid='" . $cmpid . "'";
+                        $result = mysqli_query($conn, $sql);
+                        $row = mysqli_fetch_array($result);
+                        $sql = "UPDATE daifa SET time=CURRENT_TIME, orders= orders+1, servicefee=servicefee+" . $row[0] . " WHERE (cmpid='" . $cmpid . "') AND batchname='" . $ibatch . "'";
+                        $result = mysqli_query($conn, $sql);
+                        print '<script>alert("Add Successful!")</script>';
+                    } else {
+                        print '<script>alert("请按照格式以下格式书写备注，商品名*数量；商品名*数量；...")</script>';
+                    }
+                }
             }
         } else {
             print '<script>alert("The Order ID has existed, please use a different ID or update it.")</script>';
@@ -111,30 +145,113 @@ if (isset($_POST["update"])) {
     $iphone = @$_POST["iphone"];
     $iweight = @$_POST["iweight"];
     $inote = @$_POST["inote"];
-    $sql = "select batch from daifaorders where (cmpid='". $cmpid."') and orderid='" . $isku . "'";
+    $sql = "select batch from daifaorders where (cmpid='" . $cmpid . "') and orderid='" . $isku . "'";
     $result = mysqli_query($conn, $sql);
     if (!$result || mysqli_num_rows($result) == 0) {
 
         print '<script>alert("This Order ID is not existed, Please add a new Order!")</script>';
     } else {
-        $originalbatch = mysqli_fetch_row($result);
-        $sql = "select paid from daifa where (cmpid='". $cmpid."') and batchname='" . $ibatch . "'";
+        $originalbatch = mysqli_fetch_array($result);
+        $originalbatch = $originalbatch[0];
+        $sql = "select paid,class,type from daifa where (cmpid='" . $cmpid . "') and batchname='" . $ibatch . "'";
         $result = mysqli_query($conn, $sql);
         $tem = mysqli_fetch_array($result);
 
         if ($tem[0]) {
             print '<script>alert("此批次已结算，无法添加到此批次")</script>';
         } else {
-            $sql = "UPDATE daifa SET time=CURRENT_TIME, orders= orders-1 WHERE (cmpid='". $cmpid."') AND batchname='" . $originalbatch[0] . "'";
-            mysqli_query($conn, $sql);
-            $sql = "UPDATE daifaorders SET note='" . $inote . "',batch='" . $ibatch . "',service='" . $icategory . "',name='" . $ireceiver . "',address='" . $iaddress . "',city='" . $icity . "',state='" . $istate . "',zipcode='" . $izipcode . "',phone='" . $iphone . "',weight='" . $iweight . "' WHERE (cmpid='". $cmpid."') AND orderid='" . $isku . "'";
-
-            mysqli_query($conn, $sql);
-            $sql = "UPDATE daifa SET time=CURRENT_TIME, orders= orders+1 WHERE (cmpid='". $cmpid."') AND batchname='" . $ibatch . "'";
+            $sql = "UPDATE daifaorders SET batch='tempbatch' WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
             $result = mysqli_query($conn, $sql);
-            print '<script>alert("Edit Successful!")</script>';
-            print '<script> location.replace("orderupdate.php"); </script>';
+            $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $originalbatch . "'";
+            $result = mysqli_query($conn, $sql);
+            $updateoriginalbatch = mysqli_fetch_array($result);
+            $sql = "UPDATE daifa SET orders='" . $updateoriginalbatch[0] . "', servicefee='" . $updateoriginalbatch[1] . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $originalbatch . "'";
+            $result = mysqli_query($conn, $sql);
+
+            if ($tem[1] == 0) {
+                if ($tem[2] == "Letter") {
+                    $fee = $letterfee;
+                } else {
+                    $fee = $packagefee;
+                }
+                $sql = "UPDATE `daifaorders` SET `batch`='" . $ibatch . "', `service`='" . $icategory . "', `name`='" . $ireceiver . "',`address`='" . $iaddress . "', `city`='" . $icity . "', `state`='" . $istate . "',  `zipcode`='" . $izipcode . "', `phone`='" . $iphone . "',  `weight`='" . $iweight . "', note='" . $inote . "',  fee='" . $fee . "'WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
+                $result = mysqli_query($conn, $sql);
+                $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $ibatch . "'";
+                $result = mysqli_query($conn, $sql);
+                $updatenewbatch = mysqli_fetch_array($result);
+                $sql = "UPDATE daifa SET orders='" . $updatenewbatch[0] . "', servicefee='" . $updatenewbatch[1] . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $ibatch . "'";
+                $result = mysqli_query($conn, $sql);
+                print '<script>alert("Edit Successful!")</script>';
+                print '<script> location.replace("orderupdate.php"); </script>';
+            } else {
+                $pattern = '/(\*\d+(;|；))/';  //匹配inote里的整数
+
+                if (preg_match_all($pattern, $inote, $match)) {
+                    //echo '<pre>';
+                    print_r($match);
+                    $fee = 0;
+                    foreach ($match[0] as $x) {
+                        $x = str_replace("*", "", $x);
+                        $x = str_replace(";", "", $x);
+                        $x = str_replace("；", "", $x);
+                        $fee = $fee + $x;
+                    }
+                    $sql = "UPDATE `daifaorders` SET `batch`='" . $ibatch . "', `service`='" . $icategory . "', `name`='" . $ireceiver . "',`address`='" . $iaddress . "', `city`='" . $icity . "', `state`='" . $istate . "',  `zipcode`='" . $izipcode . "', `phone`='" . $iphone . "',  `weight`='" . $iweight . "', note='" . $inote . "',  fee='" . $fee . "'WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
+                    $result = mysqli_query($conn, $sql);
+
+                    $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $ibatch . "'";
+                    $result = mysqli_query($conn, $sql);
+                    $updatenewbatch = mysqli_fetch_array($result);
+                    $sql = "UPDATE daifa SET orders='" . $updatenewbatch[0] . "', servicefee='" . $updatenewbatch[1] . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $ibatch . "'";
+                    $result = mysqli_query($conn, $sql);
+                    print '<script>alert("Edit Successful!")</script>';
+                    print '<script> location.replace("orderupdate.php"); </script>';
+                } else {
+                    $sql = "UPDATE daifaorders SET batch='" . $originalbatch . "' WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
+                    $result = mysqli_query($conn, $sql);
+                    $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $originalbatch . "'";
+                    $result = mysqli_query($conn, $sql);
+                    $updateoriginalbatch = mysqli_fetch_array($result);
+                    $sql = "UPDATE daifa SET orders='" . $updateoriginalbatch[0] . "', servicefee='" . $updateoriginalbatch[1] . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $originalbatch . "'";
+                    $result = mysqli_query($conn, $sql);
+                    print '<script>alert("请按照格式以下格式书写备注，商品名*数量；商品名*数量；...")</script>';
+                }
+            }
         }
+    }
+}
+
+if (isset($_POST["delete"])) {
+    $isku = @$_POST["isku"];
+    $ibatch = @$_POST['ibatch'];
+    $icategory = @$_POST['icategory'];
+    $ireceiver = @$_POST["ireceiver"];
+    $iaddress = @$_POST["iaddress"];
+    $icity = @$_POST["icity"];
+    $istate = @$_POST["istate"];
+    $izipcode = @$_POST["izipcode"];
+    $iphone = @$_POST["iphone"];
+    $iweight = @$_POST["iweight"];
+    $inote = @$_POST["inote"];
+    $sql = "select batch from daifaorders where (cmpid='" . $cmpid . "') and orderid='" . $isku . "'";
+    $result = mysqli_query($conn, $sql);
+    if (!$result || mysqli_num_rows($result) == 0) {
+
+        print '<script>alert("This Order ID is not existed，Please check!")</script>';
+    } else {
+        $originalbatch = mysqli_fetch_array($result);
+        $originalbatch = $originalbatch[0];
+
+        $sql = "DELETE from daifaorders  WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
+
+        $result = mysqli_query($conn, $sql);
+        $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $originalbatch . "'";
+        $result = mysqli_query($conn, $sql);
+        $updateoriginalbatch = mysqli_fetch_array($result);
+        $sql = "UPDATE daifa SET orders='" . $updateoriginalbatch[0] . "', servicefee='" . $updateoriginalbatch[1] . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $originalbatch . "'";
+        $result = mysqli_query($conn, $sql);
+        print '<script>alert("Delete Successful!")</script>';
+        print '<script> location.replace("orderupdate.php"); </script>';
     }
 }
 
@@ -354,8 +471,10 @@ function checkinput($isku) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
-                                                        } ?>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -509,7 +628,8 @@ function checkinput($isku) {
 
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="icon nalika-edit" aria-hidden="true"></i></span>
-                                                                <input name='isku' type="text" required="" class="form-control" placeholder="订单号" <?php
+                                                                <span class="input-group-addon">订单号</span>
+                                                                <input name='isku' type="text" required="" class="form-control" placeholder="请输入订单号" <?php
                                                                 if ($sku) {
                                                                     print "value='" . $sku . "'";
                                                                 }
@@ -538,31 +658,34 @@ function checkinput($isku) {
                                                                 <select name="icategory" class="form-control pro-edt-select form-control-primary">
 
                                                                     <option value="Letter"    <?php
-                                                                    if ($category == 'Letter') {
+                                                                    if ($category === 'Letter') {
                                                                         print "selected";
                                                                     }
                                                                     ?>>Letter</option>
                                                                     <option value="First Class Package"    <?php
-                                                                    if ($category == 'First Class Package') {
+                                                                    if ($category === 'First Class Package') {
+                                                                        print "selected";
+                                                                    } elseif ($category =='0') {
                                                                         print "selected";
                                                                     }
                                                                     ?>>First Class Package</option>
                                                                     <option value="Priority Package"    <?php
-                                                                    if ($category == 'Priority Package') {
+                                                                    if ($category === 'Priority Package') {
                                                                         print "selected";
                                                                     }
                                                                     ?>>Priority Package</option>
-                                                                    <option value="UPS Package"    <?php
-                                                                    if ($category == 'UPS Package') {
+                                                                    <option value="UPS Package"  <?php
+                                                                    if ($category === 'UPS Package') {
                                                                         print "selected";
                                                                     }
                                                                     ?>>UPS Package</option>
 
-                                                                </select></div>
+                                                                </select>
+                                                            </div>
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="fa fa-newspaper-o" aria-hidden="true"></i></span>
-
-                                                                <input name="inote" type="text" required="" class="form-control" placeholder="备注" <?php
+                                                                <span class="input-group-addon">备注</span>
+                                                                <input name="inote" type="text"  class="form-control" placeholder="商品名*数量；商品名*数量；..." <?php
                                                                 if ($note) {
                                                                     print "value='" . $note . "'";
                                                                 }
@@ -576,8 +699,8 @@ function checkinput($isku) {
                                                         <div class="review-content-section">                                                            
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="fa fa-male" aria-hidden="true"></i></span>
-
-                                                                <input name="ireceiver" type="text" required="" class="form-control" placeholder="收件人" <?php
+                                                                <span class="input-group-addon">收件人</span>
+                                                                <input name="ireceiver" type="text" required="" class="form-control" placeholder="" <?php
                                                                 if ($receiver) {
                                                                     print "value='" . $receiver . "'";
                                                                 }
@@ -585,8 +708,8 @@ function checkinput($isku) {
                                                             </div>
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true"></i></span>
-
-                                                                <input name="iaddress" type="text" required="" class="form-control" placeholder="地址" <?php
+                                                                <span class="input-group-addon">地址</span>
+                                                                <input name="iaddress" type="text" required="" class="form-control" placeholder="" <?php
                                                                 if ($address) {
                                                                     print "value='" . $address . "'";
                                                                 }
@@ -595,20 +718,22 @@ function checkinput($isku) {
 
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true"></i></span>
-
-                                                                <input name="icity" type="text" required="" class="form-control" placeholder="城市" <?php
+                                                                <span class="input-group-addon">城市</span>
+                                                                <input name="icity" type="text" required="" class="form-control" placeholder="" <?php
                                                                 if ($city) {
                                                                     print "value='" . $city . "'";
                                                                 }
                                                                 ?>>
                                                                 <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true"></i></span>
-                                                                <input name="istate" type="text" required="" class="form-control" placeholder="州" <?php
+                                                                <span class="input-group-addon">州</span>
+                                                                <input name="istate" type="text" required="" class="form-control" placeholder="" <?php
                                                                 if ($city) {
                                                                     print "value='" . $state . "'";
                                                                 }
                                                                 ?>>
                                                                 <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true"></i></span>
-                                                                <input name="izipcode" type="text" class="form-control" placeholder="邮编" <?php
+                                                                <span class="input-group-addon">邮编</span>
+                                                                <input name="izipcode" type="text" class="form-control" placeholder="" <?php
                                                                 if ($zipcode) {
                                                                     print "value='" . $zipcode . "'";
                                                                 }
@@ -616,14 +741,15 @@ function checkinput($isku) {
                                                             </div>
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="fa fa-phone" aria-hidden="true"></i></span>
-
-                                                                <input name="iphone" type="text" required="" class="form-control" placeholder="手机" <?php
+                                                                <span class="input-group-addon">手机</span>
+                                                                <input name="iphone" type="text" required="" class="form-control" placeholder="" <?php
                                                                 if ($phone) {
                                                                     print "value='" . $phone . "'";
                                                                 }
                                                                 ?>>
                                                                 <span class="input-group-addon"><i class="fa fa-car" aria-hidden="true"></i></span>
-                                                                <input name="iweight" type="text" required="" class="form-control" placeholder="重量" <?php
+                                                                <span class="input-group-addon">重量</span>
+                                                                <input name="iweight" type="text" required="" class="form-control" placeholder="" <?php
                                                                 if ($weight) {
                                                                     print "value='" . $weight . "'";
                                                                 }
@@ -637,17 +763,18 @@ function checkinput($isku) {
                                                 <div class="row">
                                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                                         <div class="text-center custom-pro-edt-ds">
-                                                            <input name="save" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="添加订单">
+                                                            <input name="save" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="添加新订单">
                                                             <input name="update" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="更新订单">
-                                                            <a href='product-edit.php' class="btn btn-ctl-bt waves-effect waves-light">取消
-                                                            </a>
+                                                            <input name="delete" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="删除订单">
                                                         </div>
                                                     </div>
                                                 </div>
                                             </form>
                                             <div>
-                                                
-                                                <a>说明：可添加新订单到选定批次，或者更新现有订单信息。</a>
+                                                <a>说明：<br></a>
+                                                <a>1.可添加新订单到选定批次，或者更新现有订单信息。<br></a>
+                                                <a>2.服务费根据批次类型定义。<br></a>
+                                                <a>3.如需指定订单货物明细，请详细填写备注，格式：商品名*数量；...</a>
                                             </div>
                                         </div>
                                     </div>

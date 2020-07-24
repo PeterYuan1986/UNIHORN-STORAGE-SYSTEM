@@ -10,8 +10,6 @@ $useroffice = $_SESSION['user_info']['office'];
 $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; else;
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
-$datanote = check_note($cmpid);
-$totalnotes = sizeof($datanote);
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 
@@ -25,6 +23,8 @@ if (sizeof($childid) > 1) {
         }
     }
 }
+$datanote = check_note($cmpid);
+$totalnotes = sizeof($datanote);
 ?>
 
 <html class="no-js" lang="en">   
