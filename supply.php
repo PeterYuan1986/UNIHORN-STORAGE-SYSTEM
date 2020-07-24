@@ -37,11 +37,8 @@ if (!isset($_SESSION['supplypagesearchtext'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['supplypagesearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT sku, nc FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . $_SESSION['supplypagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT sku, nc FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . @$_SESSION['supplypagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $_SESSION['supplypagesearchtext'] = '';
 }
+$sql = "SELECT sku, nc FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . $_SESSION['supplypagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
@@ -356,7 +353,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
-                                                            <?php } else { ?>
+    <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
                                                                 <?php
@@ -410,7 +407,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -534,7 +531,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                                             <input  style="color:#000" name ="<?php print $check; ?>"   value="1" type="checkbox">
                                                         </td >
                                                         </tr>
-                                                    <?php } ?>
+<?php } ?>
                                                 </table>
                                                 <div class="custom-pagination "  >
                                                     <input name="submit" type="submit" value="Click to confirm">

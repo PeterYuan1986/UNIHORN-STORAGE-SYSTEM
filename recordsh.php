@@ -36,11 +36,9 @@ if (!isset($_SESSION['recordsh_searchtext'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['recordsh_searchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM shstock where (cmpid='" . $cmpid . "') and (productlist LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR tracking LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR subject LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT * FROM shstock where (cmpid='" . $cmpid . "') and (productlist LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR tracking LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR subject LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
-    $_SESSION['recordsh_searchtext'] = '';
 }
+$sql = "SELECT * FROM shstock where (cmpid='" . $cmpid . "') and (productlist LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR tracking LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%' OR subject LIKE '%" . @$_SESSION['recordsh_searchtext'] . "%') ORDER BY " . $column . ' ' . $sort_order;
+
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
@@ -401,10 +399,10 @@ for ($index = 0; $index < @count($data); $index++) {
                                                                 ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
-                                                            <?php } else { ?>
+    <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php
+                                                                <?php
                                                             }
                                                         }
                                                         ?>
@@ -456,7 +454,7 @@ for ($index = 0; $index < @count($data); $index++) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -709,15 +707,15 @@ for ($index = 0; $index < @count($data); $index++) {
 
 
         <script type="text/javascript">
-                                            function openNewWin(url)
-                                            {
-                                                window.open(url);
-                                            }
+                                                        function openNewWin(url)
+                                                        {
+                                                            window.open(url);
+                                                        }
 
-                                            function confirmation(url) {
+                                                        function confirmation(url) {
 
-                                                return confirm('Are you sure?');
-                                            }
+                                                            return confirm('Are you sure?');
+                                                        }
 
 
         </script>

@@ -35,11 +35,8 @@ if (!isset($_SESSION['outshsearchtext'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['outshsearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT sku, shanghai FROM product where (cmpid='" . $cmpid . "') and shanghai>0 and sku LIKE '%" . $_SESSION['outshsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT sku, shanghai FROM product where (cmpid='" . $cmpid . "') and shanghai>0 and sku LIKE '%" . @$_SESSION['outshsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $_SESSION['outshsearchtext'] = '';
 }
+$sql = "SELECT sku, shanghai FROM product where (cmpid='" . $cmpid . "') and shanghai>0 and sku LIKE '%" . $_SESSION['outshsearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
@@ -324,19 +321,20 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
 
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
-<?php
-foreach ($childid as $x) {
-    $title = "UCMP" . $x;
-    if ($cmpid == $x) {
-        ?>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
     <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-    <?php }
-}
-?>
+                                                            <?php
+                                                            }
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -385,7 +383,7 @@ foreach ($childid as $x) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -467,10 +465,10 @@ foreach ($childid as $x) {
 
 
                                                                 <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['outshsearchtext'])) {
-                                                                    print $_SESSION['outshsearchtext'];
-                                                                }
-                                                                ?>" ></div>
+                                                                    if (isset($_SESSION['outshsearchtext'])) {
+                                                                        print $_SESSION['outshsearchtext'];
+                                                                    }
+                                                                    ?>" ></div>
                                                                 <div style="color:#fff;width:000px;float:left;">
                                                                     <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -505,7 +503,7 @@ foreach ($childid as $x) {
                                                             <input  style="color:#000" name ="<?php print $check; ?>"   value="1" type="checkbox">
                                                         </td >
                                                         </tr>
-                                                    <?php } ?>
+<?php } ?>
                                                 </table>
                                                 <div class="custom-pagination "  >
                                                     <input name="submit" type="submit" value="Click to confirm">

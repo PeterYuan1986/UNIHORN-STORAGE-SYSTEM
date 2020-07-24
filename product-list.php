@@ -36,11 +36,9 @@ if (!isset($_SESSION['product-list_searchtext'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['product-list_searchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . $_SESSION['product-list_searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT * FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . $_SESSION['product-list_searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $_SESSION['product-list_searchtext'] = '';
 }
+$sql = "SELECT * FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . $_SESSION['product-list_searchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
+
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
@@ -305,7 +303,7 @@ for ($i = 0; $i < @count(@$data); $i++) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php
+                                                                <?php
                                                             }
                                                         }
                                                         ?>
@@ -595,15 +593,15 @@ for ($i = 0; $i < @count(@$data); $i++) {
 
 
         <script type="text/javascript">
-                                            function openNewWin(url)
-                                            {
-                                                window.open(url);
-                                            }
+                                                function openNewWin(url)
+                                                {
+                                                    window.open(url);
+                                                }
 
-                                            function confirmation(url) {
+                                                function confirmation(url) {
 
-                                                return confirm('Are you sure?');
-                                            }
+                                                    return confirm('Are you sure?');
+                                                }
 
 
         </script>

@@ -26,18 +26,16 @@ if (sizeof($childid) > 1) {
 $datanote = check_note($cmpid);
 $totalnotes = sizeof($datanote);
 
-$perpage = 20;
+$perpage = 30;
 
 if (!isset($_SESSION['detailpagesearchtext'])) {
     $_SESSION['detailpagesearchtext'] = '';
 }
 if (isset($_POST['search'])) {
     $_SESSION['detailpagesearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT sku FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . $_SESSION['detailpagesearchtext'] . "%'";
-} else {
-    $sql = "SELECT sku FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . @$_SESSION['detailpagesearchtext'] . "%'";
-    $_SESSION['detailpagesearchtext'] = '';
-}
+   
+} 
+$sql = "SELECT sku FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . @$_SESSION['detailpagesearchtext'] . "%'";
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 $totalpage = ceil($totalrow / $perpage);
@@ -46,7 +44,7 @@ if ($totalrow != 0) {
     while ($arr = mysqli_fetch_array($result)) {
         $data[] = $arr;
     }
-    if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
+    if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 ||isset($_POST['search'])|| @$_GET['page'] > $totalpage) {
         $page = 1;
     } else
         $page = $_GET['page'];
@@ -480,7 +478,7 @@ for ($i = 0; $i < $perpage; $i++) {
                                                     <?php
                                                     for ($i = 1; $i <= $totalpage; $i++) {
                                                         if ($i == $page) {
-                                                            printf("<li ><a >%d</a></li>", $i);
+                                                            printf("<li ><a style='color:ff2' >%d</a></li>", $i);
                                                         } else {
                                                             printf("<li class='page-item'><a class='page-link' href='%s?page=%d'>%d</a></li>", $_SERVER["PHP_SELF"], $i, $i);
                                                         }

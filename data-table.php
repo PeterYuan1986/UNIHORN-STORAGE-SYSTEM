@@ -46,16 +46,10 @@ if (!isset($_SESSION['data-table_searchtest'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['data-table_searchtest'] = $_POST['searchtext'];
-    $pendingsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and status='PENDING' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%'  or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
-    $shippedsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and status='SHIPPED' and paid ='0' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
-    $paidsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and paid ='1' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $pendingsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and status='PENDING' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%'  or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
-    $shippedsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and status='SHIPPED' and paid ='0' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
-    $paidsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and paid ='1' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
-    $_SESSION['data-table_searchtest'] = '';
 }
-
+$pendingsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and status='PENDING' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%'  or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
+$shippedsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and status='SHIPPED' and paid ='0' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
+$paidsql = "SELECT * FROM daifa where cmpid='" . $cmpid . "' and paid ='1' and (batchname LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or dhltracking LIKE '%" . $_SESSION['data-table_searchtest'] . "%' or type LIKE '%" . $_SESSION['data-table_searchtest'] . "%') ORDER BY " . $column . ' ' . $sort_order;
 $pendingresult = mysqli_query($conn, $pendingsql);
 $shippedresult = mysqli_query($conn, $shippedsql);
 $paidresult = mysqli_query($conn, $paidsql);
@@ -365,7 +359,7 @@ if (isEmpty(@$shippeddata)) {
                                                                 ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
-                                                            <?php } else { ?>
+    <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
                                                                 <?php
@@ -419,7 +413,7 @@ if (isEmpty(@$shippeddata)) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -797,15 +791,15 @@ if (isEmpty(@$shippeddata)) {
 
 
         <script type="text/javascript">
-                                                                function openNewWin(url)
-                                                                {
-                                                                    window.open(url);
-                                                                }
+                                                                        function openNewWin(url)
+                                                                        {
+                                                                            window.open(url);
+                                                                        }
 
-                                                                function confirmation(url) {
+                                                                        function confirmation(url) {
 
-                                                                    return confirm('Are you sure?');
-                                                                }
+                                                                            return confirm('Are you sure?');
+                                                                        }
 
 
         </script>

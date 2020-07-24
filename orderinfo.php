@@ -31,13 +31,14 @@ $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET[
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
 $perpage = 400;
 
-
-if (isset($_POST['search'])) {
-    $_SESSION['orderinfo_serchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or service LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or name LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or company LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or address LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or city LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or state LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_serchtext'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT * FROM daifaorders where (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
+if (!isset($_SESSION['orderinfo_searchtest'])) {
+    $_SESSION['orderinfo_searchtest'] = '';
 }
+if (isset($_POST['search'])) {
+    $_SESSION['orderinfo_searchtest']=$_POST['searchtext'];
+    } 
+$sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or service LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or name LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or company LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or address LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or city LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or state LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
+
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 $totalpage = ceil($totalrow / $perpage);
@@ -50,7 +51,7 @@ if ($totalrow != 0) {
         $data[] = $arr;
     }
 }
-if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || @$_GET['page'] > $totalpage) {
+if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 ||isset($_POST['search'])|| @$_GET['page'] > $totalpage) {
     $page = 1;
 } else {
     $page = $_GET['page'];
@@ -404,8 +405,8 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_SESSION['orderinfo_serchtext'])) {
-                                                            print $_SESSION['orderinfo_serchtext'];
+                                                        if (isset($_SESSION['orderinfo_searchtest'])) {
+                                                            print $_SESSION['orderinfo_searchtest'];
                                                         }
                                                         ?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">

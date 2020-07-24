@@ -35,12 +35,8 @@ if (!isset($_SESSION['supplyshpagesearchtext'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['supplyshpagesearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT sku, shanghai FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . $_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-} else {
-    $sql = "SELECT sku, shanghai FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . @$_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
-    $_SESSION['supplyshpagesearchtext'] = '';
 }
-
+$sql = "SELECT sku, shanghai FROM product where (cmpid='" . $cmpid . "') AND sku LIKE '%" . $_SESSION['supplyshpagesearchtext'] . "%' ORDER BY " . $column . ' ' . $sort_order;
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
@@ -347,14 +343,14 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
 
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
-<?php
-foreach ($childid as $x) {
-    $title = "UCMP" . $x;
-    if ($cmpid == $x) {
-        ?>
+                                                        <?php
+                                                        foreach ($childid as $x) {
+                                                            $title = "UCMP" . $x;
+                                                            if ($cmpid == $x) {
+                                                                ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
-                                                            <?php } else { ?>
+    <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
                                                                 <?php
@@ -390,26 +386,26 @@ foreach ($childid as $x) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-<?php
-for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-    print "<li>
+                                                                <?php
+                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+                                                                    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-    print $datanote[$i]['date'];
-    print "</h2>
+                                                                    print $datanote[$i]['date'];
+                                                                    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-}
-?>
+                                                                }
+                                                                ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -495,10 +491,10 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
 
 
                                                                 <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                                if (isset($_SESSION['supplyshpagesearchtext'])) {
-                                                                    print $_SESSION['supplyshpagesearchtext'];
-                                                                }
-                                                                ?>" ></div>
+                                                                    if (isset($_SESSION['supplyshpagesearchtext'])) {
+                                                                        print $_SESSION['supplyshpagesearchtext'];
+                                                                    }
+                                                                    ?>" ></div>
                                                                 <div style="color:#fff;width:000px;float:left;">
                                                                     <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -517,14 +513,14 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
 
                                                     </tr>
 
-<?php
-for ($index = 0; $index < @count($data); $index++) {
-    print '<tr>';
-    print "<td>{$data[$index]['sku']}</td>";
-    print "<td>{$data[$index]['shanghai']}</td>";
-    $deta = "inven" . $index;
-    $check = "check" . $index;
-    ?>
+                                                    <?php
+                                                    for ($index = 0; $index < @count($data); $index++) {
+                                                        print '<tr>';
+                                                        print "<td>{$data[$index]['sku']}</td>";
+                                                        print "<td>{$data[$index]['shanghai']}</td>";
+                                                        $deta = "inven" . $index;
+                                                        $check = "check" . $index;
+                                                        ?>
 
                                                         <td>
                                                             <input  style="color:#000"  name ="<?php print $deta; ?>"    type="text">
@@ -554,26 +550,26 @@ for ($index = 0; $index < @count($data); $index++) {
                                                 <th>Inventory</th>
                                                 <th>Amount</th>
                                                 </tr>
-<?php
+                                                <?php
 //这段控制pickup表格
-$total = 0;
-if (isset($_POST['submit'])) {
-    $tosend = array();
-    for ($ind = 0; $ind < count($data); $ind++) {
-        $deta = "inven" . $ind;
-        $check = "check" . $ind;
-        if (@$_POST["{$check}"] != NULL) {
-            print '<tr>';
-            print "<td>{$data[$ind]['sku']}</td>";
-            print "<td>{$data[$ind]['shanghai']}</td>";
-            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
-            @$total += trim(@$_REQUEST["{$deta}"]);
-            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
-        }
-    }
-    $_SESSION['tosend'] = $tosend;
-}
-?>
+                                                $total = 0;
+                                                if (isset($_POST['submit'])) {
+                                                    $tosend = array();
+                                                    for ($ind = 0; $ind < count($data); $ind++) {
+                                                        $deta = "inven" . $ind;
+                                                        $check = "check" . $ind;
+                                                        if (@$_POST["{$check}"] != NULL) {
+                                                            print '<tr>';
+                                                            print "<td>{$data[$ind]['sku']}</td>";
+                                                            print "<td>{$data[$ind]['shanghai']}</td>";
+                                                            print "<td>" . @$_REQUEST["{$deta}"] . "</td></tr>";
+                                                            @$total += trim(@$_REQUEST["{$deta}"]);
+                                                            $tosend[] = array(@$data[$ind]['sku'], @$_REQUEST["{$deta}"]);
+                                                        }
+                                                    }
+                                                    $_SESSION['tosend'] = $tosend;
+                                                }
+                                                ?>
                                             </table>     
 
                                             <div class="custom-pagination "  >

@@ -88,7 +88,7 @@ if (isset($_POST['save'])) {
                                 $totalfee = $totalfee + $data[$index][1];
                             }
                             $sql = "UPDATE daifa SET time=CURRENT_TIME, status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $batch . "'";
-                   
+                            $result = mysqli_query($conn, $sql);
                             echo "<script> alert('文件上传成功！')</script>";
                             print '<script> location.replace("data-table.php"); </script>';
                         }
@@ -321,7 +321,7 @@ if (isset($_POST['save'])) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php
+                                                                <?php
                                                             }
                                                         }
                                                         ?>
@@ -372,7 +372,7 @@ if (isset($_POST['save'])) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>

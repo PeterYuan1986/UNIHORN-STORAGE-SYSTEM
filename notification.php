@@ -37,11 +37,8 @@ if (!isset($_SESSION['notifysearchtext'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['notifysearchtext'] = $_POST['searchtext'];
-    $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%') ORDER BY date DESC";
-} else {
-    $sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%')ORDER BY date DESC";
-    $_SESSION['notifysearchtext'] = '';
 }
+$sql = "SELECT * FROM note where status= '1' and cmpid='" . $cmpid . "' AND (subject LIKE '%" . $_SESSION['notifysearchtext'] . "%' OR ordernumber LIKE '%" . $_SESSION['notifysearchtext'] . "%') ORDER BY date DESC";
 $result = mysqli_query($conn, $sql);
 $totalnotes = mysqli_num_rows($result);
 //$totalpage = ceil($totalrow / $perpage);
