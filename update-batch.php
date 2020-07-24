@@ -1,7 +1,7 @@
 <?php
 require_once 'header.php';
 $pageoffice = 'all';           //设置页面属性 office ：  nc, sh, all
-$pagelevel = 2;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
+$pagelevel = 0;       // //设置页面等级 0： 只有admin可以访问； 1：库存系统用户； 2:代发用户
 check_session_expiration();
 $user = $_SESSION['user_info']['userid'];
 $fn = $_SESSION['user_info']['firstname'];
