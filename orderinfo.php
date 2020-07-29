@@ -460,6 +460,7 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                     } else {
                                                         print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                                     }
+                                                    //print "<td>". $data[$index]['status']."</td>";
                                                     print "<td>{$data[$index]['cost']}</td>";
                                                     print "<td>{$data[$index]['name']}</td>";
                                                     print "<td>{$data[$index]['company']}</td>";

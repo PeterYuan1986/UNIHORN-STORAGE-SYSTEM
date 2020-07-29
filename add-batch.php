@@ -87,6 +87,7 @@ if (isset($_POST['save'])) {
                         $totalfee = 0;
                         $flag = 1;
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容 
+                            $note='';
                             $amount = 0;
                             $columunum = 10;
                             while (@$content[$columunum] > 0) {

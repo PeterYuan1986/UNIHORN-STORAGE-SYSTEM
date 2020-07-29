@@ -5,9 +5,36 @@ require("libs/database_connection.php");
 date_default_timezone_set('America/New_York');
 setlocale(LC_ALL, 'en_US');
 $str = date("Y-m-d H:i:s", time());
-$letterfee=0.2;
-$packagefee=0.4;
-$amountfee=1;
+$letterfee = 0.2;
+$packagefee = 0.4;
+$amountfee = 1;
+
+function get_status($trackingNumber) {
+    $url = "http://production.shippingapis.com/shippingAPI.dll";
+    $service = "TrackV2";
+
+    $xml = rawurlencode("<TrackFieldRequest USERID='071UNIHO1781'><TrackID ID='" . $trackingNumber . "'></TrackID></TrackFieldRequest>");
+
+
+
+    $request = $url . "?API=" . $service . "&XML=" . $xml;
+// send the POST values to USPS
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $request);
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_HTTPGET, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+// parameters to post
+
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    $response = new SimpleXMLElement($result);
+
+//print_r($result);
+    $deliveryStatus = $response->TrackInfo->TrackSummary->Event;
+    return $deliveryStatus[0];
+}
 
 function isEmpty($val) {
     if (!is_string($val))
@@ -63,7 +90,7 @@ function check_session_expiration() {
 }
 
 function check_access($useroffice, $userlevel, $pageoffice, $pagelevel) {
-    if ((($useroffice == $pageoffice || $pageoffice == 'all') && $userlevel <= $pagelevel)||$useroffice=='admin') {
+    if ((($useroffice == $pageoffice || $pageoffice == 'all') && $userlevel <= $pagelevel) || $useroffice == 'admin') {
         
     } else {
         echo '<script> alert("You have no access for this page!")</script>';
