@@ -6,10 +6,10 @@ $file = ("./upload/" . $f);
 
 $fw = fopen($file, "w");
 
-fwrite($fw, "Order ID (required),	Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	"
+fwrite($fw, "Order ID (required),	Ship To - Name	, Ship To - Address 1 , 	Ship To - Address 2,	Ship To - City	, Ship To - State/Province ,	"
         . "Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Product, amount, Product, amount, Product, amount,...");
 fwrite($fw, "\n");
-fwrite($fw, "1234,	Alex	, Unihorn , 	2500 w Market st,	Greensboro	, NC,	"
+fwrite($fw, "1234,	Alex	, 	2500 w Market st , Apt D,	Greensboro	, NC,	"
         . "27409,	9199088221,	17, mask, 10, cable, 20");
 fclose($fw);
 

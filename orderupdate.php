@@ -22,18 +22,31 @@ if (sizeof($childid) > 1) {
     }
 }
 
+function updatestr(){
+    $isku= strexchange($isku);
+    $ibatch= strexchange($ibatch);
+    $ireceiver= strexchange($ireceiver);
+    $iaddress= strexchange($iaddress);
+    $iaddress2= strexchange($iaddress2);
+    $icity= strexchange($icity);
+    $iphone= strexchange($iphone);
+    $inote= strexchange($inote);  
+}
+
+
 $datanote = check_note($cmpid);
 $totalnotes = sizeof($datanote);
 
 if (isset($_REQUEST['search'])) {
     $sku = $_POST['searcheditorder'];
-    $sql = "SELECT `batch`, `service`,  `name`, `address`, `city`, `state`, `zipcode`, `phone`, `weight`, note  FROM `daifaorders` WHERE (cmpid='" . $cmpid . "') and orderid ='" . $sku . "'";
+    $sql = "SELECT `batch`, `service`,  `name`, `address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, note  FROM `daifaorders` WHERE (cmpid='" . $cmpid . "') and orderid ='" . $sku . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
     $batch = $row['batch'];
     $category = $row['service'];
     $receiver = $row['name'];
     $address = $row['address'];
+    $address2 = $row['address2'];
     $city = $row['city'];
     $state = $row['state'];
     $zipcode = $row['zipcode'];
@@ -49,6 +62,7 @@ if (isset($_REQUEST['search'])) {
     $weight = 0;
     $state = 0;
     $address = 0;
+    $address2 = 0;
     $city = 0;
     $zipcode = 0;
     $note = 0;
@@ -69,13 +83,14 @@ if (isset($_POST["save"])) {
     $icategory = @$_POST['icategory'];
     $ireceiver = @$_POST["ireceiver"];
     $iaddress = @$_POST["iaddress"];
-
+    $iaddress2 = @$_POST["iaddress2"];
     $icity = @$_POST["icity"];
     $istate = @$_POST["istate"];
     $izipcode = @$_POST["izipcode"];
     $iphone = @$_POST["iphone"];
     $iweight = @$_POST["iweight"];
     $inote = @$_POST["inote"];
+    updatestr();
     if (checkinput($isku)) {
         $sql = "select * from daifaorders where (cmpid='" . $cmpid . "') and orderid='" . $isku . "'";
         $result = mysqli_query($conn, $sql);
@@ -92,7 +107,7 @@ if (isset($_POST["save"])) {
                     } else {
                         $fee = $packagefee;
                     }
-                    $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
+                    $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','"  . $iaddress2 . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
                     $result = mysqli_query($conn, $sql);
                     $sql = "SELECT SUM(fee) FROM daifaorders where batch='" . $ibatch . "' and cmpid='" . $cmpid . "'";
                     $result = mysqli_query($conn, $sql);
@@ -114,7 +129,7 @@ if (isset($_POST["save"])) {
                             $fee = $fee + $x;
                         }
 
-                        $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
+                        $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','". $iaddress2 . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
                         $result = mysqli_query($conn, $sql);
                         $sql = "SELECT SUM(fee) FROM daifaorders where batch='" . $ibatch . "' and cmpid='" . $cmpid . "'";
                         $result = mysqli_query($conn, $sql);
@@ -139,12 +154,14 @@ if (isset($_POST["update"])) {
     $icategory = @$_POST['icategory'];
     $ireceiver = @$_POST["ireceiver"];
     $iaddress = @$_POST["iaddress"];
+    $iaddress2 = @$_POST["iaddress2"];
     $icity = @$_POST["icity"];
     $istate = @$_POST["istate"];
     $izipcode = @$_POST["izipcode"];
     $iphone = @$_POST["iphone"];
     $iweight = @$_POST["iweight"];
     $inote = @$_POST["inote"];
+    updatestr();
     $sql = "select batch from daifaorders where (cmpid='" . $cmpid . "') and orderid='" . $isku . "'";
     $result = mysqli_query($conn, $sql);
     if (!$result || mysqli_num_rows($result) == 0) {
@@ -174,7 +191,7 @@ if (isset($_POST["update"])) {
                 } else {
                     $fee = $packagefee;
                 }
-                $sql = "UPDATE `daifaorders` SET `batch`='" . $ibatch . "', `service`='" . $icategory . "', `name`='" . $ireceiver . "',`address`='" . $iaddress . "', `city`='" . $icity . "', `state`='" . $istate . "',  `zipcode`='" . $izipcode . "', `phone`='" . $iphone . "',  `weight`='" . $iweight . "', note='" . $inote . "',  fee='" . $fee . "'WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
+                $sql = "UPDATE `daifaorders` SET `batch`='" . $ibatch . "', `service`='" . $icategory . "', `name`='" . $ireceiver . "',`address`='" . $iaddress ."',`address2`='" . $iaddress2 . "', `city`='" . $icity . "', `state`='" . $istate . "',  `zipcode`='" . $izipcode . "', `phone`='" . $iphone . "',  `weight`='" . $iweight . "', note='" . $inote . "',  fee='" . $fee . "'WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
                 $result = mysqli_query($conn, $sql);
                 $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $ibatch . "'";
                 $result = mysqli_query($conn, $sql);
@@ -233,6 +250,7 @@ if (isset($_POST["delete"])) {
     $iphone = @$_POST["iphone"];
     $iweight = @$_POST["iweight"];
     $inote = @$_POST["inote"];
+    updatestr();
     $sql = "select batch from daifaorders where (cmpid='" . $cmpid . "') and orderid='" . $isku . "'";
     $result = mysqli_query($conn, $sql);
     if (!$result || mysqli_num_rows($result) == 0) {
@@ -665,7 +683,7 @@ function checkinput($isku) {
                                                                     <option value="First Class Package"    <?php
                                                                     if ($category === 'First Class Package') {
                                                                         print "selected";
-                                                                    } elseif ($category =='0') {
+                                                                    } elseif ($category == '0') {
                                                                         print "selected";
                                                                     }
                                                                     ?>>First Class Package</option>
@@ -708,13 +726,22 @@ function checkinput($isku) {
                                                             </div>
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true"></i></span>
-                                                                <span class="input-group-addon">地址</span>
+                                                                <span class="input-group-addon">地址1</span>
                                                                 <input name="iaddress" type="text" required="" class="form-control" placeholder="" <?php
                                                                 if ($address) {
                                                                     print "value='" . $address . "'";
                                                                 }
                                                                 ?>>
                                                             </div>   
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true"></i></span>
+                                                                <span class="input-group-addon">地址2</span>
+                                                                <input name="iaddress2" type="text" required="" class="form-control" placeholder="" <?php
+                                                                if ($address) {
+                                                                    print "value='" . $address2 . "'";
+                                                                }
+                                                                ?>>
+                                                            </div>  
 
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true"></i></span>

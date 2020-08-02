@@ -55,20 +55,20 @@ $result = mysqli_query($conn, $sql);
 $row = mysqli_fetch_array($result);
 if ($row[0] == 'PENDING') {
     $fw = fopen($file, "w");
-    fwrite($fw, "Order ID (required), Service,Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
+    fwrite($fw, "Order ID (required), Service,Ship To - Name	, Ship To - Address 1 , 	Ship To - Address 2 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
 
     for ($index = 0; $index < @count($data); $index++) {
-        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['company'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\"" . $data[$index]['zipcode'] . "\",\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
+        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['address2'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\"" . $data[$index]['zipcode'] . "\",\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
         fwrite($fw, $text);
     }
 } else {
 
 
     $fw = fopen($file, "w");
-    fwrite($fw, "Order ID (required), Service, Tracking No,Tracking Status, Cost,	Ship To - Name	, Ship To - Company , 	Ship To - Address 1 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
+    fwrite($fw, "Order ID (required), Service, Tracking No,Tracking Status, Cost,	Ship To - Name	, Ship To - Address 1 , 	Ship To - Address 2 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
 
     for ($index = 0; $index < @count($data); $index++) {
-        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\t" . $data[$index]['tracking'] . "\t,," . $data[$index]['cost'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['company'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\"" . $data[$index]['zipcode'] . "\",\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
+        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\t" . $data[$index]['tracking'] . "\t,," . $data[$index]['cost'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['address2'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\"" . $data[$index]['zipcode'] . "\",\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
 
         fwrite($fw, $text);
     }

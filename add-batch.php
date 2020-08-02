@@ -83,11 +83,11 @@ if (isset($_POST['save'])) {
                     @$filepath = @fopen("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv", 'r');
                     @$content = fgetcsv($filepath);
                     try {
-                        $a = 0;
+                        $ordernumbers = 0;
                         $totalfee = 0;
                         $flag = 1;
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容 
-                            $note='';
+                            $note = '';
                             $amount = 0;
                             $columunum = 10;
                             while (@$content[$columunum] > 0) {
@@ -95,6 +95,18 @@ if (isset($_POST['save'])) {
                                 $amount = $content[$columunum] + $amount;
                                 $columunum = $columunum + 2;
                             }
+
+                            $note = strexchange($note);
+                            $content[0] = strexchange($content[0]);
+                            $content[1] = strexchange($content[1]);
+                            $content[2] = strexchange($content[2]);
+                            $content[3] = strexchange($content[3]);
+                            $content[4] = strexchange($content[4]);
+                            $content[5] = strexchange($content[5]);
+                            $content[6] = strexchange($content[6]);
+                            $content[7] = strexchange($content[7]);
+                            $content[8] = strexchange($content[8]);
+
                             if ($daifaclass == 0) {
                                 if ($daifaservice == "Letter") {
                                     $fee = $letterfee;
@@ -115,16 +127,18 @@ if (isset($_POST['save'])) {
                                 echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查是否此单信息中含有冒号等特殊符号，请修改后重新上传！')</script>";
                                 break;
                             } else {
-                                $sql = "INSERT INTO daifaorders(orderid, name, Company, Address, city, State, zipcode, Phone, Weight ,note, service, batch, cmpid,fee) VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $note . "','" . $daifaservice . "','" . $daifabatchname . "','" . $cmpid . "','" . $fee . "')";
+                                $sql = "INSERT INTO daifaorders(orderid, name,  address,address2, city, State, zipcode, Phone, Weight ,note, service, batch, cmpid,fee,amount) VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $note . "','" . $daifaservice . "','" . $daifabatchname . "','" . $cmpid . "','" . $fee . "','" . $amount . "')";
                                 $result = mysqli_query($conn, $sql);
-                                $a++;
+                                $ordernumbers++;
                                 if (!$result) {
-                                    echo "<script> alert('插入单号报错，请联系管理员')</script>";
+                                    $totalfee = $totalfee - $fee;
+                                    $ordernumbers--;
+                                    echo "<script> alert('插入单号" . $content[0] . "报错，请记录单号并联系管理员,')</script>";
                                 }
                             }
                         }
                         if ($flag) {
-                            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid,servicefee, class)  VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $a . "','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $totalfee . "','" . $daifaclass . "')";
+                            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid,servicefee, class)  VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $ordernumbers . "','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $totalfee . "','" . $daifaclass . "')";
                             mysqli_query($conn, $sql);
                             echo "<script> alert('文件上传成功！')</script>";
                         }
@@ -532,6 +546,11 @@ if (isset($_POST['save'])) {
                                                                 <a> &nbsp;  &nbsp;  &nbsp;  &nbsp;   </a>
                                                                 <input type="radio" name="daifaclass" value ="1" <?php if ($cmpid == '3') print "checked"; ?>><a style="color:yellow">By Product Amount</a>  
                                                             </div>
+                                                            
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <a> 说明:<br></a>
+                                                                <a> 批次名称请不要包含&nbsp; '&nbsp;,&nbsp;"&nbsp;,&nbsp;&&nbsp;,&nbsp;$&nbsp;,&nbsp;/&nbsp;,&nbsp;\&nbsp; 等特殊符号。</a>
+                                                                 </div>
 
                                                         </div>
 

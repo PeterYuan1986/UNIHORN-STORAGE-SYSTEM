@@ -37,7 +37,7 @@ if (!isset($_SESSION['orderinfo_searchtest'])) {
 if (isset($_POST['search'])) {
     $_SESSION['orderinfo_searchtest']=$_POST['searchtext'];
     } 
-$sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or service LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or name LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or company LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or address LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or city LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or state LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
+$sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or service LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or name LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or address2 LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or address LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or city LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or state LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
 
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -430,8 +430,8 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                         <th><a style="color: #fff" >快递单号</a></th>
                                         <th><a style="color: #fff" >邮费</a></th>
                                         <th><a style="color: #fff" >收件人</a></th>
-                                        <th><a style="color: #fff" >公司</a></th>
-                                        <th><a style="color: #fff" >地址</a></th>
+                                        <th><a style="color: #fff" >地址1</a></th>
+                                        <th><a style="color: #fff" >地址2</a></th>
                                         <th><a style="color: #fff" >城市</a></th>
                                         <th><a style="color: #fff" >州</a></th>
                                         <th><a style="color: #fff" >邮编</a></th>
@@ -463,8 +463,8 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                     //print "<td>". $data[$index]['status']."</td>";
                                                     print "<td>{$data[$index]['cost']}</td>";
                                                     print "<td>{$data[$index]['name']}</td>";
-                                                    print "<td>{$data[$index]['company']}</td>";
                                                     print "<td>{$data[$index]['address']}</td>";
+                                                    print "<td>{$data[$index]['address2']}</td>";
                                                     print "<td>{$data[$index]['city']}</td>";
                                                     print "<td>{$data[$index]['state']}</td>";
                                                     print "<td>{$data[$index]['zipcode']}</td>";

@@ -9,6 +9,12 @@ $letterfee = 0.2;
 $packagefee = 0.4;
 $amountfee = 1;
 
+function strexchange($a) {
+    $b = str_replace("'", "\'", $a);
+    $c = str_replace('"', '\"', $b);
+    return $c;
+}
+
 function get_status($trackingNumber) {
     $url = "http://production.shippingapis.com/shippingAPI.dll";
     $service = "TrackV2";

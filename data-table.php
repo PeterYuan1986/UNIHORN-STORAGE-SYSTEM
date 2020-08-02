@@ -104,11 +104,11 @@ if (isEmpty(@$pendingdata)) {
 
     for ($i = 0; $i < @count(@$pendingdata); $i++) {
         $tem = "pendingrefresh" . $i;
-        if (isset($_POST["{$tem}"])) {
-            $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $pendingdata[$i]['batchname'] . "'";
+        if (isset($_POST["{$tem}"])) {           
+            $sql = "SELECT count(fee), sum(fee),sum(cost) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $pendingdata[$i]['batchname'] . "'";
             $result = mysqli_query($conn, $sql);
             $updatenewbatch = mysqli_fetch_array($result);
-            $sql = "UPDATE daifa SET orders='" . $updatenewbatch[0] . "', servicefee='" . $updatenewbatch[1] . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $pendingdata[$i]['batchname'] . "'";
+            $sql = "UPDATE daifa SET shippingcost='" . $updatenewbatch[2] . "',orders='" . $updatenewbatch[0] . "', servicefee='" . $updatenewbatch[1] . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $pendingdata[$i]['batchname'] . "'";
             $result = mysqli_query($conn, $sql);
             header('location: ' . $_SERVER['HTTP_REFERER']);
             break;
@@ -352,20 +352,20 @@ if (isEmpty(@$shippeddata)) {
 
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
-                                                        <?php
-                                                        foreach ($childid as $x) {
-                                                            $title = "UCMP" . $x;
-                                                            if ($cmpid == $x) {
-                                                                ?>
+<?php
+foreach ($childid as $x) {
+    $title = "UCMP" . $x;
+    if ($cmpid == $x) {
+        ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
     <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                                <?php
-                                                            }
-                                                        }
-                                                        ?>
+        <?php
+    }
+}
+?>
                                                     </ul>
 
                                                 </div>
@@ -394,23 +394,23 @@ if (isEmpty(@$shippeddata)) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php
-                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                    print "<li>
+<?php
+for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                    print $datanote[$i]['date'];
-                                                                    print "</h2>
+    print $datanote[$i]['date'];
+    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                }
-                                                                ?>
+}
+?>
                                                             </ul>
                                                             <div class="notification-view">
 <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
@@ -499,10 +499,10 @@ if (isEmpty(@$shippeddata)) {
 
 
                                                     <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
-                                                        if (isset($_SESSION['data-table_searchtest'])) {
-                                                            print $_SESSION['data-table_searchtest'];
-                                                        }
-                                                        ?>" ></div>
+if (isset($_SESSION['data-table_searchtest'])) {
+    print $_SESSION['data-table_searchtest'];
+}
+?>" ></div>
                                                     <div style="color:#fff;width:000px;float:left;">
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
@@ -530,6 +530,7 @@ if (isEmpty(@$shippeddata)) {
                                                             <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">上次更新时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">Class <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" >批次USPS邮费</a></th>
@@ -543,32 +544,33 @@ if (isEmpty(@$shippeddata)) {
 
 
 
-                                                            <?php
+<?php
 // if ($totalrow != 0) {
 //    for ($i = 0; $i < $perpage; $i++) {
 //       $index = ($page - 1) * $perpage + $i;
 //      if ($index >= count($data))
 //           break;
 //      else {
-                                                            for ($index = 0; $index < @count($pendingdata); $index++) {
-                                                                $edit = "pendingedit" . $index;
-                                                                $trash = "pendingtrash" . $index;
-                                                                $refresh = "pendingrefresh" . $index;
-                                                                print '<tr>';
-                                                                print "<td><a href='batchinfo.php?id={$pendingdata[$index]['batchname']}' style='color: #ff0'>{$pendingdata[$index]['batchname']}</a></td>";
-                                                                print "<td>{$pendingdata[$index]['time']}</td>";
-                                                                print "<td>{$pendingdata[$index]['type']}</td>";
-                                                                print "<td>{$pendingdata[$index]['orders']}</td>";
-                                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$pendingdata[$index]['dhltracking']}')\" >{$pendingdata[$index]['dhltracking']}</td>";
-                                                                print "<td>{$pendingdata[$index]['shippingcost']}</td>";
-                                                                print "<td>{$pendingdata[$index]['servicefee']}";
-                                                                ?>
+for ($index = 0; $index < @count($pendingdata); $index++) {
+    $edit = "pendingedit" . $index;
+    $trash = "pendingtrash" . $index;
+    $refresh = "pendingrefresh" . $index;
+    print '<tr>';
+    print "<td><a href='batchinfo.php?id={$pendingdata[$index]['batchname']}' style='color: #ff0'>{$pendingdata[$index]['batchname']}</a></td>";
+    print "<td>{$pendingdata[$index]['time']}</td>";
+    print "<td>{$pendingdata[$index]['type']}</td>";
+    print "<td>{$pendingdata[$index]['class']}</td>";
+    print "<td>{$pendingdata[$index]['orders']}</td>";
+    print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$pendingdata[$index]['dhltracking']}')\" >{$pendingdata[$index]['dhltracking']}</td>";
+    print "<td>{$pendingdata[$index]['shippingcost']}</td>";
+    print "<td>{$pendingdata[$index]['servicefee']}";
+    ?>
                                                                 <button data-toggle="tooltip" name ="<?php print $refresh; ?>"    type="submit" title="刷新" class="pd-setting-ed"><i class="fa fa-refresh" aria-hidden="true"></i></button>
 
                                                                 </td >
-                                                                <?php
-                                                                print "<td>{$pendingdata[$index]['status']}</td>";
-                                                                ?>
+    <?php
+    print "<td>{$pendingdata[$index]['status']}</td>";
+    ?>
 
                                                                 <td>
                                                                 <button data-toggle="tooltip" name ="<?php print $edit; ?>"    type="submit" title="上传单号" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
@@ -576,9 +578,9 @@ if (isEmpty(@$shippeddata)) {
 
                                                                 </td >
                                                                 </tr>
-                                                                <?php
-                                                            }
-                                                            ?>
+    <?php
+}
+?>
                                                         </table>
                                                     </div> 
                                                 </form>
@@ -600,50 +602,50 @@ if (isEmpty(@$shippeddata)) {
                                                             <th>Setting</th>
                                                             </tr>
 
-                                                            <?php
+<?php
 // if ($totalrow != 0) {
 //    for ($i = 0; $i < $perpage; $i++) {
 //       $index = ($page - 1) * $perpage + $i;
 //      if ($index >= count($shippeddata))
 //           break;
 //      else {/*
-                                                            $shipping_unpaid_shipped = 0;
-                                                            $service_unpaid_shipped = 0;
-                                                            for ($shippedindex = 0; $shippedindex < @count($shippeddata); $shippedindex++) {
-                                                                print '<tr>';
-                                                                print "<td><a href='batchinfo.php?id={$shippeddata[$shippedindex]['batchname']}' style='color: #ff0'>{$shippeddata[$shippedindex]['batchname']}</a></td>";
-                                                                print "<td>{$shippeddata[$shippedindex]['time']}</td>";
-                                                                print "<td>{$shippeddata[$shippedindex]['type']}</td>";
-                                                                print "<td>{$shippeddata[$shippedindex]['orders']}</td>";
-                                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$shippeddata[$shippedindex]['dhltracking']}')\" >{$shippeddata[$shippedindex]['dhltracking']}</td>";
-                                                                print "<td>{$shippeddata[$shippedindex]['shippingcost']}</td>";
-                                                                $shipping_unpaid_shipped = $shipping_unpaid_shipped + $shippeddata[$shippedindex]['shippingcost'];
+$shipping_unpaid_shipped = 0;
+$service_unpaid_shipped = 0;
+for ($shippedindex = 0; $shippedindex < @count($shippeddata); $shippedindex++) {
+    print '<tr>';
+    print "<td><a href='batchinfo.php?id={$shippeddata[$shippedindex]['batchname']}' style='color: #ff0'>{$shippeddata[$shippedindex]['batchname']}</a></td>";
+    print "<td>{$shippeddata[$shippedindex]['time']}</td>";
+    print "<td>{$shippeddata[$shippedindex]['type']}</td>";
+    print "<td>{$shippeddata[$shippedindex]['orders']}</td>";
+    print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$shippeddata[$shippedindex]['dhltracking']}')\" >{$shippeddata[$shippedindex]['dhltracking']}</td>";
+    print "<td>{$shippeddata[$shippedindex]['shippingcost']}</td>";
+    $shipping_unpaid_shipped = $shipping_unpaid_shipped + $shippeddata[$shippedindex]['shippingcost'];
 
-                                                                print "<td>{$shippeddata[$shippedindex]['servicefee']}</td>";
-                                                                $service_unpaid_shipped = $service_unpaid_shipped + $shippeddata[$shippedindex]['servicefee'];
-                                                                print "<td>{$shippeddata[$shippedindex]['status']}</td>";
-                                                                if (!$shippeddata[$shippedindex]['paid']) {
-                                                                    $pay = "shippay" . $shippedindex;
-                                                                    ?>
+    print "<td>{$shippeddata[$shippedindex]['servicefee']}</td>";
+    $service_unpaid_shipped = $service_unpaid_shipped + $shippeddata[$shippedindex]['servicefee'];
+    print "<td>{$shippeddata[$shippedindex]['status']}</td>";
+    if (!$shippeddata[$shippedindex]['paid']) {
+        $pay = "shippay" . $shippedindex;
+        ?>
                                                                     <td>
                                                                     <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
 
 
-                                                                    <?php
-                                                                } else {
-                                                                    print "<td>PAID</td>";
-                                                                }
+        <?php
+    } else {
+        print "<td>PAID</td>";
+    }
 
-                                                                $edit = "ship" . $shippedindex;
-                                                                ?>
+    $edit = "ship" . $shippedindex;
+    ?>
 
                                                                 <td>
                                                                 <button data-toggle="tooltip"   name ="<?php print $edit; ?>"  type="submit" title="上传USPS单号" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
                                                                 </td >
                                                                 </tr>
-                                                                <?php
-                                                            }
-                                                            ?>
+    <?php
+}
+?>
                                                         </table>
                                                     </div>
                                                     <div> <a>邮费共计: <?php print '$' . $shipping_unpaid_shipped; ?>：</a>
@@ -674,40 +676,40 @@ if (isEmpty(@$shippeddata)) {
 
 
 
-                                                            <?php
+<?php
 // if ($totalrow != 0) {
 //    for ($i = 0; $i < $perpage; $i++) {
 //       $index = ($page - 1) * $perpage + $i;
 //      if ($index >= count($paiddata))
 //           break;
 //      else {
-                                                            for ($index = 0; $index < @count($paiddata); $index++) {
-                                                                print '<tr>';
-                                                                print "<td><a href='batchinfo.php?id={$paiddata[$index]['batchname']}' style='color: #ff0'>{$paiddata[$index]['batchname']}</a></td>";
-                                                                print "<td>{$paiddata[$index]['time']}</td>";
-                                                                print "<td>{$paiddata[$index]['type']}</td>";
-                                                                print "<td>{$paiddata[$index]['orders']}</td>";
-                                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$paiddata[$index]['dhltracking']}')\" >{$paiddata[$index]['dhltracking']}</td>";
-                                                                print "<td>{$paiddata[$index]['shippingcost']}</td>";
-                                                                print "<td> {$paiddata[$index]['servicefee'] }</td>";
-                                                                print "<td>{$paiddata[$index]['status']}</td>";
-                                                                if (!$paiddata[$index]['paid']) {
-                                                                    $pay = "pay" . $index;
-                                                                    ?>
+for ($index = 0; $index < @count($paiddata); $index++) {
+    print '<tr>';
+    print "<td><a href='batchinfo.php?id={$paiddata[$index]['batchname']}' style='color: #ff0'>{$paiddata[$index]['batchname']}</a></td>";
+    print "<td>{$paiddata[$index]['time']}</td>";
+    print "<td>{$paiddata[$index]['type']}</td>";
+    print "<td>{$paiddata[$index]['orders']}</td>";
+    print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$paiddata[$index]['dhltracking']}')\" >{$paiddata[$index]['dhltracking']}</td>";
+    print "<td>{$paiddata[$index]['shippingcost']}</td>";
+    print "<td> {$paiddata[$index]['servicefee'] }</td>";
+    print "<td>{$paiddata[$index]['status']}</td>";
+    if (!$paiddata[$index]['paid']) {
+        $pay = "pay" . $index;
+        ?>
                                                                     <td>
                                                                     <button data-toggle="tooltip" name ="<?php print $pay; ?>"    type="submit" title="结算" onclick="return confirmation()" class="pd-setting-ed"><i class="fa fa-money" aria-hidden="true"></i></button>
 
 
-                                                                    <?php
-                                                                } else {
-                                                                    print "<td>PAID</td>";
-                                                                }
-                                                                ?>
+        <?php
+    } else {
+        print "<td>PAID</td>";
+    }
+    ?>
 
                                                                 </tr>
-                                                                <?php
-                                                            }
-                                                            ?>
+    <?php
+}
+?>
                                                         </table>
                                                     </div>
                                                 </form>

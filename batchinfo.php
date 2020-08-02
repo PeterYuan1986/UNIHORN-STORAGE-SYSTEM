@@ -432,8 +432,8 @@ if ($totalrow != 0) {
                                         <th><a style="color: #fff" >快递单号</a></th>
                                         <th><a style="color: #fff" >邮费</a></th>
                                         <th><a style="color: #fff" >收件人</a></th>
-                                        <th><a style="color: #fff" >公司</a></th>
-                                        <th><a style="color: #fff" >地址</a></th>
+                                        <th><a style="color: #fff" >地址1</a></th>
+                                        <th><a style="color: #fff" >地址2</a></th>
                                         <th><a style="color: #fff" >城市</a></th>
                                         <th><a style="color: #fff" >州</a></th>
                                         <th><a style="color: #fff" >邮编</a></th>
@@ -465,8 +465,8 @@ if ($totalrow != 0) {
                                            // print "<td>".$data[$index]['status']."</td>";
                                             print "<td>{$data[$index]['cost']}</td>";
                                             print "<td>{$data[$index]['name']}</td>";
-                                            print "<td>{$data[$index]['company']}</td>";
                                             print "<td>{$data[$index]['address']}</td>";
+                                            print "<td>{$data[$index]['address2']}</td>";
                                             print "<td>{$data[$index]['city']}</td>";
                                             print "<td>{$data[$index]['state']}</td>";
                                             print "<td>{$data[$index]['zipcode']}</td>";

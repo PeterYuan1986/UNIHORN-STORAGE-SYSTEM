@@ -14,6 +14,11 @@ check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 if (isset($_GET['id'])) {
     $batch = $_GET['id'];
+    $sql = "SELECT  `class`, type FROM `daifa` WHERE (cmpid='" . $cmpid . "') AND batchname='" . $batch . "'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_array($result);
+    $batchclass = $row[0];
+    $batchtype = $row[1];
 } else {
     header('location: data-table.php');
 }
@@ -31,6 +36,101 @@ if (sizeof($childid) > 1) {
 
 $datanote = check_note($cmpid);
 $totalnotes = sizeof($datanote);
+
+if (isset($_POST['modify'])) {
+
+//class没变，看包裹类型是否变，如果变了的话，更新服务费
+    if ($_POST['class'] == $batchclass) {
+        if ($batchclass == 0) {
+            if ($_POST['type'] == 0 && $batchtype != 'Letter') {
+                $sql = "UPDATE daifaorders set fee='" . $letterfee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+                $sql = "UPDATE daifa set type='Letter'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+            }
+            if ($_POST['type'] == 1 && $batchtype == 'Letter') {
+                $sql = "UPDATE daifaorders set fee='" . $packagefee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+                $sql = "UPDATE daifa set type='Package'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+            }
+        } else {
+            if ($_POST['type'] == 0 && $batchtype != 'Letter') {
+
+                $sql = "UPDATE daifa set type='Letter'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+            }
+            if ($_POST['type'] == 1 && $batchtype == 'Letter') {
+
+                $sql = "UPDATE daifa set type='Package'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+            }
+        }
+    } else {
+
+
+//class变了，全部更新
+
+        if ($_POST['class'] == 0) {
+            if ($_POST['type'] == 0) {
+                if ($batchclass != 'Letter') {
+                    $sql = "UPDATE daifa set type='Letter', class='0' where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    $result = mysqli_query($conn, $sql);
+                } else {
+                    $sql = "UPDATE daifa set class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    $result = mysqli_query($conn, $sql);
+                }
+                $sql = "UPDATE daifaorders set fee='" . $letterfee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+            } if ($_POST['type'] == 1) {
+
+                if ($batchclass == 'Letter') {
+                    $sql = "UPDATE daifa set type='Package', class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    $result = mysqli_query($conn, $sql);
+                } else {
+                    $sql = "UPDATE daifa set class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    $result = mysqli_query($conn, $sql);
+                }
+                $sql = "UPDATE daifaorders set fee='" . $packagefee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+            }
+        } else {
+            if ($_POST['type'] == 0) {
+                if ($batchclass != 'Letter') {
+                    $sql = "UPDATE daifa set type='Letter', class='1' where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    $result = mysqli_query($conn, $sql);
+                } else {
+                    $sql = "UPDATE daifa set class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    $result = mysqli_query($conn, $sql);
+                }
+                $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . " where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $result = mysqli_query($conn, $sql);
+            } if ($_POST['type'] == 1) {
+                if ($batchclass == 'Letter') {
+                    $sql = "UPDATE daifa set type='Package', class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    $result = mysqli_query($conn, $sql);
+                } else {
+                    $sql = "UPDATE daifa set class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    $result = mysqli_query($conn, $sql);
+                }
+
+                $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . " where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+
+                $result = mysqli_query($conn, $sql);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 if (isset($_POST['save'])) {
     if (!isset($_FILES["file"])) {
@@ -55,17 +155,17 @@ if (isset($_POST['save'])) {
             $extension = end($temp);     // 获取文件后缀名
             if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
                 if (@$_FILES["file"]["error"] > 0) {
-                    // echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
+// echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
                     echo "<script> alert('Error,请联系管理员！')</script>";
                 } else {
-                    // echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
-                    // echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
-                    // echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
-                    // echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
-                    //判断当期目录下的 upload 目录是否存在该文件
-                    //如果没有 upload 目录，你需要创建它，upload 目录权限为 777
+// echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
+// echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
+// echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
+// echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
+//判断当期目录下的 upload 目录是否存在该文件
+//如果没有 upload 目录，你需要创建它，upload 目录权限为 777
                     move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/tempupload.csv");
-                    //echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
+//echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
 
 
                     @$filepath = @fopen("./upload/tempupload.csv", 'r');
@@ -458,7 +558,7 @@ if (isset($_POST['save'])) {
                                                         <div class="review-content-section">                                                            
 
                                                             <div class="input-group mg-b-pro-edt">
-                                                                <input name="file" type="file" size="16" maxlength="200" accept="application/csv">
+                                                                <input name="file" type="file" size="16" maxlength="200" accept="application/csv" style="color:yellow">
 
                                                             </div>
 
@@ -473,6 +573,34 @@ if (isset($_POST['save'])) {
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="review-content-section">                                                            
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <a style="color:white">批次包裹类型</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>
+                                                                <input name="type" type="radio" value="0" <?php if ($batchtype == "Letter") print "checked"; ?> ><a style="color:yellow">Letter</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>
+                                                                <input name="type" type="radio" value="1" <?php if ($batchtype != "Letter") print "checked"; ?> ><a style="color:yellow">Package</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>           
+                                                            </div>
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <a style="color:white">批次计费类型</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>
+                                                                <input name="class" type="radio" value="0" <?php if ($batchclass != 1) print "checked"; ?> ><a style="color:yellow">By Package Type</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>
+                                                                <input name="class" type="radio" value="1" <?php if ($batchclass == 1) print "checked"; ?> ><a style="color:yellow">By Amount</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>        
+                                                            </div>
+                                                            <div class="input-group mg-b-pro-edt">
+
+                                                                <input name="modify" type="submit" value="修改">            
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+
+
+
                                             </form>
                                         </div>
                                     </div>
