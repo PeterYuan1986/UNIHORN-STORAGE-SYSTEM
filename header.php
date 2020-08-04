@@ -16,6 +16,7 @@ function strexchange($a) {
 }
 
 function get_status($trackingNumber) {
+    global $conn;
     $url = "http://production.shippingapis.com/shippingAPI.dll";
     $service = "TrackV2";
 
@@ -38,8 +39,27 @@ function get_status($trackingNumber) {
     $response = new SimpleXMLElement($result);
 
 //print_r($result);
-    $deliveryStatus = $response->TrackInfo->TrackSummary->Event;
-    return $deliveryStatus[0];
+    $deliveryStatus = @$response->TrackInfo->TrackSummary->Event;
+
+    if (strpos($deliveryStatus[0], ',')) {
+        preg_match('/([^,]+?),/i', $deliveryStatus[0], $match);
+
+        if (strpos($match[1], "Delivered") !== FALSE) {
+            
+        } else {
+            $sql = "UPDATE `daifaorders` SET status='" . $match[1] . "' WHERE `tracking`='" . $trackingNumber . "'";
+            mysqli_query($conn, $sql);
+        }
+        return $match[1];
+    } else {
+        if (strpos($deliveryStatus[0], "Delivered") !== FALSE) {
+            
+        } else {
+            $sql = "UPDATE `daifaorders` SET status='" . $deliveryStatus[0] . "' WHERE `tracking`='" . $trackingNumber . "'";
+            mysqli_query($conn, $sql);
+        }
+        return $deliveryStatus[0];
+    }
 }
 
 function isEmpty($val) {

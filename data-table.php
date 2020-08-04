@@ -96,7 +96,7 @@ if (isEmpty(@$pendingdata)) {
             mysqli_query($conn, $sql);
             $sql = "DELETE FROM daifaorders WHERE  cmpid='" . $cmpid . "' and batch='" . $pendingdata[$i]['batchname'] . "'";
             mysqli_query($conn, $sql);
-            unlink("./upload/" . $pendingdata[$i]['batchname'] . ".csv");
+            unlink("./upload/cmp" . $cmpid . "_" . $pendingdata[$i]['batchname'] . ".csv");
             header('location: ' . $_SERVER['HTTP_REFERER']);
             break;
         }
@@ -529,8 +529,8 @@ if (isset($_SESSION['data-table_searchtest'])) {
                                                             <tr>
                                                             <th><a style="color: #fff" href="data-table.php?column=batchname&order=<?php echo $asc_or_desc; ?>">批次名称<i class=" fa fa-sort<?php echo $column == 'batchname' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" href="data-table.php?column=time&order=<?php echo $asc_or_desc; ?>">上次更新时间 <i class=" fa fa-sort<?php echo $column == 'time' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                                            <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">Class <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                                            <th><a style="color: #fff" href="data-table.php?column=type&order=<?php echo $asc_or_desc; ?>">邮寄类型 <i class="fa fa-sort<?php echo $column == 'type' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" href="data-table.php?column=orders&order=<?php echo $asc_or_desc; ?>">订单总数<i class="fa fa-sort<?php echo $column == 'orders' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" href="data-table.php?column=dhltracking&order=<?php echo $asc_or_desc; ?>">Tracking No. <i class="fa fa-sort<?php echo $column == 'dhltracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                                             <th><a style="color: #fff" >批次USPS邮费</a></th>
@@ -558,8 +558,8 @@ for ($index = 0; $index < @count($pendingdata); $index++) {
     print '<tr>';
     print "<td><a href='batchinfo.php?id={$pendingdata[$index]['batchname']}' style='color: #ff0'>{$pendingdata[$index]['batchname']}</a></td>";
     print "<td>{$pendingdata[$index]['time']}</td>";
-    print "<td>{$pendingdata[$index]['type']}</td>";
     print "<td>{$pendingdata[$index]['class']}</td>";
+    print "<td>{$pendingdata[$index]['type']}</td>";    
     print "<td>{$pendingdata[$index]['orders']}</td>";
     print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.dhl.com/en/express/tracking.html?brand=DHL&AWB={$pendingdata[$index]['dhltracking']}')\" >{$pendingdata[$index]['dhltracking']}</td>";
     print "<td>{$pendingdata[$index]['shippingcost']}</td>";

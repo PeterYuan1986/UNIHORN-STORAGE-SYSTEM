@@ -736,7 +736,7 @@ function checkinput($isku) {
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <span class="input-group-addon"><i class="fa fa-home" aria-hidden="true"></i></span>
                                                                 <span class="input-group-addon">地址2</span>
-                                                                <input name="iaddress2" type="text" required="" class="form-control" placeholder="" <?php
+                                                                <input name="iaddress2" type="text"  class="form-control" placeholder="" <?php
                                                                 if ($address) {
                                                                     print "value='" . $address2 . "'";
                                                                 }

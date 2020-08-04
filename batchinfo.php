@@ -37,8 +37,8 @@ $column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET[
 $sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
 //$perpage = 20;
 
-if(!isset($_SESSION['batchinfo_searchtext'])){
-    $_SESSION['batchinfo_searchtext']='';
+if (!isset($_SESSION['batchinfo_searchtext'])) {
+    $_SESSION['batchinfo_searchtext'] = '';
 }
 if (isset($_POST['search'])) {
     $_SESSION['batchinfo_searchtext'] = $_POST['searchtext'];
@@ -58,6 +58,51 @@ if ($totalrow != 0) {
     while ($arr = mysqli_fetch_array($result)) {
         $data[] = $arr;
     }
+}
+
+//刷新追踪信息
+if (isset($_POST['fresh'])) {
+    $sql = "SELECT tracking, status FROM `daifaorders` where not(status='Delivered') and cmpid='" . $cmpid . "' and batch='" . $batch . "'";  //tracking>0 and not(status='Delivered')
+    $result = mysqli_query($conn, $sql);
+    try {
+        while ($array = mysqli_fetch_array($result)) {
+
+            if (strpos($array[1], "Delivered") !== FALSE) {
+                
+            } else {
+                $status = get_status($array[0]);
+            }
+        }
+    } catch (Exception $ex) {
+        $sql = "SELECT tracking, status FROM `daifaorders` where  not(status='Delivered') and cmpid='" . $cmpid . "' and batch='" . $batch . "'";  //tracking>0 and not(status='Delivered')
+        $result = mysqli_query($conn, $sql);
+        try {
+            while ($array = mysqli_fetch_array($result)) {
+
+                if (strpos($array[1], "Delivered") !== FALSE) {
+                    
+                } else {
+                    $status = get_status($array[0]);
+                }
+            }
+        } catch (Exception $ex) {
+            $sql = "SELECT tracking, status FROM `daifaorders` where  not(status='Delivered') and cmpid='" . $cmpid . "' and batch='" . $batch . "'";  //tracking>0 and not(status='Delivered')
+            $result = mysqli_query($conn, $sql);
+            try {
+                while ($array = mysqli_fetch_array($result)) {
+
+                    if (strpos($array[1], "Delivered") !== FALSE) {
+                        
+                    } else {
+                        $status = get_status($array[0]);
+                    }
+                }
+            } catch (Exception $ex) {
+                header('location: data-table.php');
+            }
+        }
+    }
+    header('location: ' . $_SERVER['HTTP_REFERER']);
 }
 ?>
 
@@ -395,25 +440,31 @@ if ($totalrow != 0) {
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <div class="product-status-wrap">
-                                <h4><?php print $batch; ?></h4>
-                                <div class="add-product" >                                    
+                                <h4><?php print $batch; ?></h4>                                
+                                <div class="add-product" >                                  
 
                                     <a  href="<?php print 'exportbatch.php?id=' . $batch ?>">Export Batch Info</a>
                                 </div>
                                 <div>
-                                    <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                    <div class="col-lg-12 col-md-7 col-sm-6 col-xs-12">
                                         <div class="header-top-menu tabl-d-n">
                                             <div class="breadcome-heading">
                                                 <form method="post" role="search" class="">
 
 
-                                                    <div style="width:200px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
+                                                    <div style="width:180px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
                                                         if (isset($_SESSION['batchinfo_searchtext'])) {
                                                             print $_SESSION['batchinfo_searchtext'];
                                                         }
                                                         ?>" ></div>
-                                                    <div style="color:#fff;width:000px;float:left;">
+                                                    <div style="color:#fff;width:250px;float:left;">
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
+
+                                                    </div>
+
+
+                                                    <div style="color:#fff;width:px;float:right;">
+                                                        <button name="fresh" type="submit" value="fresh" class="pd-setting-ed">刷新追踪信息<i class="fa fa-refresh" aria-hidden="true"></i></button>
 
                                                     </div>
                                                 </form>
@@ -430,6 +481,7 @@ if ($totalrow != 0) {
                                         <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                         <th><a style="color: #fff" >邮寄类型</a></th>
                                         <th><a style="color: #fff" >快递单号</a></th>
+                                        <th><a style="color: #fff" >追踪信息</a></th>
                                         <th><a style="color: #fff" >邮费</a></th>
                                         <th><a style="color: #fff" >收件人</a></th>
                                         <th><a style="color: #fff" >地址1</a></th>
@@ -459,10 +511,10 @@ if ($totalrow != 0) {
                                             if (stripos($data[$index]['service'], 'UPS') !== false) {
                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.ups.com/track?loc=en_US&tracknum={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                             } else {
-                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('uspsorder_jump.php?xl={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                             }
-                                            
-                                           // print "<td>".$data[$index]['status']."</td>";
+
+                                            print "<td>" . $data[$index]['status'] . "</td>";
                                             print "<td>{$data[$index]['cost']}</td>";
                                             print "<td>{$data[$index]['name']}</td>";
                                             print "<td>{$data[$index]['address']}</td>";
