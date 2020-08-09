@@ -103,7 +103,7 @@ if (isset($_POST['modify'])) {
                     $sql = "UPDATE daifa set class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
                     $result = mysqli_query($conn, $sql);
                 }
-                $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . " where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . "+".$originalpackagefee." where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
                 $result = mysqli_query($conn, $sql);
             } if ($_POST['type'] == 1) {
                 if ($batchclass == 'Letter') {
@@ -114,7 +114,7 @@ if (isset($_POST['modify'])) {
                     $result = mysqli_query($conn, $sql);
                 }
 
-                $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . " where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $sql = "UPDATE daifaorders set fee= amount*"  . $amountfee . "+".$originalpackagefee." where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
 
                 $result = mysqli_query($conn, $sql);
             }

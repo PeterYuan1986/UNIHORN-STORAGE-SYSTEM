@@ -113,7 +113,7 @@ if (isset($_POST['save'])) {
                                 } else
                                     $fee = $packagefee;
                             }else {
-                                $fee = $amount * $amountfee;
+                                $fee = $originalpackagefee+$amount * $amountfee;
                             }
                             $totalfee = $totalfee + $fee;
                             $sql = "SELECT * FROM daifaorders WHERE cmpid='" . $cmpid . "' and orderid='" . $content[0] . "'";

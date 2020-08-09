@@ -7,12 +7,82 @@ setlocale(LC_ALL, 'en_US');
 $str = date("Y-m-d H:i:s", time());
 $letterfee = 0.2;
 $packagefee = 0.4;
-$amountfee = 1;
+$amountfee = 0.3;
+$originalpackagefee = 0.7;
 
 function strexchange($a) {
     $b = str_replace("'", "\'", $a);
     $c = str_replace('"', '\"', $b);
     return $c;
+}
+
+function get_ups_status($trackingNumber) {
+    global $conn;
+//UPS 相关信息
+    $access = "1D7F00B3B06A9135";   //UPC ACCESS
+    $userid = "elephxp";            //UPS USER ID
+    $passwd = "ABC123efg@";         //UPS USER PWD
+//Configuration
+//Configuration
+    $wsdl = "./SCHEMAS-WSDLs/Track.wsdl";
+    $operation = "ProcessTrack";
+    $endpointurl = 'https://onlinetools.ups.com/webservices/Track';
+    $outputFileName = "XOLTResult.xml";
+
+    $req['RequestOption'] = '15';
+    $tref['CustomerContext'] = 'Add description here';
+    $req['TransactionReference'] = $tref;
+    $request['Request'] = $req;
+    $request['InquiryNumber'] = $trackingNumber;
+    $request['TrackingOption'] = '02';
+    try {
+
+        $mode = array
+            (
+            'soap_version' => 'SOAP_1_1', // use soap 1.1 client
+            'trace' => 1
+        );
+
+        // initialize soap client
+        $client = new SoapClient($wsdl, $mode);
+
+        //set endpoint url
+        $client->__setLocation($endpointurl);
+
+
+        //create soap header
+        $usernameToken['Username'] = $userid;
+        $usernameToken['Password'] = $passwd;
+        $serviceAccessLicense['AccessLicenseNumber'] = $access;
+        $upss['UsernameToken'] = $usernameToken;
+        $upss['ServiceAccessToken'] = $serviceAccessLicense;
+
+        $header = new SoapHeader('http://www.ups.com/XMLSchema/XOLTWS/UPSS/v1.0', 'UPSSecurity', $upss);
+        $client->__setSoapHeaders($header);
+
+
+        //get response
+        $resp = $client->__soapCall($operation, array($request));
+
+        //get status
+        //echo "Response Status: " . $resp->Response->ResponseStatus->Description . "\n";
+        $array = json_decode(json_encode($resp), true);
+        $result = @$array['Shipment']['Package']['Activity']['0']['Status']['Description'];
+        if (is_null($result)) {
+            $sql = "UPDATE `daifaorders` SET status='Shipment Ready for UPS' WHERE `tracking`='" . $trackingNumber . "'";
+
+            mysqli_query($conn, $sql);
+            return 'Shipment Ready for UPS';
+        } else {
+            $sql = "UPDATE `daifaorders` SET status='" . $result . "' WHERE `tracking`='" . $trackingNumber . "'";
+
+            mysqli_query($conn, $sql);
+            return $result;
+        }
+        ;
+    } catch (Exception $ex) {
+        print_r($ex);
+    }
 }
 
 function get_status($trackingNumber) {
@@ -45,7 +115,8 @@ function get_status($trackingNumber) {
         preg_match('/([^,]+?),/i', $deliveryStatus[0], $match);
 
         if (strpos($match[1], "Delivered") !== FALSE) {
-            
+            $sql = "UPDATE `daifaorders` SET status='Delivered' WHERE `tracking`='" . $trackingNumber . "'";
+            mysqli_query($conn, $sql);
         } else {
             $sql = "UPDATE `daifaorders` SET status='" . $match[1] . "' WHERE `tracking`='" . $trackingNumber . "'";
             mysqli_query($conn, $sql);
@@ -53,7 +124,8 @@ function get_status($trackingNumber) {
         return $match[1];
     } else {
         if (strpos($deliveryStatus[0], "Delivered") !== FALSE) {
-            
+            $sql = "UPDATE `daifaorders` SET status='Delivered' WHERE `tracking`='" . $trackingNumber . "'";
+            mysqli_query($conn, $sql);
         } else {
             $sql = "UPDATE `daifaorders` SET status='" . $deliveryStatus[0] . "' WHERE `tracking`='" . $trackingNumber . "'";
             mysqli_query($conn, $sql);

@@ -6,8 +6,8 @@ require_once 'header.php';
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-if ($_GET['xl']) {
-    header("location:https://tools.usps.com/go/TrackConfirmAction?tLabels=" . $_GET['xl']);
-    get_status($_GET['xl']);
+if ($_GET['xl']) {    
+    header("location:https://www.ups.com/track?loc=en_US&tracknum=" . $_GET['xl']);
+    get_ups_status($_GET['xl']);
 }
 ?>

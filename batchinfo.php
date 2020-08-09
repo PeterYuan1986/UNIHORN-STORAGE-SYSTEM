@@ -66,12 +66,12 @@ if (isset($_POST['fresh'])) {
     $result = mysqli_query($conn, $sql);
     try {
         while ($array = mysqli_fetch_array($result)) {
-
-            if (strpos($array[1], "Delivered") !== FALSE) {
-                
+            if (strpos($array[0], "1Z") !== FALSE) {
+                $status = get_ups_status($array[0]);
             } else {
                 $status = get_status($array[0]);
             }
+            set_time_limit(0);
         }
     } catch (Exception $ex) {
         $sql = "SELECT tracking, status FROM `daifaorders` where  not(status='Delivered') and cmpid='" . $cmpid . "' and batch='" . $batch . "'";  //tracking>0 and not(status='Delivered')
@@ -79,11 +79,13 @@ if (isset($_POST['fresh'])) {
         try {
             while ($array = mysqli_fetch_array($result)) {
 
-                if (strpos($array[1], "Delivered") !== FALSE) {
-                    
+
+                if (strpos($array[0], "1Z") !== FALSE) {
+                    $status = get_ups_status($array[0]);
                 } else {
                     $status = get_status($array[0]);
                 }
+                set_time_limit(0);
             }
         } catch (Exception $ex) {
             $sql = "SELECT tracking, status FROM `daifaorders` where  not(status='Delivered') and cmpid='" . $cmpid . "' and batch='" . $batch . "'";  //tracking>0 and not(status='Delivered')
@@ -91,11 +93,13 @@ if (isset($_POST['fresh'])) {
             try {
                 while ($array = mysqli_fetch_array($result)) {
 
-                    if (strpos($array[1], "Delivered") !== FALSE) {
-                        
+
+                    if (strpos($array[0], "1Z") !== FALSE) {
+                        $status = get_ups_status($array[0]);
                     } else {
                         $status = get_status($array[0]);
                     }
+                    set_time_limit(0);
                 }
             } catch (Exception $ex) {
                 header('location: data-table.php');
@@ -509,7 +513,7 @@ if (isset($_POST['fresh'])) {
                                             print "<td>{$data[$index]['orderid']}</td>";
                                             print "<td>{$data[$index]['service']}</td>";
                                             if (stripos($data[$index]['service'], 'UPS') !== false) {
-                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.ups.com/track?loc=en_US&tracknum={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
+                                                print "<td><a style='color:#ff4' onclick=\"openNewWin('upsorder_jump.php?xl={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                             } else {
                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('uspsorder_jump.php?xl={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                             }
