@@ -34,7 +34,7 @@ while ($arr = mysqli_fetch_array($result)) {
 }
 ?>
 <?php
-$sql = "SELECT sku,nc FROM product where(cmpid='". $cmpid."')";
+$sql = "SELECT sku,nc,barcode FROM product where(cmpid='". $cmpid."')";
 $result = mysqli_query($conn, $sql);
 while ($arr = mysqli_fetch_array($result)) {
     $alldata[] = $arr;
@@ -557,7 +557,8 @@ while ($arr = mysqli_fetch_array($result)) {
                                                     for ($ind = 0; $ind < count($updoc); $ind++) {
                                                         $flagl = false;
                                                         for ($i = 0; $i < @count($alldata) && !$flagl; $i++) {
-                                                            if (strtoupper($updoc[$ind][0]) ==strtoupper($alldata[$i]['sku']))
+                                                            $tem= "UN" .str_pad($alldata[$i]['barcode'],13,"0",STR_PAD_LEFT);   
+                                                            if (strtoupper($updoc[$ind][0]) ==$tem||strtoupper($updoc[$ind][0])==strtoupper($alldata[$i]['sku']))
                                                                 $flagl = true;
                                                         }
                                                         if (!$flagl) {
@@ -569,9 +570,10 @@ while ($arr = mysqli_fetch_array($result)) {
                                                     if ($flag) {
                                                         for ($i = 0; $i < @count($alldata); $i++) {
                                                             $num = 0;
+                                                            $tem= "UN" .str_pad($alldata[$i]['barcode'],13,"0",STR_PAD_LEFT);
                                                             for ($ind = 0; $ind < count($updoc); $ind++) {
-                                                                if (strtoupper($alldata[$i]['sku']) == strtoupper($updoc[$ind][0])) {
-                                                                    $a = $i;
+                                                                if ($tem == strtoupper($updoc[$ind][0]) || strtoupper($alldata[$i]['sku']) == strtoupper($updoc[$ind][0])) {
+                    $a = $i;
                                                                     $num++;
                                                                 }
                                                             }
@@ -613,7 +615,6 @@ while ($arr = mysqli_fetch_array($result)) {
                                             if ($result) {
                                                 $sql = "UPDATE note SET subject='" . $str . " Done. Note:" . $_POST['note'] . "', status='0' where (cmpid='". $cmpid."') AND date='" . @$data[$_SESSION['suoyin']]['date'] . "'";
                                                 mysqli_query($conn, $sql);
-
                                                 $pro = json_decode($productlist);
                                                 for ($i = 0; $i < count($pro); $i++) {
                                                     $sql = "UPDATE product SET nc=nc+" . $pro[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $pro[$i][0] . "'";

@@ -16,7 +16,7 @@ class BarcodeGeneratorHTML extends BarcodeGenerator
      * @return string HTML code.
      * @public
      */
-    public function getBarcode($code, $type, $widthFactor = 2, $totalHeight = 50, $color = 'black')
+    public function getBarcode($code, $type, $widthFactor = 2, $totalHeight = 30, $color = 'black')
     {
         $barcodeData = $this->getBarcodeData($code, $type);
 

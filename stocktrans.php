@@ -26,7 +26,7 @@ if (sizeof($childid) > 1) {
 $datanote = check_note($cmpid);
 $totalnotes = sizeof($datanote);
 
-$sql = "SELECT sku,shanghai,transit,nc FROM product where (cmpid='". $cmpid."') and shanghai>0 ORDER BY sku ASC";
+$sql = "SELECT sku,shanghai,transit,nc FROM product where (cmpid='" . $cmpid . "') and shanghai>0 ORDER BY shanghai DESC";
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 while ($arr = mysqli_fetch_array($result)) {
@@ -35,7 +35,7 @@ while ($arr = mysqli_fetch_array($result)) {
 ?>
 
 <?php
-$sql = "SELECT sku,shanghai FROM product where (cmpid='". $cmpid."')";
+$sql = "SELECT sku,shanghai,barcode FROM product where (cmpid='" . $cmpid . "')";
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
 while ($arr = mysqli_fetch_array($result)) {
@@ -47,17 +47,18 @@ while ($arr = mysqli_fetch_array($result)) {
 <?php
 if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
     $productlist = json_encode($_SESSION['todo']);
-    $sql = "INSERT INTO shstock(date, productlist, subject, ship, tracking, ordernumber,log,cmpid) VALUES ('" . $str . "','" . $productlist . "','export' ,'DHL','" . $_POST['dhl'] . "','1','" . $_POST['note'] ."','". $cmpid . "')";
+    $sql = "INSERT INTO shstock(date, productlist, subject, ship, tracking, ordernumber,log,cmpid) VALUES ('" . $str . "','" . $productlist . "','export' ,'DHL','" . $_POST['dhl'] . "','1','" . $_POST['note'] . "','" . $cmpid . "')";
     $result = mysqli_query($conn, $sql);
     if ($result) {
-        $sql = "INSERT INTO note (date, subject,status,cmpid) VALUES (' " . $str . "',' STOCK TRANSFER:" . $_POST['dhl'] . "+NOTE:" . $_POST['note'] . "','1', '". $cmpid . "')";;
+        $sql = "INSERT INTO note (date, subject,status,cmpid) VALUES (' " . $str . "',' STOCK TRANSFER:" . $_POST['dhl'] . "+NOTE:" . $_POST['note'] . "','1', '" . $cmpid . "')";
+        ;
         mysqli_query($conn, $sql);
 
         $pro = json_decode($productlist);
         for ($i = 0; $i < count($pro); $i++) {
-            $sql = "UPDATE product SET shanghai=shanghai-" . $pro[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $pro[$i][0] . "'";
+            $sql = "UPDATE product SET shanghai=shanghai-" . $pro[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $pro[$i][0] . "'";
             mysqli_query($conn, $sql);
-            $sql = "UPDATE product SET transit=transit+" . $pro[$i][1] . " where (cmpid='". $cmpid."') AND sku='" . $pro[$i][0] . "'";
+            $sql = "UPDATE product SET transit=transit+" . $pro[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $pro[$i][0] . "'";
             mysqli_query($conn, $sql);
         }
         print "<script>alert('Successful!')</script>";
@@ -262,11 +263,11 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                             </div>
                                         </div>
 
-                                    <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
+                                        <div class="col-lg-6 col-md-7 col-sm-6 col-xs-12">
                                             <form method="post">
                                                 <div class="header-top-menu tabl-d-n">
 
-                                                    
+
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
                                                         <?php
@@ -276,11 +277,12 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                                 ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
-                                                            <?php } else { ?>
+    <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
                                                             <?php }
-                                                        } ?>
+                                                        }
+                                                        ?>
                                                     </ul>
 
                                                 </div>
@@ -328,7 +330,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                                 ?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -406,10 +408,10 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                 <table style="width: 90%;margin:auto;color: #fff">
 
                                                     <tr>
-                                                        <th>SKU</th>
-                                                        <th>Inventory</th>
-                                                        <th>Amount To Transfer</th>
-                                                        <th>Check</th>
+                                                    <th>SKU</th>
+                                                    <th>Inventory</th>
+                                                    <th>Amount To Transfer</th>
+                                                    <th>Check</th>
 
                                                     </tr>
 
@@ -503,9 +505,9 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                         <form method="post">
                                             <table style="width: 100%;margin:auto;color:#fff">
                                                 <tr>
-                                                    <th>SKU</th>
-                                                    <th>Inventory</th>
-                                                    <th>To Transfer</th>
+                                                <th>SKU</th>
+                                                <th>Inventory</th>
+                                                <th>To Transfer</th>
                                                 </tr>
                                                 <?php
 //这段控制pickup表格
@@ -529,14 +531,15 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
 
                                                 //这段控制upload部分      将updoc中的重复项统计并查错                                          
                                                 if (@isset($_POST['subfile'])) {
-                                                   $flag = true;
+                                                    $flag = true;
                                                     $a = 0;
                                                     $total = 0;
                                                     $todo = array();
                                                     for ($ind = 0; $ind < count($updoc); $ind++) {
                                                         $flagl = true;
                                                         for ($i = 0; $i < @count($alldata) && $flagl; $i++) {
-                                                            if (strtoupper(trim($updoc[$ind][0])) == strtoupper($alldata[$i]['sku'])) {
+                                                            $tem = "UN" . str_pad($alldata[$i]['barcode'], 13, "0", STR_PAD_LEFT);
+                                                            if (strtoupper(trim($updoc[$ind][0])) == $tem || strtoupper($updoc[$ind][0]) == strtoupper($alldata[$i]['sku'])) {
                                                                 $flagl = FALSE;
                                                             }
                                                         }
@@ -549,8 +552,9 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                     if ($flag) {
                                                         for ($i = 0; $i < @count($alldata); $i++) {
                                                             $num = 0;
+                                                            $tem = "UN" . str_pad($alldata[$i]['barcode'], 13, "0", STR_PAD_LEFT);
                                                             for ($ind = 0; $ind < count($updoc); $ind++) {
-                                                                if (strtoupper($alldata[$i]['sku']) == strtoupper($updoc[$ind][0])) {
+                                                                if ($tem == strtoupper($updoc[$ind][0]) || strtoupper($alldata[$i]['sku']) == strtoupper($updoc[$ind][0])) {
                                                                     $a = $i;
                                                                     $num++;
                                                                 }
@@ -568,7 +572,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                                 $total += $num;
                                                             }
                                                         }
-                                                    }                                                    
+                                                    }
                                                     $_SESSION['todo'] = $todo;
                                                 }
                                                 ?>
