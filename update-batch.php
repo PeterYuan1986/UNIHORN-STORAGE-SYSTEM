@@ -172,7 +172,7 @@ if (isset($_POST['save'])) {
                     @$content = fgetcsv($filepath);
                     try {
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
-                            $sql = "UPDATE daifaorders SET service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . str_replace('$', '', $content[4]) . "' WHERE (cmpid='" . $cmpid . "') AND orderid='" . $content[27] . "'";
+                            $sql = "UPDATE daifaorders SET carrier='" . $content[24] . "', service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . str_replace('$', '', $content[4]) . "' WHERE (cmpid='" . $cmpid . "') AND orderid='" . $content[27] . "'";
                             $result = mysqli_query($conn, $sql);
                         }
                         if ($result) {

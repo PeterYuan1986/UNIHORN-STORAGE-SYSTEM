@@ -557,7 +557,7 @@ while ($arr = mysqli_fetch_array($result)) {
                                                     for ($ind = 0; $ind < count($updoc); $ind++) {
                                                         $flagl = false;
                                                         for ($i = 0; $i < @count($alldata) && !$flagl; $i++) {
-                                                            $tem= "UN" .str_pad($alldata[$i]['barcode'],13,"0",STR_PAD_LEFT);   
+                                                            $tem= "UN" .str_pad($alldata[$i]['barcode'],11,"0",STR_PAD_LEFT);   
                                                             if (strtoupper($updoc[$ind][0]) ==$tem||strtoupper($updoc[$ind][0])==strtoupper($alldata[$i]['sku']))
                                                                 $flagl = true;
                                                         }
@@ -570,7 +570,7 @@ while ($arr = mysqli_fetch_array($result)) {
                                                     if ($flag) {
                                                         for ($i = 0; $i < @count($alldata); $i++) {
                                                             $num = 0;
-                                                            $tem= "UN" .str_pad($alldata[$i]['barcode'],13,"0",STR_PAD_LEFT);
+                                                            $tem= "UN" .str_pad($alldata[$i]['barcode'],11,"0",STR_PAD_LEFT);
                                                             for ($ind = 0; $ind < count($updoc); $ind++) {
                                                                 if ($tem == strtoupper($updoc[$ind][0]) || strtoupper($alldata[$i]['sku']) == strtoupper($updoc[$ind][0])) {
                     $a = $i;

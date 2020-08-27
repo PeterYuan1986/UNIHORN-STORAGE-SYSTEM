@@ -22,17 +22,16 @@ if (sizeof($childid) > 1) {
     }
 }
 
-function updatestr(){
-    $isku= strexchange($isku);
-    $ibatch= strexchange($ibatch);
-    $ireceiver= strexchange($ireceiver);
-    $iaddress= strexchange($iaddress);
-    $iaddress2= strexchange($iaddress2);
-    $icity= strexchange($icity);
-    $iphone= strexchange($iphone);
-    $inote= strexchange($inote);  
+function updatestr() {
+    @$isku = strexchange($isku);
+    @$ibatch = strexchange($ibatch);
+    @$ireceiver = strexchange($ireceiver);
+    @$iaddress = strexchange($iaddress);
+    @$iaddress2 = strexchange($iaddress2);
+    @$icity = strexchange($icity);
+    @$iphone = strexchange($iphone);
+    @$inote = strexchange($inote);
 }
-
 
 $datanote = check_note($cmpid);
 $totalnotes = sizeof($datanote);
@@ -68,7 +67,7 @@ if (isset($_REQUEST['search'])) {
     $note = 0;
 }
 
-$sql = "SELECT `batchname` FROM `daifa` where (cmpid='" . $cmpid . "') and paid='0' ORDER BY time DESC";
+$sql = "SELECT `batchname` FROM `daifa` where (cmpid='" . $cmpid . "') and status='PENDING' ORDER BY time DESC";
 $result = mysqli_query($conn, $sql);
 while ($arr = mysqli_fetch_array($result)) {
     $data[] = $arr;
@@ -95,11 +94,11 @@ if (isset($_POST["save"])) {
         $sql = "select * from daifaorders where (cmpid='" . $cmpid . "') and orderid='" . $isku . "'";
         $result = mysqli_query($conn, $sql);
         if (!$result || mysqli_num_rows($result) == 0) {
-            $sql = "select paid,class,type from daifa where (cmpid='" . $cmpid . "') and batchname='" . $ibatch . "'";
+            $sql = "select status,class,type from daifa where (cmpid='" . $cmpid . "') and batchname='" . $ibatch . "'";
             $result = mysqli_query($conn, $sql);
             $tem = mysqli_fetch_array($result);
-            if ($tem[0]) {
-                print '<script>alert("此批次已结算，无法添加到此批次")</script>';
+            if ($ibatch == "") {
+                print '<script>alert("批次为空，请新建空白批次再添加订单到新建批次！")</script>';
             } else {
                 if ($tem[1] == 0) {
                     if ($tem[2] == "Letter") {
@@ -107,7 +106,7 @@ if (isset($_POST["save"])) {
                     } else {
                         $fee = $packagefee;
                     }
-                    $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','"  . $iaddress2 . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
+                    $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $iaddress2 . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
                     $result = mysqli_query($conn, $sql);
                     $sql = "SELECT SUM(fee) FROM daifaorders where batch='" . $ibatch . "' and cmpid='" . $cmpid . "'";
                     $result = mysqli_query($conn, $sql);
@@ -129,7 +128,7 @@ if (isset($_POST["save"])) {
                             $fee = $fee + $x;
                         }
 
-                        $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','". $iaddress2 . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
+                        $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $iaddress2 . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
                         $result = mysqli_query($conn, $sql);
                         $sql = "SELECT SUM(fee) FROM daifaorders where batch='" . $ibatch . "' and cmpid='" . $cmpid . "'";
                         $result = mysqli_query($conn, $sql);
@@ -191,7 +190,7 @@ if (isset($_POST["update"])) {
                 } else {
                     $fee = $packagefee;
                 }
-                $sql = "UPDATE `daifaorders` SET `batch`='" . $ibatch . "', `service`='" . $icategory . "', `name`='" . $ireceiver . "',`address`='" . $iaddress ."',`address2`='" . $iaddress2 . "', `city`='" . $icity . "', `state`='" . $istate . "',  `zipcode`='" . $izipcode . "', `phone`='" . $iphone . "',  `weight`='" . $iweight . "', note='" . $inote . "',  fee='" . $fee . "'WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
+                $sql = "UPDATE `daifaorders` SET `batch`='" . $ibatch . "', `service`='" . $icategory . "', `name`='" . $ireceiver . "',`address`='" . $iaddress . "',`address2`='" . $iaddress2 . "', `city`='" . $icity . "', `state`='" . $istate . "',  `zipcode`='" . $izipcode . "', `phone`='" . $iphone . "',  `weight`='" . $iweight . "', note='" . $inote . "',  fee='" . $fee . "'WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
                 $result = mysqli_query($conn, $sql);
                 $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $ibatch . "'";
                 $result = mysqli_query($conn, $sql);

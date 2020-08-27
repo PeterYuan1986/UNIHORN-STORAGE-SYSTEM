@@ -27,53 +27,69 @@ if (sizeof($childid) > 1) {
 
 $datanote = check_note($cmpid);
 $totalnotes = sizeof($datanote);
-
-if (isset($_GET['id']) && ($_GET['id'] != '')) {
+if (isset($_GET['type']) && $_GET['type'] == 'amazon') {
     $batch = $_GET['id'];
-    $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and (cmpid='" . $cmpid . "') ORDER by orderid ASC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
-    $result = mysqli_query($conn, $sql);
-//$totalpage = ceil($totalrow / $perpage);
-
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
-    }
-
-    $file = ("./upload/Export_" . $batch . ".csv");
-} else {
-    $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' ORDER by orderid DESC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
-    $result = mysqli_query($conn, $sql);
-//$totalpage = ceil($totalrow / $perpage);
-
-    while ($arr = mysqli_fetch_array($result)) {
-        $data[] = $arr;
-    }
-
-    $file = ("./upload/Export_Order_Summary.csv");
-}
-$sql = "SELECT status FROM daifa where batchname='" . $batch . "' and (cmpid='" . $cmpid . "')";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
-$result = mysqli_query($conn, $sql);
-$row = mysqli_fetch_array($result);
-if ($row[0] == 'PENDING') {
+    $filepath = @fopen("./upload/cmp" . $cmpid . "_" . $batch . ".txt", 'r');
+    @$content = fgets($filepath);
+    $file = ("./upload/Export_" . $batch . ".txt");
     $fw = fopen($file, "w");
-    fwrite($fw, "Order ID (required), Service,Ship To - Name	, Ship To - Address 1 , 	Ship To - Address 2 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
-
-    for ($index = 0; $index < @count($data); $index++) {
-        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['address2'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\t" . $data[$index]['zipcode'] . "\t,\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
+    fwrite($fw, "order-id\torder-item-id\tquantity\tship-date\tcarrier-code\tcarrier-name\ttracking-number\tship-method\ttransparency_code \n");
+    while (@$content = fgetcsv($filepath, 1000, "\t")) {    //每次读取CSV里面的一行内容
+        $sql = "SELECT carrier,tracking,service FROM daifaorders where batch='" . $batch . "' and (cmpid='" . $cmpid . "') and orderid='" . $content[0] . "'";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
+        $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_array($result);
+        $text = $content[0] . "\t" . strval($content[1]) . "\t" . $content[14] . "\t" . date(DATE_ATOM, mktime(12, 0, 0, date("m"), date("d"), date("Y"))) . "\t" . $row['carrier'] . "\t \t\"" . $row['tracking'] . "\"\t" . $row['service'] . "\n";
         fwrite($fw, $text);
     }
+    fclose($fw);
 } else {
+    if (isset($_GET['id']) && ($_GET['id'] != '')) {
+        $batch = $_GET['id'];
+        $sql = "SELECT * FROM daifaorders where batch='" . $batch . "' and (cmpid='" . $cmpid . "') ORDER by id DESC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
+        $result = mysqli_query($conn, $sql);
+//$totalpage = ceil($totalrow / $perpage);
 
+        while ($arr = mysqli_fetch_array($result)) {
+            $data[] = $arr;
+        }
 
-    $fw = fopen($file, "w");
-    fwrite($fw, "Order ID (required), Service, Tracking No,Tracking Status, Cost,	Ship To - Name	, Ship To - Address 1 , 	Ship To - Address 2 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
+        $file = ("./upload/Export_" . $batch . ".csv");
+    } else {
+        $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' ORDER by id DESC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
+        $result = mysqli_query($conn, $sql);
+//$totalpage = ceil($totalrow / $perpage);
 
-    for ($index = 0; $index < @count($data); $index++) {
-        $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\t" . $data[$index]['tracking'] . "\t,".$data[$index]['status']."," . $data[$index]['cost'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['address2'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\t" . $data[$index]['zipcode'] . "\t,\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
+        while ($arr = mysqli_fetch_array($result)) {
+            $data[] = $arr;
+        }
 
-        fwrite($fw, $text);
+        $file = ("./upload/Export_Order_Summary.csv");
     }
+    $sql = "SELECT status FROM daifa where batchname='" . $batch . "' and (cmpid='" . $cmpid . "')";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_array($result);
+    if ($row[0] == 'PENDING') {
+        $fw = fopen($file, "w");
+        fwrite($fw, "Order ID (required), Service,Ship To - Name	, Ship To - Address 1 , 	Ship To - Address 2 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
+
+        for ($index = 0; $index < @count($data); $index++) {
+            $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['address2'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\t" .strval($data[$index]['zipcode']) . "\t,\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
+            fwrite($fw, $text);
+        }
+    } else {
+
+
+        $fw = fopen($file, "w");
+        fwrite($fw, "Order ID (required), Service, Tracking No,Tracking Status, Cost,	Ship To - Name	, Ship To - Address 1 , 	Ship To - Address 2 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
+
+        for ($index = 0; $index < @count($data); $index++) {
+            $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\t" . $data[$index]['tracking'] . "\t," . $data[$index]['status'] . "," . $data[$index]['cost'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['address2'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\t" . strval($data[$index]['zipcode']) . "\t,\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
+
+            fwrite($fw, $text);
+        }
+    }
+    fclose($fw);
 }
-fclose($fw);
 
 header('Content-Description: File Transfer');
 header('Content-Type: application/octet-stream');

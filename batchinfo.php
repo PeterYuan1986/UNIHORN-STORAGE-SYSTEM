@@ -32,9 +32,9 @@ if (isset($_GET['id']) && ($_GET['id'] != '')) {
     header('location: data-table.php');
 }
 
-$columns = array('orderid');
-$column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : $columns[0];
-$sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'asc' ? 'ASC' : 'DESC';
+$columns = array('orderid', 'service', 'tracking', 'cost', 'status', 'name', 'address', 'city', 'state', 'zipcode', 'weight', 'carrier');
+$column = isset($_GET['column']) && in_array($_GET['column'], $columns) ? $_GET['column'] : 'id';
+$sort_order = isset($_GET['order']) && strtolower($_GET['order']) == 'desc' ? 'DESC' : 'ASC';
 //$perpage = 20;
 
 if (!isset($_SESSION['batchinfo_searchtext'])) {
@@ -107,6 +107,12 @@ if (isset($_POST['fresh'])) {
         }
     }
     header('location: ' . $_SERVER['HTTP_REFERER']);
+}
+
+
+if (isset($_POST['amazon'])) {
+
+    echo "<script>window.open('exportbatch.php?type=amazon&id=" . $batch . " ')</script>";
 }
 ?>
 
@@ -226,6 +232,7 @@ if (isset($_POST['fresh'])) {
                             </li>
                             <li>
                                 <a class="has-arrow" href="mailbox.html" aria-expanded="false"><i class="icon nalika-mail icon-wrap"></i> <span class="mini-click-non">Export & Import</span></a>
+
                                 <ul class="submenu-angle" aria-expanded="false">
                                     <li><a class="has-arrow" title="Import" href="supply.php"><span >Incoming</span></a>
                                         <ul class="submenu-angle" aria-expanded="false">     
@@ -444,10 +451,11 @@ if (isset($_POST['fresh'])) {
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <div class="product-status-wrap">
-                                <h4><?php print $batch; ?></h4>                                
-                                <div class="add-product" >                                  
+                                <h4><?php print $batch; ?></h4> 
 
-                                    <a  href="<?php print 'exportbatch.php?id=' . $batch ?>">Export Batch Info</a>
+                                <div    class="add-product" >                                  
+
+                                    <a  href="<?php print 'exportbatch.php?id=' . $batch ?>">导出UNIHORN表格</a>
                                 </div>
                                 <div>
                                     <div class="col-lg-12 col-md-7 col-sm-6 col-xs-12">
@@ -456,19 +464,22 @@ if (isset($_POST['fresh'])) {
                                                 <form method="post" role="search" class="">
 
 
-                                                    <div style="width:180px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
+                                                    <div style="width:px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
                                                         if (isset($_SESSION['batchinfo_searchtext'])) {
                                                             print $_SESSION['batchinfo_searchtext'];
                                                         }
                                                         ?>" ></div>
-                                                    <div style="color:#fff;width:250px;float:left;">
+                                                    <div style="color:#fff;width:px;float:left;">
                                                         <button name="search" type="submit" value="search" class="pd-setting-ed"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
 
                                                     </div>
+                                                    <div style="color:#fff;width:px;float:right;">
+                                                        <button name="amazon" title="仅针对使用Amazon文件导入的批次" type="submit" class="pd-setting-ed">导出Amazon上传文件</button>
 
+                                                    </div>
 
                                                     <div style="color:#fff;width:px;float:right;">
-                                                        <button name="fresh" type="submit" value="fresh" class="pd-setting-ed">刷新追踪信息<i class="fa fa-refresh" aria-hidden="true"></i></button>
+                                                        <button name="fresh" type="submit" title="点击刷新所有订单状态" class="pd-setting-ed">刷新追踪信息<i class="fa fa-refresh" aria-hidden="true"></i></button>
 
                                                     </div>
                                                 </form>
@@ -480,21 +491,21 @@ if (isset($_POST['fresh'])) {
 
 
                                     <table >
-
                                         <tr>
-                                        <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
-                                        <th><a style="color: #fff" >邮寄类型</a></th>
-                                        <th><a style="color: #fff" >快递单号</a></th>
-                                        <th><a style="color: #fff" >追踪信息</a></th>
-                                        <th><a style="color: #fff" >邮费</a></th>
-                                        <th><a style="color: #fff" >收件人</a></th>
-                                        <th><a style="color: #fff" >地址1</a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=orderid&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'orderid' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=carrier&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">配送公司<i class=" fa fa-sort<?php echo $column == 'carrier' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=service&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">邮寄服务类型<i class=" fa fa-sort<?php echo $column == 'service' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=tracking&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">快递单号<i class=" fa fa-sort<?php echo $column == 'tracking' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=status&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">追踪信息<i class=" fa fa-sort<?php echo $column == 'status' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=cost&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">邮费<i class=" fa fa-sort<?php echo $column == 'cost' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=name&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">收件人<i class=" fa fa-sort<?php echo $column == 'name' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=address&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">地址1<i class=" fa fa-sort<?php echo $column == 'address' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                         <th><a style="color: #fff" >地址2</a></th>
-                                        <th><a style="color: #fff" >城市</a></th>
-                                        <th><a style="color: #fff" >州</a></th>
-                                        <th><a style="color: #fff" >邮编</a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=city&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">城市<i class=" fa fa-sort<?php echo $column == 'city' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=state&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">州<i class=" fa fa-sort<?php echo $column == 'state' ? '-' . $up_or_down : ''; ?>"></i></a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=zipcode&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">邮编<i class=" fa fa-sort<?php echo $column == 'zipcode' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                         <th><a style="color: #fff" >手机</a></th>
-                                        <th><a style="color: #fff" >重量</a></th>
+                                        <th><a style="color: #fff" href="batchinfo.php?column=weight&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">重量<i class=" fa fa-sort<?php echo $column == 'weight' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                         <th><a style="color: #fff" >备注</a></th>
                                         </tr>
 
@@ -511,8 +522,9 @@ if (isset($_POST['fresh'])) {
                                         for ($index = 0; $index < @count($data); $index++) {
                                             print '<tr>';
                                             print "<td>{$data[$index]['orderid']}</td>";
+                                            print "<td>" . $data[$index]['carrier'] . "</td>";
                                             print "<td>{$data[$index]['service']}</td>";
-                                            if (stripos($data[$index]['service'], 'UPS') !== false) {
+                                            if ($data[$index]['service'] == "UPS" || stripos($data[$index]['service'], 'UPS') !== false) {
                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('upsorder_jump.php?xl={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                             } else {
                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('uspsorder_jump.php?xl={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
@@ -525,7 +537,7 @@ if (isset($_POST['fresh'])) {
                                             print "<td>{$data[$index]['address2']}</td>";
                                             print "<td>{$data[$index]['city']}</td>";
                                             print "<td>{$data[$index]['state']}</td>";
-                                            print "<td>{$data[$index]['zipcode']}</td>";
+                                            print "<td>".strval($data[$index]['zipcode'])."</td>";
                                             print "<td>{$data[$index]['phone']}</td>";
                                             print "<td>{$data[$index]['weight']}</td>";
                                             print "<td>{$data[$index]['note']}</td>";

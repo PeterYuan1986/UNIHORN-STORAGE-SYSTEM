@@ -11,8 +11,8 @@ $amountfee = 0.3;
 $originalpackagefee = 0.7;
 
 function strexchange($a) {
-    $b = str_replace("'", "\'", $a);
-    $c = str_replace('"', '\"', $b);
+    $b = strval(str_replace("'", "\'", $a));
+    $c = strval(str_replace('"', '\"', $b));
     return $c;
 }
 

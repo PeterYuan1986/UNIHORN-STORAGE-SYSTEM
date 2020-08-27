@@ -31,128 +31,263 @@ if (isset($_POST['save'])) {
     $daifadhl = @$_POST['daifadhl'];
     $daifaservice = @$_POST['daifaservice'];
     $daifaclass = @$_POST['daifaclass'];
-
-    $allowedExts = array(
-        'text/csv',
-        'application/csv',
-        'application/excel',
-        'application/vnd.ms-excel'
-    );
-    if (@$_POST['empty'] != NULL) {
-        $sql = "SELECT * FROM daifa where (cmpid='" . $cmpid . "') and  batchname='" . $daifabatchname . "'";
-        $result = mysqli_query($conn, $sql);
-        $totalrow = mysqli_num_rows($result);
-
-        if ($totalrow > 0) {
-            //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
-            echo "<script> alert('批次名已存在，请重新输入！')</script>";
-        } else {
-            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid, class) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $daifaclass . "')";
-            print $sql;
+    if ($_POST['documenttype']) {
+        $allowedExts = array(
+            'text/txt',
+            'text/plain',
+            'text/anytext',
+            'application/txt',
+        );
+        if (@$_POST['empty'] != NULL) {
+            $sql = "SELECT * FROM daifa where (cmpid='" . $cmpid . "') and  batchname='" . $daifabatchname . "'";
             $result = mysqli_query($conn, $sql);
-            echo "<script> alert('批次新建成功！')</script>";
-        }
-    } else {
-        $temp = explode(".", @$_FILES["file"]["name"]);
-        //echo @$_FILES["file"]["size"];
-        $extension = end($temp);     // 获取文件后缀名
-        if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
-            if (@$_FILES["file"]["error"] > 0) {
-                // echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
-                echo "<script> alert('Error,请联系管理员！')</script>";
+            $totalrow = mysqli_num_rows($result);
+
+            if ($totalrow > 0) {
+//echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
+                echo "<script> alert('批次名已存在，请重新输入！')</script>";
             } else {
-                // echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
-                // echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
-                // echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
-                // echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
-                //判断当期目录下的 upload 目录是否存在该文件
-                //如果没有 upload 目录，你需要创建它，upload 目录权限为 777
-                $sql = "SELECT * FROM daifa where (cmpid='" . $cmpid . "') and  batchname='" . $daifabatchname . "'";
+                $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid, class) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $daifaclass . "')";
                 $result = mysqli_query($conn, $sql);
-                $totalrow = mysqli_num_rows($result);
-
-                if ($totalrow > 0) {
-                    //echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
-                    echo "<script> alert('批次名已存在，请重新输入！')</script>";
-                } else {
-                    // 如果 upload 目录不存在该文件则将文件上传到 upload 目录下
-                    move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
-                    //echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
-
-
-                    @$filepath = @fopen("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv", 'r');
-                    @$content = fgetcsv($filepath);
-                    try {
-                        $ordernumbers = 0;
-                        $totalfee = 0;
-                        $flag = 1;
-                        while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容 
-                            $note = '';
-                            $amount = 0;
-                            $columunum = 10;
-                            while (@$content[$columunum] > 0) {
-                                $note = $note . $content[$columunum - 1] . "*" . $content[$columunum] . '; ';
-                                $amount = $content[$columunum] + $amount;
-                                $columunum = $columunum + 2;
-                            }
-
-                            $note = strexchange($note);
-                            $content[0] = strexchange($content[0]);
-                            $content[1] = strexchange($content[1]);
-                            $content[2] = strexchange($content[2]);
-                            $content[3] = strexchange($content[3]);
-                            $content[4] = strexchange($content[4]);
-                            $content[5] = strexchange($content[5]);
-                            $content[6] = strexchange($content[6]);
-                            $content[7] = strexchange($content[7]);
-                            $content[8] = strexchange($content[8]);
-
-                            if ($daifaclass == 0) {
-                                if ($daifaservice == "Letter") {
-                                    $fee = $letterfee;
-                                } else
-                                    $fee = $packagefee;
-                            }else {
-                                $fee = $originalpackagefee+$amount * $amountfee;
-                            }
-                            $totalfee = $totalfee + $fee;
-                            $sql = "SELECT * FROM daifaorders WHERE cmpid='" . $cmpid . "' and orderid='" . $content[0] . "'";
-                            $result = mysqli_query($conn, $sql);
-                            $totalrow = mysqli_num_rows($result);
-                            if ($totalrow > 0) {
-                                $flag = 0;
-                                $sql = "DELETE FROM daifaorders WHERE cmpid='" . $cmpid . "' and batch='" . $daifabatchname . "'";
-                                mysqli_query($conn, $sql);
-                                unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
-                                echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查是否此单信息中含有冒号等特殊符号，请修改后重新上传！')</script>";
-                                break;
-                            } else {
-                                $sql = "INSERT INTO daifaorders(orderid, name,  address,address2, city, State, zipcode, Phone, Weight ,note, service, batch, cmpid,fee,amount) VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $note . "','" . $daifaservice . "','" . $daifabatchname . "','" . $cmpid . "','" . $fee . "','" . $amount . "')";
-                                $result = mysqli_query($conn, $sql);
-                                $ordernumbers++;
-                                if (!$result) {
-                                    $totalfee = $totalfee - $fee;
-                                    $ordernumbers--;
-                                    echo "<script> alert('插入单号" . $content[0] . "报错，请记录单号并联系管理员,')</script>";
-                                }
-                            }
-                        }
-                        if ($flag) {
-                            $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid,servicefee, class)  VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $ordernumbers . "','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $totalfee . "','" . $daifaclass . "')";
-                            mysqli_query($conn, $sql);
-                            echo "<script> alert('文件上传成功！')</script>";
-                        }
-                    } catch (Exception $ex) {
-                        print $ex;
-                    }
-
-
-                    @fclose(@$filepath);
-                    //header("Location:data-table.php");
-                }
+                echo "<script> alert('批次新建成功！')</script>";
             }
         } else {
-            echo "<script> alert('请上传csv文件!')</script>";
+            $temp = explode(".", @$_FILES["file"]["name"]);
+//echo @$_FILES["file"]["size"];
+            $extension = end($temp);     // 获取文件后缀名
+            if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
+                if (@$_FILES["file"]["error"] > 0) {
+// echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
+                    echo "<script> alert('Error,请联系管理员！')</script>";
+                } else {
+// echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
+// echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
+// echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
+// echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
+//判断当期目录下的 upload 目录是否存在该文件
+//如果没有 upload 目录，你需要创建它，upload 目录权限为 777
+                    $sql = "SELECT * FROM daifa where (cmpid='" . $cmpid . "') and  batchname='" . $daifabatchname . "'";
+                    $result = mysqli_query($conn, $sql);
+                    $totalrow = mysqli_num_rows($result);
+
+                    if ($totalrow > 0) {
+//echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
+                        echo "<script> alert('批次名已存在，请重新输入！')</script>";
+                    } else {
+// 如果 upload 目录不存在该文件则将文件上传到 upload 目录下
+                        move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/cmp" . $cmpid . "_" . $daifabatchname . "." . $extension);
+//echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
+
+
+                        @$filepath = @fopen("./upload/cmp" . $cmpid . "_" . $daifabatchname . "." . $extension, 'r');
+                        @$content = fgets($filepath);
+                        try {
+                            $ordernumbers = 0;
+                            $totalfee = 0;
+                            $flag = 1;
+                            while (@$content = fgetcsv($filepath, 1000, "\t")) {    //每次读取CSV里面的一行内容 
+                                $sql = "SELECT note,fee FROM daifaorders WHERE cmpid='" . $cmpid . "' and orderid='" . $content[0] . "'and not(batch='" . $daifabatchname . "')";
+                                $result = mysqli_query($conn, $sql);
+                                $totalrow = mysqli_num_rows($result);
+                                if ($totalrow > 0) {
+                                    $flag = 0;
+                                    $sql = "DELETE FROM daifaorders WHERE cmpid='" . $cmpid . "' and batch='" . $daifabatchname . "'";
+                                    mysqli_query($conn, $sql);
+                                    unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
+                                    echo "<script> alert('与之前批次单号重复或者此单号信息有误：" . $content[0] . "！请检查此订单名称中含有冒号等特殊符号，请修改后重新上传！')</script>";
+                                    break;
+                                } else {
+                                    $sql = "SELECT note,fee,weight FROM daifaorders WHERE cmpid='" . $cmpid . "' and orderid='" . $content[0] . "'and batch='" . $daifabatchname . "'";
+                                    $result = mysqli_query($conn, $sql);
+                                    $rows = mysqli_num_rows($result);
+                                    if ($rows > 0) {
+                                        $row = mysqli_fetch_array($result);
+                                        $note = $row[0] . $content[10] . "*" . $content[14] . '; ';
+                                        $amount = $content[14];
+                                        $fee = $amount * $amountfee;
+                                        $weight = $row[2] + $amount * 7;
+                                        $totalfee = $totalfee + $fee;
+                                        $sql = "UPDATE daifaorders set note='" . $note . "'   ,fee =fee+'" . $fee . "'   ,amount =amount+'" . $amount . "'   ,weight ='" . $weight . "'  WHERE cmpid='" . $cmpid . "' and orderid='" . $content[0] . "'and batch='" . $daifabatchname . "'";
+                                        $result = mysqli_query($conn, $sql);
+                                    } else {
+                                        $note = $content[10] . "*" . $content[14] . '; ';
+                                        $amount = $content[14];
+
+                                        $note = strexchange($note);
+                                        $content['orderid'] = strexchange($content[0]);
+                                        $content['name'] = strexchange($content[16]);
+                                        $content['address'] = strexchange($content[17]);
+                                        $content['address2'] = strexchange($content[18]);
+                                        $content['city'] = strexchange($content[20]);
+                                        $content['State'] = strexchange($content[21]);
+                                        $content['zipcode'] = strval(strexchange($content[22]));
+                                        $content['Phone'] = strexchange($content[9]);
+                                        $content['Weight'] = $amount * 7;
+
+                                        if ($daifaclass == 0) {
+                                            if ($daifaservice == "Letter") {
+                                                $fee = $letterfee;
+                                            } else
+                                                $fee = $packagefee;
+                                        }else {
+                                            $fee = $originalpackagefee + $amount * $amountfee;
+                                        }
+                                        $totalfee = $totalfee + $fee;
+
+                                        $sql = "INSERT INTO daifaorders(orderid, name,  address,address2, city, State, zipcode, Phone, Weight ,note, service, batch, cmpid,fee,amount) VALUES ('" . $content['orderid'] . "','" . $content['name'] . "','" . $content['address'] . "','" . $content['address2'] . "','" . $content['city'] . "','" . $content['State'] . "','" . $content['zipcode'] . "','" . $content['Phone'] . "','" . $content['Weight'] . "','" . $note . "','" . $daifaservice . "','" . $daifabatchname . "','" . $cmpid . "','" . $fee . "','" . $amount . "')";
+                                        $result = mysqli_query($conn, $sql);
+                                        $ordernumbers++;
+                                        if (!$result) {
+                                            $totalfee = $totalfee - $fee;
+                                            $ordernumbers--;
+                                            echo "<script> alert('插入单号" . $content[0] . "报错，请记录单号并联系管理员,')</script>";
+                                        }
+                                    }
+                                }
+                            }
+                            if ($flag) {
+                                $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid,servicefee, class)  VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $ordernumbers . "','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $totalfee . "','" . $daifaclass . "')";
+                                mysqli_query($conn, $sql);
+                                echo "<script> alert('文件上传成功！')</script>";
+                            }
+                        } catch (Exception $ex) {
+                            print $ex;
+                        }
+
+
+                        @fclose(@$filepath);
+//header("Location:data-table.php");
+                    }
+                }
+            } else {
+                echo "<script> alert('请上传txt文件!')</script>";
+            }
+        }
+    } else {
+        $allowedExts = array(
+            'text/csv',
+            'application/csv',
+            'application/excel',
+            'application/vnd.ms-excel',
+            'application/vnd.msexcel',
+            'text/anytext',
+            'application/octet-stream',
+        );
+        if (@$_POST['empty'] != NULL) {
+            $sql = "SELECT * FROM daifa where (cmpid='" . $cmpid . "') and  batchname='" . $daifabatchname . "'";
+            $result = mysqli_query($conn, $sql);
+            $totalrow = mysqli_num_rows($result);
+
+            if ($totalrow > 0) {
+//echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
+                echo "<script> alert('批次名已存在，请重新输入！')</script>";
+            } else {
+                $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid, class) VALUES ('" . $daifabatchname . "','" . $daifaservice . "','','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $daifaclass . "')";
+                $result = mysqli_query($conn, $sql);
+                echo "<script> alert('批次新建成功！')</script>";
+            }
+        } else {
+            $temp = explode(".", @$_FILES["file"]["name"]);
+//echo @$_FILES["file"]["size"];
+            $extension = end($temp);     // 获取文件后缀名
+            if (in_array(@$_FILES["file"]["type"], $allowedExts)) {
+                if (@$_FILES["file"]["error"] > 0) {
+// echo "错误：: " . @$_FILES["file"]["error"] . "<br>";
+                    echo "<script> alert('Error,请联系管理员！')</script>";
+                } else {
+// echo "上传文件名: " . @$_FILES["file"]["name"] . "<br>";
+// echo "文件类型: " . @$_FILES["file"]["type"] . "<br>";
+// echo "文件大小: " . (@$_FILES["file"]["size"] / 1024) . " kB<br>";
+// echo "文件临时存储的位置: " . @$_FILES["file"]["tmp_name"] . "<br>";
+//判断当期目录下的 upload 目录是否存在该文件
+//如果没有 upload 目录，你需要创建它，upload 目录权限为 777
+                    $sql = "SELECT * FROM daifa where (cmpid='" . $cmpid . "') and  batchname='" . $daifabatchname . "'";
+                    $result = mysqli_query($conn, $sql);
+                    $totalrow = mysqli_num_rows($result);
+
+                    if ($totalrow > 0) {
+//echo @$_FILES["file"]["name"] . " 文件已经存在。 ";
+                        echo "<script> alert('批次名已存在，请重新输入！')</script>";
+                    } else {
+// 如果 upload 目录不存在该文件则将文件上传到 upload 目录下
+                        move_uploaded_file(@$_FILES["file"]["tmp_name"], "./upload/cmp" . $cmpid . "_" . $daifabatchname . "." . $extension);
+//echo "文件存储在: " . "upload/" . $_SESSION['daifabatchname'].".csv". "<br>";
+
+
+                        @$filepath = @fopen("./upload/cmp" . $cmpid . "_" . $daifabatchname . "." . $extension, 'r');
+                        @$content = fgetcsv($filepath);
+                        try {
+                            $ordernumbers = 0;
+                            $totalfee = 0;
+                            $flag = 1;
+                            while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容 
+                                $note = '';
+                                $amount = 0;
+                                $columunum = 10;
+                                while (@$content[$columunum] > 0) {
+                                    $note = $note . $content[$columunum - 1] . "*" . $content[$columunum] . '; ';
+                                    $amount = $content[$columunum] + $amount;
+                                    $columunum = $columunum + 2;
+                                }
+
+                                $note = strexchange($note);
+                                $content[0] = strexchange($content[0]);
+                                $content[1] = strexchange($content[1]);
+                                $content[2] = strexchange($content[2]);
+                                $content[3] = strexchange($content[3]);
+                                $content[4] = strexchange($content[4]);
+                                $content[5] = strexchange($content[5]);
+                                $content[6] = strexchange($content[6]);
+                                $content[7] = strexchange($content[7]);
+                                $content[8] = strexchange($content[8]);
+
+                                if ($daifaclass == 0) {
+                                    if ($daifaservice == "Letter") {
+                                        $fee = $letterfee;
+                                    } else
+                                        $fee = $packagefee;
+                                }else {
+                                    $fee = $originalpackagefee + $amount * $amountfee;
+                                }
+                                $totalfee = $totalfee + $fee;
+                                $sql = "SELECT * FROM daifaorders WHERE cmpid='" . $cmpid . "' and orderid='" . $content[0] . "'";
+                                $result = mysqli_query($conn, $sql);
+                                $totalrow = mysqli_num_rows($result);
+                                if ($totalrow > 0) {
+                                    $flag = 0;
+                                    $sql = "DELETE FROM daifaorders WHERE cmpid='" . $cmpid . "' and batch='" . $daifabatchname . "'";
+                                    mysqli_query($conn, $sql);
+                                    unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
+                                    echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查此订单名称中含有冒号等特殊符号，请修改后重新上传！')</script>";
+                                    break;
+                                } else {
+                                    $sql = "INSERT INTO daifaorders(orderid, name,  address,address2, city, State, zipcode, Phone, Weight ,note, service, batch, cmpid,fee,amount) VALUES ('" . $content[0] . "','" . $content[1] . "','" . $content[2] . "','" . $content[3] . "','" . $content[4] . "','" . $content[5] . "','" . $content[6] . "','" . $content[7] . "','" . $content[8] . "','" . $note . "','" . $daifaservice . "','" . $daifabatchname . "','" . $cmpid . "','" . $fee . "','" . $amount . "')";
+                                    $result = mysqli_query($conn, $sql);
+                                    $ordernumbers++;
+                                    if (!$result) {
+                                        $totalfee = $totalfee - $fee;
+                                        $ordernumbers--;
+                                        echo "<script> alert('插入单号" . $content[0] . "报错，请记录单号并联系管理员,')</script>";
+                                    }
+                                }
+                            }
+                            if ($flag) {
+                                $sql = "INSERT INTO daifa(batchname, type, orders, dhltracking, status, cmpid,servicefee, class)  VALUES ('" . $daifabatchname . "','" . $daifaservice . "','" . $ordernumbers . "','" . $daifadhl . "','PENDING', '" . $cmpid . "','" . $totalfee . "','" . $daifaclass . "')";
+                                mysqli_query($conn, $sql);
+                                echo "<script> alert('文件上传成功！')</script>";
+                            }
+                        } catch (Exception $ex) {
+                            print $ex;
+                        }
+
+
+                        @fclose(@$filepath);
+//header("Location:data-table.php");
+                    }
+                }
+            } else {
+                echo "<script> alert('请上传csv文件!')</script>";
+            }
         }
     }
 }
@@ -546,11 +681,13 @@ if (isset($_POST['save'])) {
                                                                 <a> &nbsp;  &nbsp;  &nbsp;  &nbsp;   </a>
                                                                 <input type="radio" name="daifaclass" value ="1" <?php if ($cmpid == '3') print "checked"; ?>><a style="color:yellow">By Product Amount</a>  
                                                             </div>
-                                                            
+
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <a> 说明:<br></a>
-                                                                <a> 批次名称请不要包含&nbsp; '&nbsp;,&nbsp;"&nbsp;,&nbsp;&&nbsp;,&nbsp;$&nbsp;,&nbsp;/&nbsp;,&nbsp;\&nbsp; 等特殊符号。</a>
-                                                                 </div>
+                                                                <a> 1.批次名称请不要包含&nbsp; '&nbsp;,&nbsp;"&nbsp;,&nbsp;&&nbsp;,&nbsp;$&nbsp;,&nbsp;/&nbsp;,&nbsp;\&nbsp; 等特殊符号。</a>
+                                                                <a><br>2.Amazon表格为亚马逊平台默认txt文件，自定义亚马逊文件将导入失败。</a>
+
+                                                            </div>
 
                                                         </div>
 
@@ -558,19 +695,28 @@ if (isset($_POST['save'])) {
                                                     <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                                         <div class="review-content-section">
                                                             <div class="input-group mg-b-pro-edt">
-                                                                <button><a onclick="window.open('download.php')">点击下载模板，请勿更改表格顺序</a></button>
+                                                                <button><a onclick="window.open('download.php')">点击下载UNIHORN模板，请勿更改表格顺序</a></button>
                                                             </div>
-
-
 
                                                             <div>
                                                                 <br>
                                                             </div>
+
+
                                                             <div>
 
                                                                 <div class="input-group mg-b-pro-edt">
-                                                                    <a style="color:yellow">上传CSV文件</a>
+                                                                    <a style="color:yellow">上传csv/txt文件</a>
                                                                     <input name="file" style="color:yellow" type="file" size="16" maxlength="80" accept="application/csv" >
+
+                                                                </div>
+                                                                <div>
+                                                                    <br>
+                                                                </div>
+                                                                <div>
+                                                                    <input type="radio" name="documenttype"  value ="0" <?php if ($cmpid == '2' || $cmpid != '3') print "checked"; ?>><a style="color:yellow">UNIHORN模板</a>
+                                                                    <a> &nbsp;  &nbsp;  &nbsp;  &nbsp;   </a>
+                                                                    <input type="radio" name="documenttype" value ="1" <?php if ($cmpid == '3') print "checked"; ?>><a style="color:yellow">Amazon导出文件</a>  
 
                                                                 </div>
                                                                 <div>

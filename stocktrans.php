@@ -538,7 +538,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                     for ($ind = 0; $ind < count($updoc); $ind++) {
                                                         $flagl = true;
                                                         for ($i = 0; $i < @count($alldata) && $flagl; $i++) {
-                                                            $tem = "UN" . str_pad($alldata[$i]['barcode'], 13, "0", STR_PAD_LEFT);
+                                                            $tem = "UN" . str_pad($alldata[$i]['barcode'], 11, "0", STR_PAD_LEFT);
                                                             if (strtoupper(trim($updoc[$ind][0])) == $tem || strtoupper($updoc[$ind][0]) == strtoupper($alldata[$i]['sku'])) {
                                                                 $flagl = FALSE;
                                                             }
@@ -552,7 +552,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['todo']) != 0) {
                                                     if ($flag) {
                                                         for ($i = 0; $i < @count($alldata); $i++) {
                                                             $num = 0;
-                                                            $tem = "UN" . str_pad($alldata[$i]['barcode'], 13, "0", STR_PAD_LEFT);
+                                                            $tem = "UN" . str_pad($alldata[$i]['barcode'], 11, "0", STR_PAD_LEFT);
                                                             for ($ind = 0; $ind < count($updoc); $ind++) {
                                                                 if ($tem == strtoupper($updoc[$ind][0]) || strtoupper($alldata[$i]['sku']) == strtoupper($updoc[$ind][0])) {
                                                                     $a = $i;

@@ -35,9 +35,9 @@ if (!isset($_SESSION['orderinfo_searchtest'])) {
     $_SESSION['orderinfo_searchtest'] = '';
 }
 if (isset($_POST['search'])) {
-    $_SESSION['orderinfo_searchtest']=$_POST['searchtext'];
-    } 
-$sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or service LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or name LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or address2 LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or address LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or city LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or state LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%') and (cmpid='" . $cmpid . "') ORDER BY " . $column . ' ' . $sort_order;
+    $_SESSION['orderinfo_searchtest'] = $_POST['searchtext'];
+}
+$sql = "SELECT * FROM daifaorders where (note LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or orderid LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or service LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or tracking LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or name LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or address2 LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or address LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or city LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or state LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or zipcode LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%' or batch LIKE '%" . $_SESSION['orderinfo_searchtest'] . "%') and (cmpid='" . $cmpid . "') ORDER BY id DESC";
 
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -51,7 +51,7 @@ if ($totalrow != 0) {
         $data[] = $arr;
     }
 }
-if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 ||isset($_POST['search'])|| @$_GET['page'] > $totalpage) {
+if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || isset($_POST['search']) || @$_GET['page'] > $totalpage) {
     $page = 1;
 } else {
     $page = $_GET['page'];
@@ -268,7 +268,8 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
+                                                            <?php
+                                                            }
                                                         }
                                                         ?>
                                                     </ul>
@@ -426,7 +427,8 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                         <tr>
                                         <th><a style="color: #fff" href="batchinfo.php?column=sku&order=<?php echo $asc_or_desc . "&id=" . $batch; ?>">订单号<i class=" fa fa-sort<?php echo $column == 'sku' ? '-' . $up_or_down : ''; ?>"></i></a></th>
                                         <th><a style="color: #fff" >批次</a></th>
-                                        <th><a style="color: #fff" >邮寄类型</a></th>
+                                        <th><a style="color: #fff" >配送公司</a></th>
+                                        <th><a style="color: #fff" >邮寄服务类型</a></th>
                                         <th><a style="color: #fff" >快递单号</a></th>
                                         <th><a style="color: #fff" >邮费</a></th>
                                         <th><a style="color: #fff" >收件人</a></th>
@@ -454,8 +456,9 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                     print '<tr>';
                                                     print "<td>{$data[$index]['orderid']}</td>";
                                                     print "<td>{$data[$index]['batch']}</td>";
+                                                    print "<td>{$data[$index]['carrier']}</td>";
                                                     print "<td>{$data[$index]['service']}</td>";
-                                                    if (stripos($data[$index]['service'], 'ups') !== false) {
+                                                    if ($data[$index]['service'] == "UPS" || stripos($data[$index]['service'], 'UPS') !== false) {
                                                         print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.ups.com/track?loc=en_US&tracknum={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                                     } else {
                                                         print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
@@ -467,7 +470,7 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                     print "<td>{$data[$index]['address2']}</td>";
                                                     print "<td>{$data[$index]['city']}</td>";
                                                     print "<td>{$data[$index]['state']}</td>";
-                                                    print "<td>{$data[$index]['zipcode']}</td>";
+                                                    print "<td>".strval($data[$index]['zipcode'])."</td>";
                                                     print "<td>{$data[$index]['phone']}</td>";
                                                     print "<td>{$data[$index]['weight']}</td>";
                                                     print "<td>{$data[$index]['note']}</td>";

@@ -77,7 +77,7 @@ for ($i = 0; $i < $perpage; $i++) {
         $_SESSION['detailshanghai'] = $row[9];
         $_SESSION['detailsold'] = $row[10];
         $_SESSION['detailweb'] = $row[11];
-        @$_SESSION['detailbar'] = "UN" .str_pad($row[13],13,"0",STR_PAD_LEFT);   
+        @$_SESSION['detailbar'] = "UN" .str_pad($row[13],11,"0",STR_PAD_LEFT);   
         break;
     }
 }
