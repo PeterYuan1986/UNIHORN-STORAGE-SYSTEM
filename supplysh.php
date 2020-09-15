@@ -269,6 +269,7 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                         <ul class="submenu-angle" aria-expanded="false">   
                                             <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replace(NC)</span></a></li>
                                             <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replace(SH)</span></a></li>
+                                            <li><a title="Batch Order" href="add-batch.php"><span class="mini-sub-pro">Batch Order</span></a></li>
                                             <li><a title="Export Stock" href="stocktrans.php"><span class="mini-sub-pro">Export Stock</span></a></li>                                             
                                         </ul>
                                     </li>
@@ -296,10 +297,10 @@ if (@isset($_POST['confirm']) && @count($_SESSION['tosend']) != 0) {
                                 </ul>
                             </li>
                             <li>
-                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">批量发货</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
-                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
+                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">批量发货汇总</span></a></li>
                                     <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>     
                                     <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>  
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>

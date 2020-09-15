@@ -14,7 +14,7 @@ check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
 
 if (isset($_GET['id'])) {
     $batch = $_GET['id'];
-    $sql = "SELECT  `class`, type FROM `daifa` WHERE (cmpid='" . $cmpid . "') AND batchname='" . $batch . "'";
+    $sql = "SELECT  class, type FROM `daifa` WHERE (cmpid='" . $cmpid . "') AND batchname='" . $batch . "'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
     $batchclass = $row[0];
@@ -44,25 +44,31 @@ if (isset($_POST['modify'])) {
         if ($batchclass == 0) {
             if ($_POST['type'] == 0 && $batchtype != 'Letter') {
                 $sql = "UPDATE daifaorders set fee='" . $letterfee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                //print "1".$sql;
                 $result = mysqli_query($conn, $sql);
                 $sql = "UPDATE daifa set type='Letter'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                //print "2".$sql;
                 $result = mysqli_query($conn, $sql);
             }
             if ($_POST['type'] == 1 && $batchtype == 'Letter') {
                 $sql = "UPDATE daifaorders set fee='" . $packagefee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                //print "3".$sql;
                 $result = mysqli_query($conn, $sql);
                 $sql = "UPDATE daifa set type='Package'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                //print "4".$sql;
                 $result = mysqli_query($conn, $sql);
             }
         } else {
             if ($_POST['type'] == 0 && $batchtype != 'Letter') {
 
                 $sql = "UPDATE daifa set type='Letter'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                //print "5".$sql;
                 $result = mysqli_query($conn, $sql);
             }
             if ($_POST['type'] == 1 && $batchtype == 'Letter') {
 
                 $sql = "UPDATE daifa set type='Package'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                //print "6".$sql;
                 $result = mysqli_query($conn, $sql);
             }
         }
@@ -73,48 +79,60 @@ if (isset($_POST['modify'])) {
 
         if ($_POST['class'] == 0) {
             if ($_POST['type'] == 0) {
-                if ($batchclass != 'Letter') {
+                if ($batchtype != 'Letter') {
                     $sql = "UPDATE daifa set type='Letter', class='0' where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    //print "7".$sql;
                     $result = mysqli_query($conn, $sql);
                 } else {
                     $sql = "UPDATE daifa set class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    //print "8".$sql;
                     $result = mysqli_query($conn, $sql);
                 }
                 $sql = "UPDATE daifaorders set fee='" . $letterfee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                //print "9".$sql;
                 $result = mysqli_query($conn, $sql);
             } if ($_POST['type'] == 1) {
 
-                if ($batchclass == 'Letter') {
+                if ($batchtype == 'Letter') {
                     $sql = "UPDATE daifa set type='Package', class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    //print "10".$sql;
                     $result = mysqli_query($conn, $sql);
                 } else {
                     $sql = "UPDATE daifa set class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    //print "11".$sql;
                     $result = mysqli_query($conn, $sql);
                 }
                 $sql = "UPDATE daifaorders set fee='" . $packagefee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                //print "12".$sql;
                 $result = mysqli_query($conn, $sql);
             }
         } else {
             if ($_POST['type'] == 0) {
-                if ($batchclass != 'Letter') {
+                if ($batchtype != 'Letter') {
                     $sql = "UPDATE daifa set type='Letter', class='1' where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    //print "13".$sql;
                     $result = mysqli_query($conn, $sql);
                 } else {
                     $sql = "UPDATE daifa set class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    //print "14".$sql;
                     $result = mysqli_query($conn, $sql);
                 }
-                $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . "+".$originalpackagefee." where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . "+" . $originalpackagefee . " where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                //print "15".$sql;
                 $result = mysqli_query($conn, $sql);
             } if ($_POST['type'] == 1) {
-                if ($batchclass == 'Letter') {
+                if ($batchtype == 'Letter') {
                     $sql = "UPDATE daifa set type='Package', class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    //print "16".$sql;
                     $result = mysqli_query($conn, $sql);
                 } else {
                     $sql = "UPDATE daifa set class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
+                    //print "17".$sql;
                     $result = mysqli_query($conn, $sql);
                 }
 
-                $sql = "UPDATE daifaorders set fee= amount*"  . $amountfee . "+".$originalpackagefee." where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . "+" . $originalpackagefee . " where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
+                //print "18".$sql;
 
                 $result = mysqli_query($conn, $sql);
             }
@@ -174,6 +192,23 @@ if (isset($_POST['save'])) {
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
                             $sql = "UPDATE daifaorders SET carrier='" . $content[24] . "', service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . str_replace('$', '', $content[4]) . "' WHERE (cmpid='" . $cmpid . "') AND orderid='" . $content[27] . "'";
                             $result = mysqli_query($conn, $sql);
+                            if ($_POST['checkbox'] != NULL) {
+                                $pattern = '/(([a-zA-Z0-9]|\-|\.)+\*)/';  //匹配inote里的整数
+                                preg_match($pattern, $content[28], $match);
+                                $prex = str_replace("*", "", $match[0]);
+                                $pattern = '/(\*\d+(;|；))/';  //匹配inote里的整数
+                                preg_match($pattern, $content[28], $match);
+                                $prey = str_replace("*", "", $match[0]);
+                                $prey = str_replace(";", "", $prey);
+                                $prey = str_replace("*", "", $prey);
+                                $productlist = json_encode(array($prex, $prey));
+                                $sql = "INSERT INTO `ncstock`(date, productlist, subject, ordernumber, market, tracking, ship, cmpid) VALUES ('" . $str . "','" . $productlist . "','order' ,'" . $content[27] . "','" . $_POST['mkt'] . "','" . $content[3] . "','" . $content[24] . "','" . $cmpid . "')";
+                                $result = mysqli_query($conn, $sql);
+                                $sql = "UPDATE product SET nc=nc-" . $prey . " where (cmpid='" . $cmpid . "') AND sku='" . $prex . "'";
+                                mysqli_query($conn, $sql);
+                                $sql = "UPDATE product SET sold=sold+" . $prey . " where (cmpid='" . $cmpid . "') AND sku='" . $prex . "'";
+                                mysqli_query($conn, $sql);
+                            }
                         }
                         if ($result) {
                             $sql = "SELECT cost, fee FROM daifaorders where (cmpid='" . $cmpid . "') AND batch='" . $batch . "'";
@@ -340,6 +375,7 @@ if (isset($_POST['save'])) {
                                         <ul class="submenu-angle" aria-expanded="false">   
                                             <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replace(NC)</span></a></li>
                                             <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replace(SH)</span></a></li>
+                                            <li><a title="Batch Order" href="add-batch.php"><span class="mini-sub-pro">Batch Order</span></a></li>
                                             <li><a title="Export Stock" href="stocktrans.php"><span class="mini-sub-pro">Export Stock</span></a></li>                                             
                                         </ul>
                                     </li>
@@ -367,10 +403,10 @@ if (isset($_POST['save'])) {
                                 </ul>
                             </li>
                             <li class="active">
-                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">批量发货</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
-                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
+                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">批量发货汇总</span></a></li>
                                     <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>            
                                     <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                                    
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
@@ -524,7 +560,7 @@ if (isset($_POST['save'])) {
                                                     <i class="icon nalika-edit"></i>
                                                 </div>
                                                 <div class="breadcomb-ctn">
-                                                    <h2>添加批次</h2>
+                                                    <h2>批次信息上传</h2>
                                                     <p>Welcome to Unihorn Management System <span class="bread-ntd"></span></p>
                                                 </div>
                                             </div>
@@ -546,7 +582,7 @@ if (isset($_POST['save'])) {
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                 <div class="review-tab-pro-inner">
                                     <ul id="myTab3" class="tab-review-design">
-                                        <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> Add Batch</a></li>
+                                        <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> UPLOAD Batch INFO</a></li>
                                     </ul>
                                     <div id="myTabContent" class="tab-content custom-product-edit">
 
@@ -560,6 +596,18 @@ if (isset($_POST['save'])) {
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <input name="file" type="file" size="16" maxlength="200" accept="application/csv" style="color:yellow">
 
+                                                            </div><div>
+                                                                <input name="checkbox" type="checkbox" value="1"> <a style="color:white">真仓(选中将从实际库存中扣除相应数量)&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                                            </div>
+                                                            <div class="input-group mg-b-pro-edt">
+                                                                <a style="color:white">销售平台</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>
+                                                                <input name="mkt" type="radio" value="Amazon"  checked><a style="color:yellow">Amazon</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>
+                                                                <input name="mkt" type="radio" value="Newegg"  ><a style="color:yellow">Newegg</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>  
+                                                                <input name="mkt" type="radio" value="Ebay"  ><a style="color:yellow">Ebay</a>
+                                                                <a>&nbsp;&nbsp;&nbsp;</a>
                                                             </div>
 
                                                         </div>

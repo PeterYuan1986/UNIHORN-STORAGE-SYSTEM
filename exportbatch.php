@@ -38,7 +38,26 @@ if (isset($_GET['type']) && $_GET['type'] == 'amazon') {
         $sql = "SELECT carrier,tracking,service FROM daifaorders where batch='" . $batch . "' and (cmpid='" . $cmpid . "') and orderid='" . $content[0] . "'";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_array($result);
-        $text = $content[0] . "\t" . strval($content[1]) . "\t" . $content[14] . "\t" . date(DATE_ATOM, mktime(12, 0, 0, date("m"), date("d"), date("Y"))) . "\t" . $row['carrier'] . "\t \t\"" . $row['tracking'] . "\"\t" . $row['service'] . "\n";
+        $text = $content[0] . "\t" . strval($content[1]) . "\t" . $content[14] . "\t" . $content[4] . "\t" . $row['carrier'] . "\t \t\"" . $row['tracking'] . "\"\t" . $row['service'] . "\n";
+        fwrite($fw, $text);
+    }
+    fclose($fw);
+} elseif (isset($_GET['type']) && $_GET['type'] == 'newegg') {
+    $batch = $_GET['id'];
+    $filepath = @fopen("./upload/cmp" . $cmpid . "_" . $batch . ".csv", 'r');
+    @$content = fgets($filepath);
+    $file = ("./upload/Export_" . $batch . ".csv");
+    $fw = fopen($file, "w");
+    fwrite($fw, "Order Number,Order Date & Time,Sales Channel,Fulfillment Option,Ship To Address Line 1,Ship To Address Line 2,	Ship To City,	Ship To State,	Ship To ZipCode,Ship To Country	,Ship To First Name,	Ship To LastName,	Ship To Company,	Ship To Phone Number,	Order Customer Email,	Order Shipping Method,	Item Seller Part #,	Item Newegg #,	Item Unit Price,	Extend Unit Price,	Item Unit Shipping Charge,	Extend Shipping Charge,	Extend VAT,	Extend Duty,	Order Shipping Total,Order Discount Amount,Sales Tax,VAT Total,Duty Total,Order Total,Quantity Ordered,Quantity Shipped,Actual Shipping Carrier,Actual Shipping Method,	Tracking Number\n");
+    while (@$content = fgetcsv($filepath, 1000, ",")) {    //每次读取CSV里面的一行内容
+        $sql = "SELECT carrier,tracking,service FROM daifaorders where batch='" . $batch . "' and (cmpid='" . $cmpid . "') and orderid='" . $content[0] . "'";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
+        $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_array($result);
+        $text='';
+        for($index=0;$index<=30;$index++){
+            $text=$text.strval($content[$index]).",";
+        }
+        $text = $text.$content[30].",". $row['carrier'] . ",".$row['service'].",". $row['tracking']."\n";
         fwrite($fw, $text);
     }
     fclose($fw);
@@ -73,7 +92,7 @@ if (isset($_GET['type']) && $_GET['type'] == 'amazon') {
         fwrite($fw, "Order ID (required), Service,Ship To - Name	, Ship To - Address 1 , 	Ship To - Address 2 ,	Ship To - City	, Ship To - State/Province ,	Ship To - Postal Code,	Ship To - Phone,	Total Weight in Oz, Note, \n");
 
         for ($index = 0; $index < @count($data); $index++) {
-            $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['address2'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\t" .strval($data[$index]['zipcode']) . "\t,\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
+            $text = "\"" . $data[$index]['orderid'] . "\"," . $data[$index]['service'] . ",\"" . $data[$index]['name'] . "\",\"" . $data[$index]['address'] . "\",\"" . $data[$index]['address2'] . "\",\"" . $data[$index]['city'] . "\",\"" . $data[$index]['state'] . "\",\t" . strval($data[$index]['zipcode']) . "\t,\"" . $data[$index]['phone'] . "\"," . $data[$index]['weight'] . ",\"" . $data[$index]['note'] . "\"\n";
             fwrite($fw, $text);
         }
     } else {

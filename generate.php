@@ -30,6 +30,7 @@ $code = $Bar->getBarcode($_SESSION['detailbar'], $Bar::TYPE_CODE_128);
                 <div class="col-md-6 " style="background: white; padding: 0px;">
                     <div class="panel-heading">
                         <h3><?php print $_SESSION['detailsku']; ?></h3>
+                        <p><?php print "SKU:".$_SESSION['detailbar']; ?></p>
                         <?php echo $code ?>
                         <h4>NOTICE BEFORE OPEN THE BOX</h4>
                         <p><i class="fa fa-pencil-square-o" aria-hidden="true">1.Please make sure the CPU lid is on when you unpack the motherboard and be carefull when you take the CPU lid off and don't touch the CPU pins.</i></p>

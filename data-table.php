@@ -280,6 +280,7 @@ if (isEmpty(@$shippeddata)) {
                                         <ul class="submenu-angle" aria-expanded="false">
                                             <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replace(NC)</span></a></li>
                                             <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replace(SH)</span></a></li>
+                                            <li><a title="Batch Order" href="add-batch.php"><span class="mini-sub-pro">Batch Order</span></a></li>
                                             <li><a title="Export Stock" href="stocktrans.php"><span class="mini-sub-pro">Export Stock</span></a></li>
                                         </ul>
                                     </li>
@@ -307,10 +308,10 @@ if (isEmpty(@$shippeddata)) {
                                 </ul>
                             </li>
                             <li class="active">
-                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">批量发货</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
-                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
+                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">批量发货汇总</span></a></li>
                                     <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>        
                                     <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                               
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
@@ -467,7 +468,7 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
                                                     <i class="icon nalika-edit"></i>
                                                 </div>
                                                 <div class="breadcomb-ctn">
-                                                    <h2>一件代发汇总</h2>
+                                                    <h2>批量发货汇总</h2>
                                                     <p>Welcome to Unihorn Management System <span class="bread-ntd"></span></p>
                                                 </div>
                                             </div>
@@ -487,7 +488,7 @@ for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <div class="product-status-wrap">
-                                <h4>一件代发汇总</h4>
+                                <h4>批量发货汇总</h4>
                                 <div class="add-product" >
                                     <a  href="add-batch.php">添加批次</a>
                                 </div>

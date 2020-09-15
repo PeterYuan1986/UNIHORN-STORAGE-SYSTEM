@@ -120,15 +120,15 @@ if (isset($_POST["save"])) {
 
                     if (preg_match_all($pattern, $inote, $match)) {
                         //echo '<pre>';
-                        $fee = 0;
+                        $amount = 0;
                         foreach ($match[0] as $x) {
                             $x = str_replace("*", "", $x);
                             $x = str_replace(";", "", $x);
                             $x = str_replace("；", "", $x);
-                            $fee = $fee + $x;
+                            $amount = $amount + $x;
                         }
-
-                        $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $iaddress2 . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "')";
+                        $fee = $originalpackagefee + $amount * $amountfee;
+                        $sql = "INSERT INTO `daifaorders`(`orderid`, `batch` , `service`, `name`,`address`,`address2`, `city`, `state`, `zipcode`, `phone`, `weight`, `cmpid`, note, fee, amount) VALUES('" . $isku . "','" . $ibatch . "','" . $icategory . "','" . $ireceiver . "','" . $iaddress . "','" . $iaddress2 . "','" . $icity . "','" . $istate . "','" . $izipcode . "','" . $iphone . "','" . $iweight . "','" . $cmpid . "','" . $inote . "','" . $fee . "','" . $amount . "')";
                         $result = mysqli_query($conn, $sql);
                         $sql = "SELECT SUM(fee) FROM daifaorders where batch='" . $ibatch . "' and cmpid='" . $cmpid . "'";
                         $result = mysqli_query($conn, $sql);
@@ -205,14 +205,15 @@ if (isset($_POST["update"])) {
                 if (preg_match_all($pattern, $inote, $match)) {
                     //echo '<pre>';
                     print_r($match);
-                    $fee = 0;
+                    $amount = 0;
                     foreach ($match[0] as $x) {
                         $x = str_replace("*", "", $x);
                         $x = str_replace(";", "", $x);
                         $x = str_replace("；", "", $x);
-                        $fee = $fee + $x;
+                        $amount = $amount + $x;
                     }
-                    $sql = "UPDATE `daifaorders` SET `batch`='" . $ibatch . "', `service`='" . $icategory . "', `name`='" . $ireceiver . "',`address`='" . $iaddress . "', `city`='" . $icity . "', `state`='" . $istate . "',  `zipcode`='" . $izipcode . "', `phone`='" . $iphone . "',  `weight`='" . $iweight . "', note='" . $inote . "',  fee='" . $fee . "'WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
+                   $fee = $originalpackagefee + $amount * $amountfee;
+                    $sql = "UPDATE `daifaorders` SET `batch`='" . $ibatch . "', `service`='" . $icategory . "', `name`='" . $ireceiver . "',`address`='" . $iaddress . "', `city`='" . $icity . "', `state`='" . $istate . "',  `zipcode`='" . $izipcode . "', `amount`='" . $amount . "', `phone`='" . $iphone . "',  `weight`='" . $iweight . "', note='" . $inote . "',  fee='" . $fee . "'WHERE (cmpid='" . $cmpid . "') AND orderid='" . $isku . "'";
                     $result = mysqli_query($conn, $sql);
 
                     $sql = "SELECT count(fee), sum(fee) from daifaorders  where (cmpid='" . $cmpid . "') and batch='" . $ibatch . "'";
@@ -406,6 +407,7 @@ function checkinput($isku) {
                                         <ul class="submenu-angle" aria-expanded="false">   
                                             <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replace(NC)</span></a></li>
                                             <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replace(SH)</span></a></li>
+                                            <li><a title="Batch Order" href="add-batch.php"><span class="mini-sub-pro">Batch Order</span></a></li>
                                             <li><a title="Export Stock" href="stocktrans.php"><span class="mini-sub-pro">Export Stock</span></a></li>                                             
                                         </ul>
                                     </li>
@@ -433,10 +435,10 @@ function checkinput($isku) {
                                 </ul>
                             </li>
                             <li class="active">
-                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">批量发货</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
-                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
+                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">批量发货汇总</span></a></li>
                                     <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>              
                                     <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>                        
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>

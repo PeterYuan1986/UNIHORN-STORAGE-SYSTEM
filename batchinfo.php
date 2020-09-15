@@ -108,8 +108,14 @@ if (isset($_POST['fresh'])) {
     }
     header('location: ' . $_SERVER['HTTP_REFERER']);
 }
+if (isset($_POST['newegg'])) {
 
+    echo "<script>window.open('exportbatch.php?type=newegg&id=" . $batch . " ')</script>";
+}
+if (isset($_POST['unihorn'])) {
 
+    echo "<script>window.open('exportbatch.php?id=" . $batch . " ')</script>";
+}
 if (isset($_POST['amazon'])) {
 
     echo "<script>window.open('exportbatch.php?type=amazon&id=" . $batch . " ')</script>";
@@ -245,6 +251,7 @@ if (isset($_POST['amazon'])) {
                                         <ul class="submenu-angle" aria-expanded="false">   
                                             <li><a title="Order & Replacement" href="outgoingnc.php"><span class="mini-sub-pro">Order & Replace(NC)</span></a></li>
                                             <li><a title="Order & Replacement" href="outgoingsh.php"><span class="mini-sub-pro">Order & Replace(SH)</span></a></li>
+                                            <li><a title="Batch Order" href="add-batch.php"><span class="mini-sub-pro">Batch Order</span></a></li>
                                             <li><a title="Export Stock" href="stocktrans.php"><span class="mini-sub-pro">Export Stock</span></a></li>                                             
                                         </ul>
                                     </li>
@@ -272,10 +279,10 @@ if (isset($_POST['amazon'])) {
                                 </ul>
                             </li>
                             <li class="active">
-                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">一件代发</span></a>
+                                <a class="has-arrow" href="static-table.html" aria-expanded="false"><i class="icon nalika-table icon-wrap"></i> <span class="mini-click-non">批量发货</span></a>
                                 <ul class="submenu-angle" aria-expanded="false">
 
-                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">一件代发汇总</span></a></li>
+                                    <li><a title="Data Table" href="data-table.php"><span class="mini-sub-pro">批量发货汇总</span></a></li>
                                     <li><a href="add-batch.php"><span class="mini-sub-pro">添加批次</span></a></li>       
                                     <li><a href="orderupdate.php"><span class="mini-sub-pro">订单更新</span></a></li>
                                     <li><a href="orderinfo.php"><span class="mini-sub-pro">订单汇总</span></a></li>
@@ -451,17 +458,17 @@ if (isset($_POST['amazon'])) {
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <div class="product-status-wrap">
-                                <h4><?php print $batch; ?></h4> 
+                                <form method="post" role="search" class="">
+                                    <h4><?php print $batch; ?></h4> 
 
-                                <div    class="add-product" >                                  
+                                    <div    class="add-product" style="width:10000;float:right;"> 
+                                        <button name="fresh" type="submit"><a><i class="fa fa-refresh" aria-hidden="true">    刷新追踪信息</i></a></button>
+                                    </div>
+                                    <div>
+                                        <div class="col-lg-12 col-md-7 col-sm-6 col-xs-12">
+                                            <div class="header-top-menu tabl-d-n">
+                                                <div class="breadcome-heading">
 
-                                    <a  href="<?php print 'exportbatch.php?id=' . $batch ?>">导出UNIHORN表格</a>
-                                </div>
-                                <div>
-                                    <div class="col-lg-12 col-md-7 col-sm-6 col-xs-12">
-                                        <div class="header-top-menu tabl-d-n">
-                                            <div class="breadcome-heading">
-                                                <form method="post" role="search" class="">
 
 
                                                     <div style="width:px;float:left;"><input name="searchtext" type="text" placeholder="Search Content....." value="<?php
@@ -477,17 +484,20 @@ if (isset($_POST['amazon'])) {
                                                         <button name="amazon" title="仅针对使用Amazon文件导入的批次" type="submit" class="pd-setting-ed">导出Amazon上传文件</button>
 
                                                     </div>
-
                                                     <div style="color:#fff;width:px;float:right;">
-                                                        <button name="fresh" type="submit" title="点击刷新所有订单状态" class="pd-setting-ed">刷新追踪信息<i class="fa fa-refresh" aria-hidden="true"></i></button>
+                                                        <button name="newegg" title="仅针对使用Newegg文件导入的批次" type="submit" class="pd-setting-ed">导出Newegg上传文件</button>
 
                                                     </div>
-                                                </form>
+
+                                                    <div style="color:#fff;width:px;float:right;">
+                                                        <button name="unihorn" title="导出UNIHORN文件" type="submit" class="pd-setting-ed">导出UNIHORN文件</button>
+                                                    </div>
+
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <form action="" method="post" name="form">
+
 
 
                                     <table >
@@ -537,7 +547,7 @@ if (isset($_POST['amazon'])) {
                                             print "<td>{$data[$index]['address2']}</td>";
                                             print "<td>{$data[$index]['city']}</td>";
                                             print "<td>{$data[$index]['state']}</td>";
-                                            print "<td>".strval($data[$index]['zipcode'])."</td>";
+                                            print "<td>" . strval($data[$index]['zipcode']) . "</td>";
                                             print "<td>{$data[$index]['phone']}</td>";
                                             print "<td>{$data[$index]['weight']}</td>";
                                             print "<td>{$data[$index]['note']}</td>";
