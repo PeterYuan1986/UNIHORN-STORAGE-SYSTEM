@@ -31,7 +31,7 @@ if (isset($_POST['save'])) {
     $daifadhl = @$_POST['daifadhl'];
     $daifaservice = @$_POST['daifaservice'];
     $daifaclass = @$_POST['daifaclass'];
-    if ($_POST['documenttype'] == 0) {
+    if ($_POST['documenttype'] == 1) {
         $allowedExts = array(
             'text/txt',
             'text/plain',
@@ -93,7 +93,7 @@ if (isset($_POST['save'])) {
                                     $flag = 0;
                                     $sql = "DELETE FROM daifaorders WHERE cmpid='" . $cmpid . "' and batch='" . $daifabatchname . "'";
                                     mysqli_query($conn, $sql);
-                                    unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
+                                    unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname.".".$extension);
                                     echo "<script> alert('与之前批次单号重复或者此单号信息有误：" . $content[0] . "！请检查此订单名称中含有冒号等特殊符号，请修改后重新上传！')</script>";
                                     break;
                                 } else {
@@ -252,7 +252,7 @@ if (isset($_POST['save'])) {
                                     $flag = 0;
                                     $sql = "DELETE FROM daifaorders WHERE cmpid='" . $cmpid . "' and batch='" . $daifabatchname . "'";
                                     mysqli_query($conn, $sql);
-                                    unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
+                                    unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname.".".$extension);
                                     echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查此订单名称中含有冒号等特殊符号，请修改后重新上传！')</script>";
                                     break;
                                 } else {
@@ -378,7 +378,7 @@ if (isset($_POST['save'])) {
                                     $flag = 0;
                                     $sql = "DELETE FROM daifaorders WHERE cmpid='" . $cmpid . "' and batch='" . $daifabatchname . "'";
                                     mysqli_query($conn, $sql);
-                                    unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname . ".csv");
+                                    unlink("./upload/cmp" . $cmpid . "_" . $daifabatchname.".".$extension);
                                     echo "<script> alert('重复单号或者此单号信息有误：" . $content[0] . "！请检查此订单名称中含有冒号等特殊符号，请修改后重新上传！')</script>";
                                     break;
                                 } else {

@@ -65,7 +65,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         print $sql . "<br>";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
                     print $sql . "<br>";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
@@ -79,9 +79,10 @@ for ($index = 0; $index < @count($data); $index++) {
                     $productl = json_decode($data[$index]['productlist']);
                     for ($i = 0; $i < count($productl); $i++) {
                         $sql = "update product set nc=nc+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
+                        
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -96,7 +97,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         $sql = "update product set nc=nc-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -106,7 +107,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     } break;
                 }
             case "supply-bad": {
-                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -116,7 +117,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     } break;
                 }
             case "return-bad": {
-                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -131,7 +132,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         $sql = "update product set nc=nc-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -158,7 +159,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         mysqli_query($conn, $sql);
                     }
 
-                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -177,7 +178,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         $sql = "update product set nc=nc+" . $product2[$i][1] . ",transit=transit-" . $product2[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $product2[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
+                    $sql = "DELETE FROM ncstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';

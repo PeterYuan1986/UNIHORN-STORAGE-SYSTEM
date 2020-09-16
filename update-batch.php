@@ -11,6 +11,7 @@ $userlevel = $_SESSION['user_info']['level'];           //userlevel  0: admin; e
 $cmpid = $_SESSION['user_info']['cmpid'];
 $childid = $_SESSION['user_info']['childid'];
 check_access($useroffice, $userlevel, $pageoffice, $pagelevel);
+$ordertosend = array(); //用于真仓更新库存
 
 if (isset($_GET['id'])) {
     $batch = $_GET['id'];
@@ -36,6 +37,10 @@ if (sizeof($childid) > 1) {
 
 $datanote = check_note($cmpid);
 $totalnotes = sizeof($datanote);
+if (isset($_POST['discard'])) {
+    header('location: data-table.php');
+}
+
 
 if (isset($_POST['modify'])) {
 
@@ -44,31 +49,31 @@ if (isset($_POST['modify'])) {
         if ($batchclass == 0) {
             if ($_POST['type'] == 0 && $batchtype != 'Letter') {
                 $sql = "UPDATE daifaorders set fee='" . $letterfee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
-                //print "1".$sql;
+//print "1".$sql;
                 $result = mysqli_query($conn, $sql);
                 $sql = "UPDATE daifa set type='Letter'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                //print "2".$sql;
+//print "2".$sql;
                 $result = mysqli_query($conn, $sql);
             }
             if ($_POST['type'] == 1 && $batchtype == 'Letter') {
                 $sql = "UPDATE daifaorders set fee='" . $packagefee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
-                //print "3".$sql;
+//print "3".$sql;
                 $result = mysqli_query($conn, $sql);
                 $sql = "UPDATE daifa set type='Package'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                //print "4".$sql;
+//print "4".$sql;
                 $result = mysqli_query($conn, $sql);
             }
         } else {
             if ($_POST['type'] == 0 && $batchtype != 'Letter') {
 
                 $sql = "UPDATE daifa set type='Letter'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                //print "5".$sql;
+//print "5".$sql;
                 $result = mysqli_query($conn, $sql);
             }
             if ($_POST['type'] == 1 && $batchtype == 'Letter') {
 
                 $sql = "UPDATE daifa set type='Package'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                //print "6".$sql;
+//print "6".$sql;
                 $result = mysqli_query($conn, $sql);
             }
         }
@@ -81,58 +86,58 @@ if (isset($_POST['modify'])) {
             if ($_POST['type'] == 0) {
                 if ($batchtype != 'Letter') {
                     $sql = "UPDATE daifa set type='Letter', class='0' where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                    //print "7".$sql;
+//print "7".$sql;
                     $result = mysqli_query($conn, $sql);
                 } else {
                     $sql = "UPDATE daifa set class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                    //print "8".$sql;
+//print "8".$sql;
                     $result = mysqli_query($conn, $sql);
                 }
                 $sql = "UPDATE daifaorders set fee='" . $letterfee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
-                //print "9".$sql;
+//print "9".$sql;
                 $result = mysqli_query($conn, $sql);
             } if ($_POST['type'] == 1) {
 
                 if ($batchtype == 'Letter') {
                     $sql = "UPDATE daifa set type='Package', class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                    //print "10".$sql;
+//print "10".$sql;
                     $result = mysqli_query($conn, $sql);
                 } else {
                     $sql = "UPDATE daifa set class='0'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                    //print "11".$sql;
+//print "11".$sql;
                     $result = mysqli_query($conn, $sql);
                 }
                 $sql = "UPDATE daifaorders set fee='" . $packagefee . "'  where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
-                //print "12".$sql;
+//print "12".$sql;
                 $result = mysqli_query($conn, $sql);
             }
         } else {
             if ($_POST['type'] == 0) {
                 if ($batchtype != 'Letter') {
                     $sql = "UPDATE daifa set type='Letter', class='1' where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                    //print "13".$sql;
+//print "13".$sql;
                     $result = mysqli_query($conn, $sql);
                 } else {
                     $sql = "UPDATE daifa set class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                    //print "14".$sql;
+//print "14".$sql;
                     $result = mysqli_query($conn, $sql);
                 }
                 $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . "+" . $originalpackagefee . " where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
-                //print "15".$sql;
+//print "15".$sql;
                 $result = mysqli_query($conn, $sql);
             } if ($_POST['type'] == 1) {
                 if ($batchtype == 'Letter') {
                     $sql = "UPDATE daifa set type='Package', class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                    //print "16".$sql;
+//print "16".$sql;
                     $result = mysqli_query($conn, $sql);
                 } else {
                     $sql = "UPDATE daifa set class='1'  where (cmpid='" . $cmpid . "') and batchname='" . $batch . "'";
-                    //print "17".$sql;
+//print "17".$sql;
                     $result = mysqli_query($conn, $sql);
                 }
 
                 $sql = "UPDATE daifaorders set fee= amount*" . $amountfee . "+" . $originalpackagefee . " where (cmpid='" . $cmpid . "') and batch='" . $batch . "'";
-                //print "18".$sql;
+//print "18".$sql;
 
                 $result = mysqli_query($conn, $sql);
             }
@@ -140,17 +145,8 @@ if (isset($_POST['modify'])) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
 if (isset($_POST['save'])) {
+    $tosend = array();
     if (!isset($_FILES["file"])) {
         echo "<script> alert('请上传csv文件!')</script>";
     } else { {
@@ -189,11 +185,12 @@ if (isset($_POST['save'])) {
                     @$filepath = @fopen("./upload/tempupload.csv", 'r');
                     @$content = fgetcsv($filepath);
                     try {
+                        $indexofcontent = 0;
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
                             $sql = "UPDATE daifaorders SET carrier='" . $content[24] . "', service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . str_replace('$', '', $content[4]) . "' WHERE (cmpid='" . $cmpid . "') AND orderid='" . $content[27] . "'";
                             $result = mysqli_query($conn, $sql);
                             if ($_POST['checkbox'] != NULL) {
-                                $pattern = '/(([a-zA-Z0-9]|\-|\.)+\*)/';  //匹配inote里的整数
+                                $pattern = '/(([a-zA-Z0-9]|\-|\.|\s)+\*)/';  //匹配inote里的整数
                                 preg_match($pattern, $content[28], $match);
                                 $prex = str_replace("*", "", $match[0]);
                                 $pattern = '/(\*\d+(;|；))/';  //匹配inote里的整数
@@ -201,15 +198,19 @@ if (isset($_POST['save'])) {
                                 $prey = str_replace("*", "", $match[0]);
                                 $prey = str_replace(";", "", $prey);
                                 $prey = str_replace("*", "", $prey);
-                                $productlist = json_encode(array($prex, $prey));
-                                $sql = "INSERT INTO `ncstock`(date, productlist, subject, ordernumber, market, tracking, ship, cmpid) VALUES ('" . $str . "','" . $productlist . "','order' ,'" . $content[27] . "','" . $_POST['mkt'] . "','" . $content[3] . "','" . $content[24] . "','" . $cmpid . "')";
-                                $result = mysqli_query($conn, $sql);
-                                $sql = "UPDATE product SET nc=nc-" . $prey . " where (cmpid='" . $cmpid . "') AND sku='" . $prex . "'";
-                                mysqli_query($conn, $sql);
-                                $sql = "UPDATE product SET sold=sold+" . $prey . " where (cmpid='" . $cmpid . "') AND sku='" . $prex . "'";
-                                mysqli_query($conn, $sql);
+                                $tosend[$indexofcontent]['ordernumber'] = $content[27];
+                                $tosend[$indexofcontent]['marketplacesku'] = $prex;
+                                $tosend[$indexofcontent]['amount'] = $prey;
+                                $tosend[$indexofcontent]['market'] = $_POST['mkt'];
+                                $tosend[$indexofcontent]['tracking'] = $content[3];
+                                $tosend[$indexofcontent]['ship'] = $content[24];
                             }
+                            $indexofcontent++;
                         }
+                        if ($_POST['checkbox'] != NULL) {
+                            $_SESSION['ordertosend'] = $tosend;
+                        }
+
                         if ($result) {
                             $sql = "SELECT cost, fee FROM daifaorders where (cmpid='" . $cmpid . "') AND batch='" . $batch . "'";
                             $result = mysqli_query($conn, $sql);
@@ -225,7 +226,8 @@ if (isset($_POST['save'])) {
                             $sql = "UPDATE daifa SET time=CURRENT_TIME, status='SHIPPED', shippingcost='" . $totalcost . "', servicefee='" . $totalfee . "' WHERE (cmpid='" . $cmpid . "') AND batchname='" . $batch . "'";
                             $result = mysqli_query($conn, $sql);
                             echo "<script> alert('文件上传成功！')</script>";
-                            print '<script> location.replace("data-table.php"); </script>';
+                            if ($_POST['checkbox'] == NULL)
+                                print '<script> location.replace("data-table.php"); </script>';
                         }
                     } catch (Exception $ex) {
                         
@@ -240,6 +242,30 @@ if (isset($_POST['save'])) {
             }
         }
     }
+}
+//控制真仓待选SKU
+$sql = "SELECT `sku` FROM `product` where (cmpid='" . $cmpid . "') ORDER BY sku ASC";
+$result = mysqli_query($conn, $sql);
+while ($arr = mysqli_fetch_array($result)) {
+    $datainselection[] = $arr;
+}
+
+if (isset($_POST['confirm'])) {
+    $skuidx = 0;
+    for (; $skuidx < @count($_SESSION['ordertosend']); $skuidx++) {
+
+        $name = "ibatch" . $skuidx;
+        $sql = "UPDATE product SET nc=nc-" . $_SESSION['ordertosend'][$skuidx]['amount'] . " where (cmpid='" . $cmpid . "') AND sku='" . $_POST[$name] . "'";
+        mysqli_query($conn, $sql);
+        $sql = "UPDATE product SET sold=sold+" . $_SESSION['ordertosend'][$skuidx]['amount'] . " where (cmpid='" . $cmpid . "') AND sku='" . $_POST[$name] . "'";
+        mysqli_query($conn, $sql);
+        $productlist = json_encode(array(array($_POST[$name], $_SESSION['ordertosend'][$skuidx]['amount'])));
+        $sql = "INSERT INTO `ncstock`(date, productlist, subject, ordernumber, market, tracking, ship, cmpid) VALUES ('" . $str . "','" . $productlist . "','order' ,'" . $_SESSION['ordertosend'][$skuidx]['ordernumber'] . "','" . $_SESSION['ordertosend'][$skuidx]['market'] . "','" . $_SESSION['ordertosend'][$skuidx]['tracking'] . "','" . $_SESSION['ordertosend'][$skuidx]['ship'] . "','" . $cmpid . "')";
+        $result = mysqli_query($conn, $sql);
+    }
+    unset($_SESSION['ordertosend']);
+    echo "<script> alert('文件上传成功！')</script>";
+    print '<script> location.replace("data-table.php"); </script>';
 }
 ?>
 
@@ -611,17 +637,15 @@ if (isset($_POST['save'])) {
                                                             </div>
 
                                                         </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                            <div class="text-center custom-pro-edt-ds">
-                                                                <input name="save" type="submit" class="btn btn-ctl-bt waves-effect waves-light m-r-10" value="ADD NEW">                                                            
-                                                                <a href='data-table.php' class="btn btn-ctl-bt waves-effect waves-light">Discard
-                                                                </a>
-                                                            </div>
+                                                        <div >
+                                                            <input name="save" type="submit"  value="ADD NEW">              
+                                                            <input name="dicard" type="submit"  value="DISCARD">                 
+
                                                         </div>
                                                     </div>
+
                                                     <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+
                                                         <div class="review-content-section">                                                            
                                                             <div class="input-group mg-b-pro-edt">
                                                                 <a style="color:white">批次包裹类型</a>
@@ -647,7 +671,69 @@ if (isset($_POST['save'])) {
                                                         </div>
                                                     </div>
 
+                                                    <div class="col-lg-7 col-md-12 col-sm-12 col-xs-12">
+                                                        <div>
+                                                            <br><br><br>
+                                                            <ul id="myTab3" class="tab-review-design">
+                                                                <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> INVERNTORY TO BE ADJUSTED</a></li>
+                                                            </ul><table style="width: 100%;margin:auto;color:#fff">
+                                                                <tr>
+                                                                <th>MARKETPLACE</th>             
+                                                                <th>MARKETPLACE SKU</th>                                                                
+                                                                <th>WAREHOUSE SKU</th>
+                                                                <th>AMOUNT</th>
+                                                                </tr>
+                                                                <?php
+//这段控制pickup表
 
+                                                                $total = 0;
+                                                                if (isset($_POST['save']) && $_POST['checkbox'] != NULL && isset($_SESSION['ordertosend'])) {
+
+                                                                    $skuindex = 0;
+                                                                    for (; $skuindex < @count($_SESSION['ordertosend']); $skuindex++) {
+                                                                        $name = "ibatch" . $skuindex;
+                                                                        print '<tr>';
+                                                                        print "<td>{$_SESSION['ordertosend'][$skuindex]['market']}</td>";
+                                                                        print "<td>{$_SESSION['ordertosend'][$skuindex]['marketplacesku']}</td>";
+                                                                        print "<td><select name=" . $name . " class='form-control pro-edt-select form-control-primary'>";
+
+                                                                        $maxpre = 0;
+                                                                        for ($index = 0; $index < @count($datainselection); $index++) {
+                                                                            if ($_SESSION['ordertosend'][$skuindex]['marketplacesku'] == $datainselection[$index]['sku']) {
+                                                                                $slectedsku = $_SESSION['ordertosend'][$skuindex]['marketplacesku'];
+                                                                                break;
+                                                                            } else {
+                                                                                similar_text($_SESSION['ordertosend'][$skuindex]['marketplacesku'], $datainselection[$index]['sku'], $pre);
+                                                                                if ($pre > $maxpre) {
+                                                                                    $slectedsku = $_SESSION['ordertosend'][$skuindex]['marketplacesku'];
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        for ($index = 0; $index < @count($datainselection); $index++) {
+                                                                            print "<option value='" . $datainselection[$index]['sku'] . "'";
+                                                                            if ($slectedsku == $datainselection[$index]['sku']) {
+                                                                                print "selected";
+                                                                            }
+                                                                            print ">" . $datainselection[$index]['sku'] . "</option>";
+                                                                        }
+                                                                        print "</select><br></td>";
+                                                                        print "<td>{$_SESSION['ordertosend'][$skuindex]['amount']}</td>";
+                                                                        $total += $_SESSION['ordertosend'][$skuindex]['amount'];
+                                                                    }
+                                                                }
+                                                                ?>
+                                                            </table>     
+
+                                                            <div class="custom-pagination "  >
+                                                                <p style="color:#ff4"><br>Total Amount: <?php print $total; ?></p>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <input name="confirm" type="submit" value="Click to confirm">
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
 
                                             </form>
                                         </div>
