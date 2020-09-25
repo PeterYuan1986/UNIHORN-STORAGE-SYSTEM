@@ -31,7 +31,7 @@ if (isset($_GET['type']) && $_GET['type'] == 'amazon') {
     $batch = $_GET['id'];
     $filepath = @fopen("./upload/cmp" . $cmpid . "_" . $batch . ".txt", 'r');
     @$content = fgets($filepath);
-    $file = ("./upload/Export_" . $batch . ".txt");
+    $file = ("./upload/Export_Amazon_upload_" . $batch . ".txt");
     $fw = fopen($file, "w");
     fwrite($fw, "order-id\torder-item-id\tquantity\tship-date\tcarrier-code\tcarrier-name\ttracking-number\tship-method\ttransparency_code \n");
     while (@$content = fgetcsv($filepath, 1000, "\t")) {    //每次读取CSV里面的一行内容
@@ -46,7 +46,7 @@ if (isset($_GET['type']) && $_GET['type'] == 'amazon') {
     $batch = $_GET['id'];
     $filepath = @fopen("./upload/cmp" . $cmpid . "_" . $batch . ".csv", 'r');
     @$content = fgets($filepath);
-    $file = ("./upload/Export_" . $batch . ".csv");
+    $file = ("./upload/Export_Newegg_upload_" . $batch . ".csv");
     $fw = fopen($file, "w");
     fwrite($fw, "Order Number,Order Date & Time,Sales Channel,Fulfillment Option,Ship To Address Line 1,Ship To Address Line 2,	Ship To City,	Ship To State,	Ship To ZipCode,Ship To Country	,Ship To First Name,	Ship To LastName,	Ship To Company,	Ship To Phone Number,	Order Customer Email,	Order Shipping Method,	Item Seller Part #,	Item Newegg #,	Item Unit Price,	Extend Unit Price,	Item Unit Shipping Charge,	Extend Shipping Charge,	Extend VAT,	Extend Duty,	Order Shipping Total,Order Discount Amount,Sales Tax,VAT Total,Duty Total,Order Total,Quantity Ordered,Quantity Shipped,Actual Shipping Carrier,Actual Shipping Method,	Tracking Number\n");
     while (@$content = fgetcsv($filepath, 1000, ",")) {    //每次读取CSV里面的一行内容
@@ -72,7 +72,7 @@ if (isset($_GET['type']) && $_GET['type'] == 'amazon') {
             $data[] = $arr;
         }
 
-        $file = ("./upload/Export_" . $batch . ".csv");
+        $file = ("./upload/Export_Unihorn_" . $batch . ".csv");
     } else {
         $sql = "SELECT * FROM daifaorders where cmpid='" . $cmpid . "' ORDER by id DESC";  //SELECT * FROM daifaorders where batch='0704_UPS' ORDER by orderid ASC
         $result = mysqli_query($conn, $sql);

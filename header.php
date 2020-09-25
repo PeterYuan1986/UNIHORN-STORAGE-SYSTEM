@@ -179,7 +179,7 @@ function check_session_expiration() {
         }
 // either new or old, it should live at most for another hour
         else {
-            $_SESSION['discard_after'] = $now + 900;  //过期15分钟session销毁跳到timeout
+            $_SESSION['discard_after'] = $now + 36000;  //过期15分钟session销毁跳到timeout
         }
     } else {
         echo '<script> alert("Please Re-login!")</script>';

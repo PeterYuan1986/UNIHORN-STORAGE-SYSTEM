@@ -459,7 +459,7 @@ if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 |
                                                     print "<td>{$data[$index]['batch']}</td>";
                                                     print "<td>{$data[$index]['carrier']}</td>";
                                                     print "<td>{$data[$index]['service']}</td>";
-                                                    if ($data[$index]['service'] == "UPS" || stripos($data[$index]['service'], 'UPS') !== false) {
+                                                    if ($data[$index]['carrier'] == "UPS" || stripos($data[$index]['carrier'], 'UPS') !== false) {
                                                         print "<td><a style='color:#ff4' onclick=\"openNewWin('https://www.ups.com/track?loc=en_US&tracknum={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                                     } else {
                                                         print "<td><a style='color:#ff4' onclick=\"openNewWin('https://tools.usps.com/go/TrackConfirmAction?tLabels={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";

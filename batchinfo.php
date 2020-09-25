@@ -534,7 +534,7 @@ if (isset($_POST['amazon'])) {
                                             print "<td>{$data[$index]['orderid']}</td>";
                                             print "<td>" . $data[$index]['carrier'] . "</td>";
                                             print "<td>{$data[$index]['service']}</td>";
-                                            if ($data[$index]['service'] == "UPS" || stripos($data[$index]['service'], 'UPS') !== false) {
+                                            if ($data[$index]['carrier'] == "UPS" || stripos($data[$index]['carrier'], 'UPS') !== false) {
                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('upsorder_jump.php?xl={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";
                                             } else {
                                                 print "<td><a style='color:#ff4' onclick=\"openNewWin('uspsorder_jump.php?xl={$data[$index]['tracking']}')\">{$data[$index]['tracking']}</a></td>";

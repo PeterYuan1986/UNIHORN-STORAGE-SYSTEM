@@ -186,6 +186,7 @@ if (isset($_POST['save'])) {
                     @$content = fgetcsv($filepath);
                     try {
                         $indexofcontent = 0;
+                        $tosend_array = [];
                         while (@$content = fgetcsv($filepath)) {    //每次读取CSV里面的一行内容      
                             $sql = "UPDATE daifaorders SET carrier='" . $content[24] . "', service='" . $content[25] . "', tracking='" . $content[3] . "', cost='" . str_replace('$', '', $content[4]) . "' WHERE (cmpid='" . $cmpid . "') AND orderid='" . $content[27] . "'";
                             $result = mysqli_query($conn, $sql);
@@ -204,11 +205,17 @@ if (isset($_POST['save'])) {
                                 $tosend[$indexofcontent]['market'] = $_POST['mkt'];
                                 $tosend[$indexofcontent]['tracking'] = $content[3];
                                 $tosend[$indexofcontent]['ship'] = $content[24];
+                                if (array_key_exists($prex, $tosend_array)) {
+                                    $tosend_array[$prex] += $prey;
+                                } else {
+                                    $tosend_array[$prex] = $prey;
+                                }
                             }
                             $indexofcontent++;
                         }
                         if ($_POST['checkbox'] != NULL) {
                             $_SESSION['ordertosend'] = $tosend;
+                            $_SESSION['tosend_array'] = $tosend_array;
                         }
 
                         if ($result) {
@@ -250,7 +257,7 @@ while ($arr = mysqli_fetch_array($result)) {
     $datainselection[] = $arr;
 }
 
-if (isset($_POST['confirm'])) {
+if (isset($_POST['confirm']) && isset($_SESSION['ordertosend'])) {
     $skuidx = 0;
     for (; $skuidx < @count($_SESSION['ordertosend']); $skuidx++) {
 
@@ -264,6 +271,23 @@ if (isset($_POST['confirm'])) {
         $result = mysqli_query($conn, $sql);
     }
     unset($_SESSION['ordertosend']);
+    echo "<script> alert('文件上传成功！')</script>";
+    print '<script> location.replace("data-table.php"); </script>';
+}
+if (isset($_POST['confirm_array']) && isset($_SESSION['tosend_array'])) {
+    $skuidx_array = 0;
+    foreach ($_SESSION['tosend_array'] as $key => $value) {
+        $name_array = "ibatch_array" . $skuidx_array;
+        $sql = "UPDATE product SET nc=nc-" . $value . " where (cmpid='" . $cmpid . "') AND sku='" . $_POST[$name_array] . "'";
+        mysqli_query($conn, $sql);
+        $sql = "UPDATE product SET sold=sold+" . $value . " where (cmpid='" . $cmpid . "') AND sku='" . $_POST[$name_array] . "'";
+        mysqli_query($conn, $sql);
+        $productlist = json_encode(array(array($_POST[$name_array], $value)));
+        $sql = "INSERT INTO `ncstock`(date, productlist, subject, ordernumber, market, cmpid) VALUES ('" . $str . "','" . $productlist . "','order' ,'" . $batch . "','" . $_SESSION['ordertosend'][$skuidx_array]['market'] . "','" . $cmpid . "')";
+        $result = mysqli_query($conn, $sql);
+        $skuidx_array++;
+    }
+    unset($_SESSION['tosend_array']);
     echo "<script> alert('文件上传成功！')</script>";
     print '<script> location.replace("data-table.php"); </script>';
 }
@@ -675,7 +699,7 @@ if (isset($_POST['confirm'])) {
                                                         <div>
                                                             <br><br><br>
                                                             <ul id="myTab3" class="tab-review-design">
-                                                                <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> INVERNTORY TO BE ADJUSTED</a></li>
+                                                                <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> INVERNTORY TO BE ADJUSTED BY ORDER</a></li>
                                                             </ul><table style="width: 100%;margin:auto;color:#fff">
                                                                 <tr>
                                                                 <th>MARKETPLACE</th>             
@@ -698,14 +722,16 @@ if (isset($_POST['confirm'])) {
                                                                         print "<td><select name=" . $name . " class='form-control pro-edt-select form-control-primary'>";
 
                                                                         $maxpre = 0;
+                                                                        $slectedsku = '';
                                                                         for ($index = 0; $index < @count($datainselection); $index++) {
                                                                             if ($_SESSION['ordertosend'][$skuindex]['marketplacesku'] == $datainselection[$index]['sku']) {
-                                                                                $slectedsku = $_SESSION['ordertosend'][$skuindex]['marketplacesku'];
+                                                                                $slectedsku = $datainselection[$index]['sku'];
                                                                                 break;
                                                                             } else {
                                                                                 similar_text($_SESSION['ordertosend'][$skuindex]['marketplacesku'], $datainselection[$index]['sku'], $pre);
                                                                                 if ($pre > $maxpre) {
-                                                                                    $slectedsku = $_SESSION['ordertosend'][$skuindex]['marketplacesku'];
+                                                                                    $slectedsku = $datainselection[$index]['sku'];
+                                                                                    $maxpre=$pre;
                                                                                 }
                                                                             }
                                                                         }
@@ -735,6 +761,70 @@ if (isset($_POST['confirm'])) {
                                                         </div>
                                                     </div>
 
+                                                    <div class="col-lg-7 col-md-12 col-sm-12 col-xs-12">
+                                                        <div>
+                                                            <br><br><br>
+                                                            <ul id="myTab3" class="tab-review-design">
+                                                                <li class="active"><a href="#description"><i class="icon nalika-edit" aria-hidden="true"></i> INVERNTORY TO BE ADJUSTED BY BATCH</a></li>
+                                                            </ul><table style="width: 100%;margin:auto;color:#fff">
+                                                                <tr>
+                                                                <th>MARKETPLACE</th>             
+                                                                <th>MARKETPLACE SKU</th>                                                                
+                                                                <th>WAREHOUSE SKU</th>
+                                                                <th>AMOUNT</th>
+                                                                </tr>
+                                                                <?php
+//这段控制pickup表
+
+                                                                $total_array = 0;
+                                                                if (isset($_POST['save']) && $_POST['checkbox'] != NULL && isset($_SESSION['tosend_array'])) {
+                                                                    $skuindex_array = 0;
+                                                                    foreach ($_SESSION['tosend_array'] as $key => $value) {
+                                                                        $name = "ibatch_array" . $skuindex_array;
+                                                                        print '<tr>';
+                                                                        print "<td>{$_POST['mkt']}</td>";
+                                                                        print "<td>{$key}</td>";
+                                                                        print "<td><select name=" . $name . " class='form-control pro-edt-select form-control-primary'>";
+
+                                                                        $maxpre_array = 0;
+                                                                        for ($index = 0; $index < @count($datainselection); $index++) {
+                                                                            if ($key == $datainselection[$index]['sku']) {
+                                                                                $slectedsku_array = $datainselection[$index]['sku'];
+                                                                                break;
+                                                                            } else {
+                                                                                similar_text($key, $datainselection[$index]['sku'], $pre);
+                                                                                if ($pre > $maxpre_array) {
+                                                                                    $slectedsku_array = $datainselection[$index]['sku'];
+                                                                                    $maxpre_array=$pre;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        for ($index = 0; $index < @count($datainselection); $index++) {
+                                                                            print "<option value='" . $datainselection[$index]['sku'] . "'";
+                                                                            if ($slectedsku_array == $datainselection[$index]['sku']) {
+                                                                                print "selected";
+                                                                            }
+                                                                            print ">" . $datainselection[$index]['sku'] . "</option>";
+                                                                        }
+                                                                        print "</select><br></td>";
+                                                                        print "<td>{$value}</td>";
+                                                                        $total_array += $value;
+                                                                        $skuindex_array++;
+                                                                    }
+                                                                }
+                                                                ?>
+                                                            </table>     
+
+                                                            <div class="custom-pagination "  >
+                                                                <p style="color:#ff4"><br>Total Amount: <?php print $total; ?></p>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <input name="confirm_array" type="submit" value="Click to confirm">
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
                                             </form>
                                         </div>
                                     </div>
