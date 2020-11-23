@@ -1,8 +1,12 @@
 <?php
+if(@isset($_GET['sncode'])){
+    $sn=$_GET['sncode'];
+}
 require 'header.php';
 require "vendor/autoload.php";
 $Bar = new Picqer\Barcode\BarcodeGeneratorHTML();
-$code = $Bar->getBarcode($_SESSION['detailbar'], $Bar::TYPE_CODE_128);
+$code = $Bar->getBarcode($_SESSION['detailbar'], $Bar::TYPE_CODE_128_A);
+$sncode = $Bar->getBarcode(@$sn, $Bar::TYPE_CODE_128_A);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -30,7 +34,7 @@ $code = $Bar->getBarcode($_SESSION['detailbar'], $Bar::TYPE_CODE_128);
                 <div class="col-md-6 " style="background: white; padding: 0px;">
                     <div class="panel-heading">
                         <h3><?php print $_SESSION['detailsku']; ?></h3>
-                        <p><?php print "SKU:".$_SESSION['detailbar']; ?></p>
+                        <p><?php print "SKU:" . $_SESSION['detailbar']; ?></p>
                         <?php echo $code ?>
                         <h4>NOTICE BEFORE OPEN THE BOX</h4>
                         <p><i class="fa fa-pencil-square-o" aria-hidden="true">1.Please make sure the CPU lid is on when you unpack the motherboard and be carefull when you take the CPU lid off and don't touch the CPU pins.</i></p>
@@ -39,11 +43,14 @@ $code = $Bar->getBarcode($_SESSION['detailbar'], $Bar::TYPE_CODE_128);
                         <p> <i class="fa fa-pencil-square-o" aria-hidden="true">4.Please put the CPU lid on and wrap the Mobo carefully if you want to return it.</i></p>
                         <p> <i class="fa fa-pencil-square-o" aria-hidden="true">5.Feel free to contact us if you have any issues.</i></p>
                         <p><i>Email:contact@unihorn.tech (Preferred)</i></p>
-                        <p><i>TEL:+1(832)841-0760</i></p>
+                        <p><i><?php print $str; ?></i></p>
+                        <?php echo $sncode ?>
+                        <p><?php print "S/N:" . @$sn; ?></p>
+                        
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</body>
+
+    </body>
 </html>

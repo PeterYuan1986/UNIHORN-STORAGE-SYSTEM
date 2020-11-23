@@ -33,8 +33,7 @@ if (!isset($_SESSION['detailpagesearchtext'])) {
 }
 if (isset($_POST['search'])) {
     $_SESSION['detailpagesearchtext'] = $_POST['searchtext'];
-   
-} 
+}
 $sql = "SELECT sku FROM product where (cmpid='" . $cmpid . "') and sku LIKE '%" . @$_SESSION['detailpagesearchtext'] . "%'";
 $result = mysqli_query($conn, $sql);
 $totalrow = mysqli_num_rows($result);
@@ -44,7 +43,7 @@ if ($totalrow != 0) {
     while ($arr = mysqli_fetch_array($result)) {
         $data[] = $arr;
     }
-    if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 ||isset($_POST['search'])|| @$_GET['page'] > $totalpage) {
+    if (empty(@$_GET['page']) || !is_numeric(@$_GET['page']) || @$_GET['page'] < 1 || isset($_POST['search']) || @$_GET['page'] > $totalpage) {
         $page = 1;
     } else
         $page = $_GET['page'];
@@ -77,7 +76,7 @@ for ($i = 0; $i < $perpage; $i++) {
         $_SESSION['detailshanghai'] = $row[9];
         $_SESSION['detailsold'] = $row[10];
         $_SESSION['detailweb'] = $row[11];
-        @$_SESSION['detailbar'] = "UN" .str_pad($row[13],11,"0",STR_PAD_LEFT);   
+        @$_SESSION['detailbar'] = "UN" . str_pad($row[13], 11, "0", STR_PAD_LEFT);
         break;
     }
 }
@@ -295,7 +294,8 @@ for ($i = 0; $i < $perpage; $i++) {
                                                             <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                            <?php }
+                                                            <?php
+                                                            }
                                                         }
                                                         ?>
                                                     </ul>
@@ -538,10 +538,16 @@ for ($i = 0; $i < $perpage; $i++) {
 
                                         <div class="clear"></div>
                                         <div >
-                                            <div >  
-                                                <a href="#" onclick="openNewWin('generate.php');"><i class="icon pro-button" Style="color:#fff">PRINT LABEL</i></a>                                             
+                                            <form method="get" action="generate.php">
+                                                <div > 
+                                                    <input  name='sncode' type="text" size="20" >
+                                                    <input        type="submit"     value="PRINT LABEL">
 
-                                            </div>
+
+                                                    <!--<a href="#" onclick="openNewWin('generate.php');"><i class="icon pro-button" Style="color:#fff">PRINT LABEL</i></a>-->                                             
+
+                                                </div>
+                                            </form>
                                             <div class="pro-viwer">
                                                 <a href="#" onclick="openNewWin('<?php print @$_SESSION['detailweb'] ?>');">
                                                     <i class="fa fa-internet-explorer">Click</i></a>

@@ -65,7 +65,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         print $sql . "<br>";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     print $sql . "<br>";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
@@ -81,7 +81,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         $sql = "update product set shanghai=shanghai+" . $productl[$i][1] . ",sold=sold-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -96,7 +96,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -106,7 +106,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     } break;
                 }
             case "supply-bad": {
-                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -116,7 +116,7 @@ for ($index = 0; $index < @count($data); $index++) {
                     } break;
                 }
             case "return-bad": {
-                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -131,7 +131,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         $sql = "update product set shanghai=shanghai-" . $productl[$i][1] . " where (cmpid='" . $cmpid . "') AND sku='" . $productl[$i][0] . "'";
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -158,7 +158,7 @@ for ($index = 0; $index < @count($data); $index++) {
                         mysqli_query($conn, $sql);
                     }
 
-                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';
@@ -169,7 +169,7 @@ for ($index = 0; $index < @count($data); $index++) {
                 }
             case "export": {
 
-                    $sql = "select productlist from shstock where (cmpid='" . $cmpid . "') and id='" . $data[$index]['id'] . "'";
+                    $sql = "select productlist from shstock where (cmpid='" . $cmpid . "') and date='" . $data[$index]['date'] . "'";
 
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_fetch_array($result);
@@ -179,7 +179,7 @@ for ($index = 0; $index < @count($data); $index++) {
 
                         mysqli_query($conn, $sql);
                     }
-                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND id='" . $data[$index]['id'] . "'";
+                    $sql = "DELETE FROM shstock WHERE (cmpid='" . $cmpid . "') AND date='" . $data[$index]['date'] . "'";
                     $result = mysqli_query($conn, $sql);
                     if ($result) {
                         echo '<script> alert("Succesful!")</script>';

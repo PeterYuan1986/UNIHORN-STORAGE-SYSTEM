@@ -38,7 +38,7 @@ function nowapi_call($a_parm) {
 $nowapi_parm['app'] = 'finance.rate_unionpayintl';
 $nowapi_parm['cur_base'] = 'CNY';
 $nowapi_parm['cur_transaction'] = 'USD';
-$nowapi_parm['cur_date'] = date('Ymd');
+$nowapi_parm['cur_date'] = '20170501';
 $nowapi_parm['appkey'] = '52564';
 $nowapi_parm['sign'] = 'c18d1347a50f10e2c551476deade2fec';
 $nowapi_parm['format'] = 'json';

@@ -37,7 +37,7 @@ $data = array(
     'appid' => $appid, //必须的，APPID
     'trade_order_id' => $batch, //必须的，网站订单ID，唯一的，匹配[a-zA-Z\d\-_]+
     'payment' => 'wechat', //必须的，支付接口标识：wechat(微信接口)|alipay(支付宝接口)
-    'total_fee' => $cost*($m2rate+0.01), //人民币，单位精确到分(测试账户只支持0.1元内付款)
+    'total_fee' =>0.01,//$cost*($m2rate+0.01), //人民币，单位精确到分(测试账户只支持0.1元内付款)
     'title' => "USPS邮费+服务费", //必须的，订单标题，长度32或以内
     'time' => time(), //必须的，当前时间戳，根据此字段判断订单请求是否已超时，防止第三方攻击服务器
     'notify_url' => 'http://www.unihorn.tech/admin/pay/notify.php?id=' . $batch, //必须的，支付成功异步回调接口

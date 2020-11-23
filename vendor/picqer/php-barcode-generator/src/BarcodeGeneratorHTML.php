@@ -16,16 +16,16 @@ class BarcodeGeneratorHTML extends BarcodeGenerator
      * @return string HTML code.
      * @public
      */
-    public function getBarcode($code, $type, $widthFactor = 2, $totalHeight = 30, $color = 'black')
+    public function getBarcode($code, $type, $widthFactor = 1.5, $totalHeight = 20, $color = 'black')
     {
         $barcodeData = $this->getBarcodeData($code, $type);
 
         $html = '<div style="font-size:0;position:relative;width:' . ($barcodeData['maxWidth'] * $widthFactor) . 'px;height:' . ($totalHeight) . 'px;">' . "\n";
 
-        $positionHorizontal = 0;
+        $positionHorizontal = 15;
         foreach ($barcodeData['bars'] as $bar) {
-            $barWidth = round(($bar['width'] * $widthFactor), 3);
-            $barHeight = round(($bar['height'] * $totalHeight / $barcodeData['maxHeight']), 3);
+            $barWidth = round(($bar['width'] * $widthFactor),0.1);
+            $barHeight = round(($bar['height'] * $totalHeight / $barcodeData['maxHeight']), 2);
 
             if ($bar['drawBar']) {
                 $positionVertical = round(($bar['positionVertical'] * $totalHeight / $barcodeData['maxHeight']), 3);

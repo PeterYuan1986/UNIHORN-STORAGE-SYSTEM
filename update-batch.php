@@ -192,26 +192,28 @@ if (isset($_POST['save'])) {
                             $result = mysqli_query($conn, $sql);
                             if ($_POST['checkbox'] != NULL) {
                                 $pattern = '/(([a-zA-Z0-9]|\-|\.|\s)+\*)/';  //匹配inote里的整数
-                                preg_match($pattern, $content[28], $match);
-                                $prex = str_replace("*", "", $match[0]);
+                                preg_match_all($pattern, $content[28], $matchsku);
                                 $pattern = '/(\*\d+(;|；))/';  //匹配inote里的整数
-                                preg_match($pattern, $content[28], $match);
-                                $prey = str_replace("*", "", $match[0]);
-                                $prey = str_replace(";", "", $prey);
-                                $prey = str_replace("*", "", $prey);
-                                $tosend[$indexofcontent]['ordernumber'] = $content[27];
-                                $tosend[$indexofcontent]['marketplacesku'] = $prex;
-                                $tosend[$indexofcontent]['amount'] = $prey;
-                                $tosend[$indexofcontent]['market'] = $_POST['mkt'];
-                                $tosend[$indexofcontent]['tracking'] = $content[3];
-                                $tosend[$indexofcontent]['ship'] = $content[24];
-                                if (array_key_exists($prex, $tosend_array)) {
-                                    $tosend_array[$prex] += $prey;
-                                } else {
-                                    $tosend_array[$prex] = $prey;
+                                preg_match_all($pattern, $content[28], $match);
+                                for ($ind = 0; $ind < count($matchsku[0]); $ind++) {
+                                    $prex = str_replace("*", "", $matchsku[0][$ind]);
+                                    $prey = str_replace("*", "", $match[0][$ind]);
+                                    $prey = str_replace(";", "", $prey);
+                                    $prey = str_replace("；", "", $prey);
+                                    $tosend[$indexofcontent]['ordernumber'] = $content[27];
+                                    $tosend[$indexofcontent]['marketplacesku'] = $prex;
+                                    $tosend[$indexofcontent]['amount'] = $prey;
+                                    $tosend[$indexofcontent]['market'] = $_POST['mkt'];
+                                    $tosend[$indexofcontent]['tracking'] = $content[3];
+                                    $tosend[$indexofcontent]['ship'] = $content[24];
+                                    if (array_key_exists($prex, $tosend_array)) {
+                                        @$tosend_array[$prex] += $prey;
+                                    } else {
+                                        @$tosend_array[$prex] = $prey;
+                                    }
+                                    $indexofcontent++;
                                 }
                             }
-                            $indexofcontent++;
                         }
                         if ($_POST['checkbox'] != NULL) {
                             $_SESSION['ordertosend'] = $tosend;
@@ -497,20 +499,20 @@ if (isset($_POST['confirm_array']) && isset($_SESSION['tosend_array'])) {
 
                                                     <ul class="nav navbar-nav mai-top-nav">
                                                         <li><a>ACCOUNT_ID：</a></li>
-                                                        <?php
-                                                        foreach ($childid as $x) {
-                                                            $title = "UCMP" . $x;
-                                                            if ($cmpid == $x) {
-                                                                ?>
+<?php
+foreach ($childid as $x) {
+    $title = "UCMP" . $x;
+    if ($cmpid == $x) {
+        ?>
                                                                 <li ><a style='color:rgba(204, 154, 129, 55)'><?php print $title; ?></a>
                                                                 </li>
-                                                            <?php } else { ?>
+    <?php } else { ?>
                                                                 <li ><a><input type="submit" style='background-color:rgba(204, 154, 129, 0);color:fff' name='<?php print $title; ?>' value='<?php print $title; ?>' /></a>
                                                                 </li>
-                                                                <?php
-                                                            }
-                                                        }
-                                                        ?>
+        <?php
+    }
+}
+?>
                                                     </ul>
 
                                                 </div>
@@ -539,26 +541,26 @@ if (isset($_POST['confirm_array']) && isset($_SESSION['tosend_array'])) {
                                                                 <h1>Notifications</h1>
                                                             </div>
                                                             <ul class="notification-menu">
-                                                                <?php
-                                                                for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
-                                                                    print "<li>
+<?php
+for ($i = 0; $i < count($datanote) && $i < 3; $i++) {
+    print "<li>
                                                                     <a href='notification.php'>
                                                                         <div class='notification-icon'>
                                                                             <i class='icon nalika-tick' aria-hidden='true'></i>
                                                                         </div>
                                                                         <div class='notification-content'>                                                                            
                                                                             <h2>";
-                                                                    print $datanote[$i]['date'];
-                                                                    print "</h2>
+    print $datanote[$i]['date'];
+    print "</h2>
                                                                             <p>" . $datanote[$i]['subject'] . "</p>
                                                                         </div>
                                                                     </a>
                                                                 </li>";
-                                                                }
-                                                                ?>
+}
+?>
                                                             </ul>
                                                             <div class="notification-view">
-                                                                <?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
+<?php if (count($datanote) > 3) print "<a href='notification.php'>View All Notification</a>"; ?>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -707,47 +709,47 @@ if (isset($_POST['confirm_array']) && isset($_SESSION['tosend_array'])) {
                                                                 <th>WAREHOUSE SKU</th>
                                                                 <th>AMOUNT</th>
                                                                 </tr>
-                                                                <?php
+<?php
 //这段控制pickup表
 
-                                                                $total = 0;
-                                                                if (isset($_POST['save']) && $_POST['checkbox'] != NULL && isset($_SESSION['ordertosend'])) {
+$total = 0;
+if (isset($_POST['save']) && $_POST['checkbox'] != NULL && isset($_SESSION['ordertosend'])) {
 
-                                                                    $skuindex = 0;
-                                                                    for (; $skuindex < @count($_SESSION['ordertosend']); $skuindex++) {
-                                                                        $name = "ibatch" . $skuindex;
-                                                                        print '<tr>';
-                                                                        print "<td>{$_SESSION['ordertosend'][$skuindex]['market']}</td>";
-                                                                        print "<td>{$_SESSION['ordertosend'][$skuindex]['marketplacesku']}</td>";
-                                                                        print "<td><select name=" . $name . " class='form-control pro-edt-select form-control-primary'>";
+    $skuindex = 0;
+    for (; $skuindex < @count($_SESSION['ordertosend']); $skuindex++) {
+        $name = "ibatch" . $skuindex;
+        print '<tr>';
+        print "<td>{$_SESSION['ordertosend'][$skuindex]['market']}</td>";
+        print "<td>{$_SESSION['ordertosend'][$skuindex]['marketplacesku']}</td>";
+        print "<td><select name=" . $name . " class='form-control pro-edt-select form-control-primary'>";
 
-                                                                        $maxpre = 0;
-                                                                        $slectedsku = '';
-                                                                        for ($index = 0; $index < @count($datainselection); $index++) {
-                                                                            if ($_SESSION['ordertosend'][$skuindex]['marketplacesku'] == $datainselection[$index]['sku']) {
-                                                                                $slectedsku = $datainselection[$index]['sku'];
-                                                                                break;
-                                                                            } else {
-                                                                                similar_text($_SESSION['ordertosend'][$skuindex]['marketplacesku'], $datainselection[$index]['sku'], $pre);
-                                                                                if ($pre > $maxpre) {
-                                                                                    $slectedsku = $datainselection[$index]['sku'];
-                                                                                    $maxpre=$pre;
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                        for ($index = 0; $index < @count($datainselection); $index++) {
-                                                                            print "<option value='" . $datainselection[$index]['sku'] . "'";
-                                                                            if ($slectedsku == $datainselection[$index]['sku']) {
-                                                                                print "selected";
-                                                                            }
-                                                                            print ">" . $datainselection[$index]['sku'] . "</option>";
-                                                                        }
-                                                                        print "</select><br></td>";
-                                                                        print "<td>{$_SESSION['ordertosend'][$skuindex]['amount']}</td>";
-                                                                        $total += $_SESSION['ordertosend'][$skuindex]['amount'];
-                                                                    }
-                                                                }
-                                                                ?>
+        $maxpre = 0;
+        $slectedsku = '';
+        for ($index = 0; $index < @count($datainselection); $index++) {
+            if ($_SESSION['ordertosend'][$skuindex]['marketplacesku'] == $datainselection[$index]['sku']) {
+                $slectedsku = $datainselection[$index]['sku'];
+                break;
+            } else {
+                similar_text($_SESSION['ordertosend'][$skuindex]['marketplacesku'], $datainselection[$index]['sku'], $pre);
+                if ($pre > $maxpre) {
+                    $slectedsku = $datainselection[$index]['sku'];
+                    $maxpre = $pre;
+                }
+            }
+        }
+        for ($index = 0; $index < @count($datainselection); $index++) {
+            print "<option value='" . $datainselection[$index]['sku'] . "'";
+            if ($slectedsku == $datainselection[$index]['sku']) {
+                print "selected";
+            }
+            print ">" . $datainselection[$index]['sku'] . "</option>";
+        }
+        print "</select><br></td>";
+        print "<td>{$_SESSION['ordertosend'][$skuindex]['amount']}</td>";
+        @$total += $_SESSION['ordertosend'][$skuindex]['amount'];
+    }
+}
+?>
                                                             </table>     
 
                                                             <div class="custom-pagination "  >
@@ -773,46 +775,46 @@ if (isset($_POST['confirm_array']) && isset($_SESSION['tosend_array'])) {
                                                                 <th>WAREHOUSE SKU</th>
                                                                 <th>AMOUNT</th>
                                                                 </tr>
-                                                                <?php
+<?php
 //这段控制pickup表
 
-                                                                $total_array = 0;
-                                                                if (isset($_POST['save']) && $_POST['checkbox'] != NULL && isset($_SESSION['tosend_array'])) {
-                                                                    $skuindex_array = 0;
-                                                                    foreach ($_SESSION['tosend_array'] as $key => $value) {
-                                                                        $name = "ibatch_array" . $skuindex_array;
-                                                                        print '<tr>';
-                                                                        print "<td>{$_POST['mkt']}</td>";
-                                                                        print "<td>{$key}</td>";
-                                                                        print "<td><select name=" . $name . " class='form-control pro-edt-select form-control-primary'>";
+$total_array = 0;
+if (isset($_POST['save']) && $_POST['checkbox'] != NULL && isset($_SESSION['tosend_array'])) {
+    $skuindex_array = 0;
+    foreach ($_SESSION['tosend_array'] as $key => $value) {
+        $name = "ibatch_array" . $skuindex_array;
+        print '<tr>';
+        print "<td>{$_POST['mkt']}</td>";
+        print "<td>{$key}</td>";
+        print "<td><select name=" . $name . " class='form-control pro-edt-select form-control-primary'>";
 
-                                                                        $maxpre_array = 0;
-                                                                        for ($index = 0; $index < @count($datainselection); $index++) {
-                                                                            if ($key == $datainselection[$index]['sku']) {
-                                                                                $slectedsku_array = $datainselection[$index]['sku'];
-                                                                                break;
-                                                                            } else {
-                                                                                similar_text($key, $datainselection[$index]['sku'], $pre);
-                                                                                if ($pre > $maxpre_array) {
-                                                                                    $slectedsku_array = $datainselection[$index]['sku'];
-                                                                                    $maxpre_array=$pre;
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                        for ($index = 0; $index < @count($datainselection); $index++) {
-                                                                            print "<option value='" . $datainselection[$index]['sku'] . "'";
-                                                                            if ($slectedsku_array == $datainselection[$index]['sku']) {
-                                                                                print "selected";
-                                                                            }
-                                                                            print ">" . $datainselection[$index]['sku'] . "</option>";
-                                                                        }
-                                                                        print "</select><br></td>";
-                                                                        print "<td>{$value}</td>";
-                                                                        $total_array += $value;
-                                                                        $skuindex_array++;
-                                                                    }
-                                                                }
-                                                                ?>
+        $maxpre_array = 0;
+        for ($index = 0; $index < @count($datainselection); $index++) {
+            if ($key == $datainselection[$index]['sku']) {
+                $slectedsku_array = $datainselection[$index]['sku'];
+                break;
+            } else {
+                similar_text($key, $datainselection[$index]['sku'], $pre);
+                if ($pre > $maxpre_array) {
+                    $slectedsku_array = $datainselection[$index]['sku'];
+                    $maxpre_array = $pre;
+                }
+            }
+        }
+        for ($index = 0; $index < @count($datainselection); $index++) {
+            print "<option value='" . $datainselection[$index]['sku'] . "'";
+            if ($slectedsku_array == $datainselection[$index]['sku']) {
+                print "selected";
+            }
+            print ">" . $datainselection[$index]['sku'] . "</option>";
+        }
+        print "</select><br></td>";
+        print "<td>{$value}</td>";
+        @$total_array += $value;
+        $skuindex_array++;
+    }
+}
+?>
                                                             </table>     
 
                                                             <div class="custom-pagination "  >
